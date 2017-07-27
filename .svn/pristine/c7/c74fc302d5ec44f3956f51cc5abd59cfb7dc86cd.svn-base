@@ -1,0 +1,394 @@
+package lb.rest.user.web.action;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import lb.rest.user.db.dao.BsLeaveWordDao;
+import lb.rest.user.db.entity.BsLeaveWord;
+import lb.rest.user.db.entity.BsLeaveWordExample;
+import lb.rest.user.db.entity.BsLeaveWordExample.Criteria;
+import lb.rest.user.db.entity.BsLeaveWordKey;
+import lb.rest.user.db.entity.BsUserComment;
+import lb.rest.user.db.entity.BsUserCommentExample;
+import lb.rest.user.db.entity.Mlbuser;
+import lb.rest.user.db.entity.MlbuserAddition;
+import lb.rest.user.db.entity.MlbuserAdditionKey;
+import lb.rest.user.db.mapper.BsLeaveWordMapper;
+import lb.rest.user.db.mapper.BsUserCommentMapper;
+import lb.rest.user.db.mapper.MlbuserAdditionMapper;
+import lb.rest.user.db.mapper.MlbuserMapper;
+import lombok.extern.slf4j.Slf4j;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.math.NumberUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.mlb.enums.IndustryEnum;
+import com.mlb.util.JsonDataUtils;
+import com.mlb.util.SequenceUtil;
+import com.mlb.util.SessionUtils;
+
+import fc.wpf.rest.db.service.DataService;
+import fc.wpf.rest.utils.BeanFactory;
+import fc.wpf.rest.utils.DBBean;
+import fc.wpf.rest.web.action.BasicCtrl;
+import fc.wpf.rest.web.bean.DbCondi;
+import fc.wpf.rest.web.bean.ReturnInfo;
+import fc.wpf.rest.web.bean.SqlMaker;
+import fc.wpf.rest.web.bind.FieldUtils;
+
+@Slf4j
+@Controller
+@RequestMapping("/bsleaveword")
+public class BsLeaveWordCtrl extends BasicCtrl {
+
+	private static BsLeaveWordMapper bsLeaveWordMapper = (BsLeaveWordMapper) BeanFactory.getBean("bsLeaveWordMapper");
+	private static BsLeaveWordDao bsLeaveWordDao = (BsLeaveWordDao) BeanFactory.getBean("bsLeaveWordDao");
+	private static MlbuserMapper mlbuserMapper = (MlbuserMapper) BeanFactory.getBean("mlbuserMapper");
+	private static MlbuserAdditionMapper mlbuserAdditionMapper = (MlbuserAdditionMapper) BeanFactory
+			.getBean("mlbuserAdditionMapper");
+
+	private static DataService mysqlDataService = (DataService) BeanFactory.getBean("mysqlDataService");
+
+	private static BsUserCommentMapper bsUserCommentMapper = (BsUserCommentMapper) BeanFactory
+			.getBean("bsUserCommentMapper");
+
+	/**
+	 * ajax单条数据插入 url:'http://ip/rest/bsleaveword'
+	 * data:'{"key1":"value1","key2":"value2",...}' type:’POST
+	 */
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo insert(BsLeaveWord info, HttpServletRequest req) {
+		try {
+			int subjectUserId = NumberUtils.toInt(req.getParameter("subjectUserId"));
+			if (subjectUserId > 0) {
+				int objId = SequenceUtil.getInstance().nextValue("bs_leave_word");
+				info.setId(objId);
+				info.setCreateTime(new Date());
+				info.setHasRead(2);
+				int flag = bsLeaveWordMapper.insertSelective(info);
+				if (flag > 0) {
+					return ReturnInfo.Success;
+				}
+			}
+		} catch (Exception e) {
+			log.warn("BsLeaveWordCtrl insert error..", e);
+			// e.printStackTrace();
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * ajax根据ID主键查询 请求 url: 'http://ip/app/bsleaveword/(_id值)' dataType: 'json'
+	 * type: 'get'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.GET)
+	@ResponseBody
+	public BsLeaveWord get(@PathVariable String key, HttpServletRequest req) {
+		BsLeaveWord obj = null;
+		try {
+			BsLeaveWord akey = new BsLeaveWord();
+
+			Field keyField = FieldUtils.allDeclaredField(BsLeaveWordKey.class).get(0);
+
+			if (keyField.getType().isInstance(1)) {
+				FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+			} else if (keyField.getType().isInstance(1L)) {
+				FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+			} else {
+				FieldUtils.setObjectValue(akey, keyField, key);
+			}
+
+			if (true && akey.getId() == null) {
+			} else {
+				BsLeaveWordExample example = new BsLeaveWordExample();
+				example.createCriteria().andIdEqualTo(akey.getId());
+				List<BsLeaveWord> list = bsLeaveWordMapper.selectByExample(example);
+				if (list != null && list.size() > 0) {
+					obj = list.get(0);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("BsLeaveWordCtrl get by key error..", e);
+		}
+		return obj;
+	}
+
+	/**
+	 * ajax根据主键删除 url:'http://ip/app/bsleaveword/(_id值)' type: 'DELETE'
+	 * dataType: 'json'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public ReturnInfo delete(@PathVariable String key, HttpServletRequest req) {
+		try {
+			BsLeaveWord akey = new BsLeaveWord();
+
+			Field keyField = FieldUtils.allDeclaredField(BsLeaveWordKey.class).get(0);
+
+			if (keyField.getType().isInstance(1)) {
+				FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+			} else if (keyField.getType().isInstance(1L)) {
+				FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+			} else {
+				FieldUtils.setObjectValue(akey, keyField, key);
+			}
+
+			if (true && akey.getId() != null) {
+				bsLeaveWordMapper.deleteByPrimaryKey(akey);
+				return ReturnInfo.Success;
+			}
+		} catch (Exception e) {
+			log.warn("BsLeaveWordCtrl delete by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * ajax根据主键单条修改 url:'http://ip/app/bsleaveword/(_id值)'
+	 * data:'{"key1":"value1","key2":"value2",...}' type:'PUT'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo update(@PathVariable String key, BsLeaveWord info, HttpServletRequest req) {
+		try {
+			if (info != null) {
+				BsLeaveWord akey = new BsLeaveWord();
+
+				Field keyField = FieldUtils.allDeclaredField(BsLeaveWordKey.class).get(0);
+
+				if (keyField.getType().isInstance(1)) {
+					FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+				} else if (keyField.getType().isInstance(1L)) {
+					FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+				} else {
+					FieldUtils.setObjectValue(akey, keyField, key);
+				}
+				BsLeaveWordExample example = new BsLeaveWordExample();
+				example.createCriteria().andIdEqualTo(akey.getId());
+				info.setCreateTime(new Date());
+				bsLeaveWordMapper.updateByExampleSelective(info, example);
+			}
+			return ReturnInfo.Success;
+		} catch (Exception e) {
+			log.warn("BsLeaveWord update by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/***
+	 * 用户能看到的粮库列表
+	 * 
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping(value = "/list", method = RequestMethod.POST)
+	@ResponseBody
+	public Object getList(HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		int type = NumberUtils.toInt(req.getParameter("type"));
+		List<BsLeaveWord> list = null;
+		if (type == 1) {
+			list = bsLeaveWordDao.getObjectList(userId);
+		} else if (type == 2) {
+			list = bsLeaveWordDao.getSubjectList(userId);
+		}
+		boolean success = false;
+		JsonDataUtils json = new JsonDataUtils();
+		if (list != null && list.size() > 0) {
+			success = true;
+			int number = 1;
+			success = true;
+			json.addTitle("number", "id", "userName", "industryName", "companyName", "content", "hasRead");
+
+			if (list != null) {
+				for (BsLeaveWord item : list) {
+					// String formattedDate =
+					// DateUtil.format(item.getCreateTime(),
+					// DateStyle.YYYY_MM_DD_HH_MM_SS);
+					int showUserId = item.getObjectUserId();
+
+					if (type == 1) {
+						showUserId = item.getSubjectUserId();
+					} else if (type == 2) {
+						showUserId = item.getObjectUserId();
+					}
+
+					MlbuserAdditionKey additionKey = new MlbuserAdditionKey();
+					additionKey.setUserId(showUserId);
+					MlbuserAddition additionItem = mlbuserAdditionMapper.selectByPrimaryKey(additionKey);
+					int industry = additionItem.getIndustry() == null ? 0 : additionItem.getIndustry();
+					String industryName = IndustryEnum.getName(industry);
+					Mlbuser userKey = new Mlbuser();
+					userKey.setUserid(showUserId);
+					Mlbuser mlbuserItem = mlbuserMapper.selectByPrimaryKey(userKey);
+					String company = "";
+					String userName = "";
+					String companyAuthStr = "否";
+					String personalAuthStr = "否";
+					int companyAuth = 2;
+					int personalAuth = 2;
+					if (mlbuserItem.getCompanyAuth() != null && mlbuserItem.getCompanyAuth() > 0) {
+						companyAuth = mlbuserItem.getCompanyAuth();
+					}
+					if (mlbuserItem.getPersonalAuth() != null && mlbuserItem.getPersonalAuth() > 0) {
+						personalAuth = mlbuserItem.getPersonalAuth();
+					}
+					if (companyAuth == 1) {
+						companyAuthStr = "是";
+					}
+					if (personalAuth == 1) {
+						personalAuthStr = "是";
+					}
+
+					if (mlbuserItem != null) {
+						company = mlbuserItem.getCompanyname();
+						userName = mlbuserItem.getTruename();
+					}
+					json.addOneRow(number++, item.getId(), userName, industryName, company, item.getContent(),
+							item.getHasRead());
+				}
+
+			}
+		}
+		json.setSuccess(success);
+		return json.toJsonObj();
+	}
+
+	@RequestMapping(value = "/getItems", method = RequestMethod.POST)
+	@ResponseBody
+	public Object getItems(HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		List<BsLeaveWord> list = bsLeaveWordDao.getObjectList(userId);
+		JSONArray jsonlist = new JSONArray();
+		if (list != null && list.size() > 0) {
+			for (BsLeaveWord item : list) {
+				JSONObject obj = new JSONObject();
+				obj.put("id", item.getId());
+				obj.put("name", item.getRemark());
+				jsonlist.add(obj);
+			}
+		}
+		return jsonlist;
+	}
+
+	@RequestMapping(value = "/setRead", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo setRead(HttpServletRequest req) {
+		try {
+			BsLeaveWord item = new BsLeaveWord();
+			int id = NumberUtils.toInt(req.getParameter("id"));
+			int status = NumberUtils.toInt(req.getParameter("status"), 1);
+			if (id > 0) {
+				item.setId(id);
+				item.setHasRead(status);
+				item.setViewTime(new Date());
+				int suc = bsLeaveWordMapper.updateByPrimaryKeySelective(item);
+				if (suc > 0) {
+					return new ReturnInfo("提交成功", 0, 0, true);
+				}
+			} else {
+				return new ReturnInfo("提交失败", 0, 0, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsLeaveWordCtrl setRead by key error..");
+		}
+		return new ReturnInfo("提交失败", 0, 0, false);
+	}
+
+	// 更新已读 ，将未读的更新为已读。 1：已读 2：未读
+	@RequestMapping(value = "/updateRead", method = RequestMethod.GET)
+	@ResponseBody
+	public ReturnInfo updateRead(HttpServletRequest req) {
+		try {
+			int objectUserId = NumberUtils.toInt(req.getParameter("userId"));
+			int status = NumberUtils.toInt(req.getParameter("status"), 1);
+			if (objectUserId > 0) {
+				BsLeaveWord item = new BsLeaveWord();
+				item.setObjectUserId(objectUserId);
+				item.setHasRead(status);
+				item.setViewTime(new Date());
+
+				BsLeaveWordExample example = new BsLeaveWordExample();
+				Criteria criteria = example.createCriteria();
+				criteria.andObjectUserIdEqualTo(objectUserId).andHasReadEqualTo(2);
+				int suc = bsLeaveWordMapper.updateByExampleSelective(item, example);
+
+				BsUserComment itemComment = new BsUserComment();
+				itemComment.setUserId(objectUserId);
+				itemComment.setHasRead(status);
+
+				BsUserCommentExample exampleComment = new BsUserCommentExample();
+				lb.rest.user.db.entity.BsUserCommentExample.Criteria criteriaComment = exampleComment.createCriteria();
+				criteriaComment.andUserIdEqualTo(objectUserId).andHasReadEqualTo(2);
+				suc += bsUserCommentMapper.updateByExampleSelective(itemComment, exampleComment);
+
+				if (suc > 0) {
+					return new ReturnInfo("更新成功", 0, 0, true);
+				}
+			} else {
+				return new ReturnInfo("更新失败", 0, 0, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsLeaveWordCtrl updateRead by key error..");
+		}
+		return new ReturnInfo("更新失败", 0, 0, false);
+	}
+
+	// 得到 未读 状态的数据 1：已读 2：未读
+	@RequestMapping(value = "/getNoRead", method = RequestMethod.GET)
+	@ResponseBody
+	public int getNoRead(HttpServletRequest req) {
+		int suc = 0;
+		try {
+			int objectUserId = NumberUtils.toInt(req.getParameter("userId"));
+			int status = NumberUtils.toInt(req.getParameter("status"), 2);
+			if (objectUserId > 0) {
+				BsLeaveWordExample example = new BsLeaveWordExample();
+				Criteria criteria = example.createCriteria();
+				criteria.andObjectUserIdEqualTo(objectUserId).andHasReadEqualTo(status);
+				suc = bsLeaveWordMapper.countByExample(example);
+
+				BsUserCommentExample exampleComment = new BsUserCommentExample();
+				lb.rest.user.db.entity.BsUserCommentExample.Criteria criteriaComment = exampleComment.createCriteria();
+				criteriaComment.andUserIdEqualTo(objectUserId).andHasReadEqualTo(status);
+				suc += bsUserCommentMapper.countByExample(exampleComment);
+				return suc;
+			} else {
+			}
+		} catch (Exception e) {
+			log.warn("BsLeaveWordCtrl getRead by key error..");
+		}
+		return suc;
+	}
+
+	private void setTableName(DbCondi dc) {
+		String tName = DBBean.getTableName2Class(BsLeaveWord.class);
+		if (dc.getOther() == null) {
+			Map<String, Object> o = new HashMap<String, Object>();
+			o.put(SqlMaker.TABLE_NAME, tName);
+			dc.setOther(o);
+		} else {
+			dc.getOther().put(SqlMaker.TABLE_NAME, tName);
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class BsLeaveWords extends ArrayList<BsLeaveWord> {
+		public BsLeaveWords() {
+			super();
+		}
+	}
+}

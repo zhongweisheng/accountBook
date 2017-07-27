@@ -1,0 +1,180 @@
+.right{
+    float: left;
+    width:calc(100% - 160px);
+    width:-moz-calc(100% - 160px);
+    width:-webkit-calc(100% - 160px);
+    border-left: 1px solid #000;
+}
+.rightHead{
+    margin-top: 50px;
+}
+.rightContent{
+    width: 1000px;
+    margin-left: 39px;
+    margin-top: 55px;
+}
+.head-container{
+    width: 800px;
+    height: 2rem;
+    margin: 0 auto;
+    border: 0 solid #000;
+    border-radius: 5px;
+    background-color: #828282;
+}
+.head-tab{
+    width: 33.3%;
+    height: 2rem;
+    line-height: 2rem;
+    text-align: center;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.head-tab:hover{
+    background-color: #f7941d;
+}
+.head-tab-active{
+    background-color: #f7941d;
+}
+.form{
+    width: 800px;
+    margin: 0 auto;
+}
+.register-form-title {
+    padding-top: 50px;
+}
+.register-form-title .list1{
+    border:solid 1px #44aac3;
+    width: 100%;
+}
+.register-form-title .list2 span{
+    color: #44aac3;
+    font-size: 30px;
+}
+.field-name{
+    float: left;
+    display: block;
+    width: 25%;
+    font-size: 20px;
+    color: #858384;
+    line-height: 40px;
+    text-align: right;
+    padding-right: 10px;
+}
+.form input{
+    padding-left: 2%;
+    float: left;
+    display: block;
+    width: 50%;
+    height: 35px;
+    font-size: 20px
+}
+.reminder{
+    display: none;
+    color: red;
+    height: 12px;
+    font-size: 12px;
+    text-align: left;
+}
+.address{
+    float: left;
+    display: block;
+    width: 500px;
+}
+.cityselect select{
+    display: block;
+    height: 35px;
+    width: 20%;
+    border: solid 1px #858384;
+    float: left;
+    background-color: white;
+    font-size: 20px
+}
+#bindWx{
+    padding-left: 2%;
+    float: left;
+    display: block;
+    width: 606px;
+    height: 39px;
+    background-color: #f5a85d;
+    text-align: center;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 39px;
+}
+.registerModel{
+    top:0;
+    left: 0;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: none;
+    background: rgba(189,189,189,.7);
+}
+.register-form{
+    width: 680px;
+    height:530px;
+    background-color: white;
+    margin: 190px auto;
+}
+
+.register-form .content{
+    width: 70%;
+    margin: auto;
+    padding-top: 1px;
+}
+.register-form-title {
+    padding-top: 50px;
+}
+.register-form-title .list1{
+    border:solid 1px #44aac3;
+    width: 100%;
+}
+.register-form-title .list2 span{
+    color: #44aac3;
+    font-size: 30px;
+}
+.rightFooter{
+    height: 80px;
+    line-height: 80px;
+    margin-bottom: 66px;
+}
+.btn{
+    margin: 50px auto;
+    cursor: pointer;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    color: #fff;
+    font-size: 22px;
+    background-color: #f5a85d;
+    width: 700px;
+    transition: background-color 1s;
+}
+#accountNum{
+    border-style: none;
+}
+.btn:hover{
+    background-color: #2e6da4;
+}
+#QRcodeContent{
+    width: 200px;
+    height: 200px;
+    margin: 50px auto 0;
+}
+#cencelWx{
+    display: block;
+    width: 150px;
+    height: 48px;
+    text-align: center;
+    background-color: #f5a85d;
+    margin: 43px auto;
+    color: white;
+    line-height: 46px;
+    cursor: pointer;
+}
+.disable{
+    opacity: .5;
+}

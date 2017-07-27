@@ -1,0 +1,158 @@
+.divcenter{
+    width: 80%;
+    margin:1rem auto 0;
+    text-align: center;
+}
+.loginintpu{
+    background-color: white;
+    height: 1.8rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 1rem;
+}
+.input-left{
+    font-size: 0.8rem;
+    margin:0 0.5rem 0;
+    float: left;
+    color: #a3a3a3;
+    line-height: 1.7rem;
+}
+.item-after{
+    line-height: 1.6rem;
+    font-size: 0.7rem;
+    float: left;
+}
+.disable-btn {
+    opacity: 0.5;
+}
+.get-text-code{
+
+}
+.input-right{
+    float: left;
+    width: 60%;
+    height: 1rem;
+    margin-top: 0.1rem;
+}
+.input-right input{
+    width: 100%;
+    border-style: none;
+    height: 1.5rem;
+    font-size: 0.7rem;
+}
+.loginintpu input-left{
+    color: #a3a3a3;
+    width: 90%;
+}
+.submitbtn{
+    width: 100%;
+    height: 1.7rem;
+    border: 1px solid #ed9029;
+    background-color: #ed9029;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    color: white;
+    line-height: 1.7rem;
+}
+.active{
+    border: 0.5px solid #37a333;
+}
+.divcenter textarea{
+    width: 100%;
+    height: 4rem;
+}
+.ndustry-left{
+    text-align: left;
+    font-size: 0.7rem;
+    height: 1.5rem;
+    width: 100%;
+    float: left;
+    color:  #a3a3a3;
+}
+.ndustry-right{
+    height: 4rem;
+    width: 75%;
+    float: left;
+    color:  #a3a3a3;
+}
+.ndustry-type{
+    font-size: 0.7rem;
+    border: 1px solid #a3a3a3 ;
+    background-color: white;
+    margin: 0 0 0.5rem 0.2rem;
+    width: 30%;
+    height: 1.5rem;
+    border-radius: 20px;
+    float: left;
+    line-height: 1.4rem;
+}
+.reminder{
+    display: none;
+    width: 80%;
+    margin:1rem auto 0;
+    text-align: center;
+}
+.tel-vertifications{
+    display: none;
+    width: 80%;
+    margin:1rem auto 0;
+    text-align: center;
+}
+.show{
+    display: block;
+}
+.isselect{
+    border: 1px solid #f66747;
+    background-color: #f66747;
+    color:white;
+}
+.none{
+    display: none;
+}
+.cityselect select{
+    display: block;
+    height: 24px;
+    width: 33.3%;
+    border: solid 1px #858384;
+    float: left;
+    background-color: white;
+}
+.agreeModal{
+    display: none;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+.agreeInner{
+    width: 90%;
+    height: 85%;
+    margin: 20% auto;
+    padding: 0 1rem;
+    background: #fff;
+    position: relative;
+}
+.agreeCon{
+    width: 100%;
+    height: inherit;
+    overflow-y: scroll;
+}
+.agreeFooter{
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2rem;
+}
+.agreeBtn{
+    cursor: pointer;
+    width: 80%;
+    height: 1.5rem;
+    margin: 0 auto;
+    text-align: center;
+    line-height: 1.55rem;
+    background: #f6a85e;
+    color: #fff;
+    border-radius: 0.1rem;
+}

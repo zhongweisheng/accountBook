@@ -1,0 +1,164 @@
+/**
+ * Created by luffy on 17-2-17.
+ */
+
+$(".input-right").on('click',function () {
+    $(".loginintpu").removeClass('active');
+    $(this).closest('.loginintpu').addClass('active');
+});
+
+$(document).on('input','.tel-vertification input',function () {
+    var val = $(this).val();
+    val = val.replace(/\s/,"");
+    console.log(val,val.length);
+    console.log($('.get-text-code').data('loading'));
+    if(val.length == 11) {
+        $('.get-text-code').removeClass('disable-btn');
+        $('.get-text-code').data('loading',true)
+    }else{
+        $('.get-text-code').addClass('disable-btn');
+        $('.get-text-code').data('loading',false);
+    }
+    if ($('.get-text-code').data('loading')) {
+        return false;
+    }
+})
+
+$(document).on('input','#code',function () {
+    var regx = '^[0-9]*$';
+    if(!$('#code').val().match(regx)){
+        $('#code').val('');
+        return;
+    }
+})
+function telVertification () {
+    var tel = $('.tel-vertification input').val();
+    var telReminder = $('.tel-vertification .reminder').addClass('active');
+    if (!(tel.length == 11)) {
+        telReminder.html('您输入的号码位数不正确！');
+        return false;
+    }
+    if(!tel.match(/^1[3,5,8,7]\d{9}$/g)) {
+        console.log('手机号码输入有误');
+        telReminder.html('您输入的手机号码有误');
+        return false;
+    }else {
+        console.log('手机输入号码正确');
+    }
+    telReminder.removeClass('active');
+    return true;
+}
+
+function getTextCode(code) {
+    var getcodetime = 60;
+    var getcodebtn = $(code);
+    var reminder = $('.reminder').addClass('show');
+    var tel = $('.tel-vertification input').val();
+    if (!tel) {
+        $.toast('请您先输入手机号码');
+        $('.tel-vertification input')[0].focus();
+        return false;
+    }
+    if ($(code).hasClass('disable-btn')) {
+        $(code).data('loading',true);
+        return false;
+    }else {
+        $(code).data('loading',false);
+        if (!telVertification()) {
+            return false;
+        } ;
+        $(code).addClass('disable-btn');
+
+        $.ajax({
+            url:"/accountBook/common/sendSmsCode?phone="+tel+"&pageType=2",
+            type:"get",
+            dataType:"json",
+            success:function (data) {
+                console.log(data);
+                if(data.success){
+                    var timer = setInterval(function () {
+                        getcodetime -= 1;
+                        if(getcodetime <= 0) {
+                            clearInterval(timer);
+                            getcodebtn.data('loading',false);
+                            getcodebtn.removeClass('disable-btn');
+                            reminder.html('');
+                        }else {
+                            getcodebtn.data('loading',true);
+                            reminder.html('短信已发送，如未收到，请<span style="color:red;">'+getcodetime+'</span>s后再次获取');
+
+                        }
+
+                    },1000);
+                }else {
+                    $.alert(data.message);
+                }
+
+            },
+            error:function (err) {
+                console.log(err)
+            }
+        })
+    }
+}
+
+$("#submit").on('click',function () {
+    if(!$("#account").val()){
+        $.toast('请输入帐号');
+        return false;
+    }else if(!$("#password").val()){
+        $.toast('请输入密码');
+        return false;
+    }else if(!$("#code").val()){
+        $.toast('请输入短信验证码');
+        return false;
+    }
+
+
+    var account = $("#account").val();
+    var password = md5($("#password").val());
+    var code = $("#code").val();
+    var params = {};
+    params.phone = account;
+    params.password = password;
+    params.smscode = code;
+    params.CHANNAL_TYPE_CHECK='WEIXIN';
+    var qcode = '';
+    var arrSimple=new Array();
+    for(var i in params){
+        var forvalue = params[i] || '';
+        arrSimple.push(i+'='+forvalue);
+    }
+    arrSimple.sort();
+    qcode =arrSimple.join('');
+    eval(function(p,a,c,k,e,d){e=function(c){return(c<a?"":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1;};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p;}('0=1(0);',2,2,'qcode|md5'.split('|'),0,{}))
+    params.qcode = qcode;
+    console.log(params);
+    $.ajax({
+        type: 'post',
+        url:'accountBook/bsinventoryuser/getBackPassword',
+        dataType: 'json',
+        async: false,
+        data: params,
+        success: function(result) {
+            if(result){
+                if(result.success){
+                    $.alert('修改密码成功', '提示', function () {
+                        localStorage.setItem("ud",DES3.encrypt(result.retcode));
+                        var type = localStorage.getItem('type');
+                        window.location.href = 'entry.html?type='+type;
+                    });
+                }else {
+                    $.alert(result.description);
+                }
+            }else{
+                $.alert('连接失败');
+            }
+        },
+        error: function(err) {
+            console.log(err);
+        }
+    });
+});
+
+$.init();

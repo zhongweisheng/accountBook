@@ -1,0 +1,5 @@
+	<p class="depotN"> 粮库</p>
+	
+	       <select name="depot" id="depot" class="depot" style="height: 30px;width: 200px; float: left;color: #000;">
+            </select>
+

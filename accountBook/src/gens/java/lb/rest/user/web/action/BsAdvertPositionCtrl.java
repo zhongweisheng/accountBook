@@ -1,0 +1,201 @@
+package lb.rest.user.web.action;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import lb.rest.user.db.dao.BsAdvertPositionDao;
+import lb.rest.user.db.entity.BsAdvertPosition;
+import lb.rest.user.db.entity.BsAdvertPositionExample;
+import lb.rest.user.db.entity.BsAdvertPositionExample.Criteria;
+import lb.rest.user.db.mapper.BsAdvertPositionMapper;
+import lombok.extern.slf4j.Slf4j;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.math.NumberUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.mlb.util.JsonDataUtils;
+import com.mlb.util.SessionUtils;
+
+import fc.wpf.rest.utils.BeanFactory;
+import fc.wpf.rest.utils.DBBean;
+import fc.wpf.rest.web.action.BasicCtrl;
+import fc.wpf.rest.web.bean.DbCondi;
+import fc.wpf.rest.web.bean.ReturnInfo;
+import fc.wpf.rest.web.bean.SqlMaker;
+
+@Slf4j
+@Controller
+@RequestMapping("/bsadvertposition")
+public class BsAdvertPositionCtrl extends BasicCtrl {
+
+	private static BsAdvertPositionMapper bsAdvertPositionMapper = (BsAdvertPositionMapper) BeanFactory
+			.getBean("bsAdvertPositionMapper");
+	private static BsAdvertPositionDao bsAdvertPositionDao = (BsAdvertPositionDao) BeanFactory
+			.getBean("bsAdvertPositionDao");
+
+	/*
+	 * private static MlbuserMapper mlbuserMapper = (MlbuserMapper)
+	 * BeanFactory.getBean("mlbuserMapper"); private static
+	 * MlbuserAdditionMapper mlbuserAdditionMapper = (MlbuserAdditionMapper)
+	 * BeanFactory .getBean("mlbuserAdditionMapper"); private CommonDao
+	 * commonDao = (CommonDao) BeanFactory.getBean("commonDao");
+	 * 
+	 * private static DataService mysqlDataService = (DataService)
+	 * BeanFactory.getBean("mysqlDataService");
+	 */
+	/***
+	 * 用户能看到的粮库列表
+	 * 
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping(value = "/list", method = RequestMethod.GET)
+	@ResponseBody
+	public Object getList(HttpServletRequest req) {
+
+		int qType = NumberUtils.toInt(req.getParameter("type"));
+		List<BsAdvertPosition> list = bsAdvertPositionDao.getStatusList(qType, 1);
+		boolean success = false;
+		JsonDataUtils json = new JsonDataUtils();
+		int total = 0;
+		if (list != null && list.size() > 0) {
+			total = list.size();
+			success = true;
+			int number = 1;
+			success = true;
+			json.addTitle("number", "id", "type", "typeName", "userId", "userName", "phoneName", "title", "content",
+					"rank");
+			if (list != null) {
+				for (BsAdvertPosition item : list) {
+					// String formattedDate =
+					// DateUtil.format(item.getCreateTime(),
+					// DateStyle.YYYY_MM_DD_HH_MM_SS);
+					int type = item.getAdvertType();
+					int userId = item.getUserId();
+
+					String typeName = "";
+					if (type == 1) {
+						typeName = "求购";
+					} else {
+						typeName = "供应";
+					}
+					String userName = item.getUserName();
+					String title = item.getTitle();
+					String phone = item.getUserPhone();
+					String content = item.getContent();
+					json.addOneRow(number++, item.getId(), type, typeName, userId, userName, phone, title, content,
+							item.getRank());
+				}
+			}
+		}
+		int mm = 1 & 1;
+
+		json.setTotal(total);
+		json.setSuccess(success);
+		return json.toJsonObj();
+	}
+
+	@RequestMapping(value = "/getAdvertPosition", method = RequestMethod.POST)
+	@ResponseBody
+	public Object getAdvertPosition(HttpServletRequest req) {
+		int subjectUserId = NumberUtils.toInt(req.getParameter("subjectUserId"));
+		int objectUserId = NumberUtils.toInt(req.getParameter("objectUserId"));
+		BsAdvertPosition item = bsAdvertPositionDao.getAttention(subjectUserId, objectUserId);
+
+		JSONObject obj = new JSONObject();
+		if (item != null) {
+			obj.put("id", item.getId());
+			obj.put("status", item.getStatus());
+		}
+		return obj;
+	}
+
+	@RequestMapping(value = "/updateAdvertPosition", method = RequestMethod.POST)
+	@ResponseBody
+	public Object updateAdvertPosition(HttpServletRequest req) {
+		int id = NumberUtils.toInt(req.getParameter("id"));
+		int status = NumberUtils.toInt(req.getParameter("status"));
+		BsAdvertPosition record = new BsAdvertPosition();
+		record.setId(id);
+		record.setStatus(status);
+
+		int flag = bsAdvertPositionDao.updateByPrimaryKeySelective(record);
+		if (flag > 0) {
+			return ReturnInfo.Success;
+		}
+		return ReturnInfo.Faild;
+	}
+
+	@RequestMapping(value = "/getItems", method = RequestMethod.POST)
+	@ResponseBody
+	public Object getItems(HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		List<BsAdvertPosition> list = bsAdvertPositionDao.getObjectList(userId);
+		JSONArray jsonlist = new JSONArray();
+		if (list != null && list.size() > 0) {
+			for (BsAdvertPosition item : list) {
+				JSONObject obj = new JSONObject();
+				obj.put("id", item.getId());
+				obj.put("name", item.getContent());
+				jsonlist.add(obj);
+			}
+		}
+		return jsonlist;
+	}
+
+	// 更新已读 ，将未读的更新为已读。 1：已读 2：未读
+	@RequestMapping(value = "/updateRead", method = RequestMethod.GET)
+	@ResponseBody
+	public ReturnInfo updateRead(HttpServletRequest req) {
+		try {
+			int objectUserId = NumberUtils.toInt(req.getParameter("userId"));
+			int status = NumberUtils.toInt(req.getParameter("status"), 1);
+			if (objectUserId > 0) {
+				BsAdvertPosition item = new BsAdvertPosition();
+				item.setUserId(objectUserId);
+				item.setStatus(status);
+
+				BsAdvertPositionExample example = new BsAdvertPositionExample();
+				Criteria criteria = example.createCriteria();
+				criteria.andUserIdEqualTo(objectUserId).andStatusEqualTo(2);
+				int suc = bsAdvertPositionMapper.updateByExampleSelective(item, example);
+
+				if (suc > 0) {
+					return new ReturnInfo("更新成功", 0, 0, true);
+				}
+			} else {
+				return new ReturnInfo("更新失败", 0, 0, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsAdvertPositionCtrl updateRead by key error..");
+		}
+		return new ReturnInfo("更新失败", 0, 0, false);
+	}
+
+	private void setTableName(DbCondi dc) {
+		String tName = DBBean.getTableName2Class(BsAdvertPosition.class);
+		if (dc.getOther() == null) {
+			Map<String, Object> o = new HashMap<String, Object>();
+			o.put(SqlMaker.TABLE_NAME, tName);
+			dc.setOther(o);
+		} else {
+			dc.getOther().put(SqlMaker.TABLE_NAME, tName);
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class BsAdvertPositions extends ArrayList<BsAdvertPosition> {
+		public BsAdvertPositions() {
+			super();
+		}
+	}
+}

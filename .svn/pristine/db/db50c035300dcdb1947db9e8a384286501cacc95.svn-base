@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>求购信息</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+    }
+    .topOne{
+        height: 40px;
+        width: 100%;
+        background: #e89b2c;
+        line-height: 40px;
+    }
+    .headImg{
+        height: 18px;
+        width: 16px;
+        background: url("img/back.png") left center no-repeat;
+        margin-top: 3%;
+        float: left;
+        margin-left: 5%;
+
+    }
+    .headTitle{
+        color: white;
+        float: left;
+        margin: 0 auto;
+        margin-left: 33%;
+        font-size: 16px;
+    }
+    .banner{
+        height: 32rem;
+        width: 100%;
+        background: url("img/refuse.png") left center no-repeat;
+        background-size: 100%
+    }
+    .footer{
+        width: 100%;
+        height: 40px;
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        z-index: 10000;
+        text-align: center;
+        line-height: 40px;
+        font-size: 15px;
+    }
+    .left{
+        flex: 1;
+        color: #1b1b1b;
+        background: whitesmoke;
+    }
+    .right{
+        flex: 1;
+        background: #e89b2c;
+        color: white;
+    }
+</style>
+<body>
+
+
+<div class="topOne">
+    <div class="headImg" onclick="window.history.go(-1)"></div>
+    <div class="headTitle">卖粮宝</div>
+</div>
+<div class="banner"></div>
+<div class="footer">
+    <div class="left phone" data-phone="4006029967"> 联系客服</div>
+    <div class="right" onclick="window.location.href='resufeService.html'" >申请服务</div>
+</div>
+<script type='text/javascript' src='js/common/jquery-1.11.1.min.js' charset='utf-8'></script>
+</body>
+<script>
+    //打电话
+    $(document).on('click','.phone',function () {
+        var phone = $(this).data('phone');
+        window.location.href = 'tel:'+phone;
+    });
+</script>
+</html>

@@ -1,0 +1,23 @@
+## 文件
+#mlb_file_upload_path = /usr/mlb/
+mlb_file_upload_path = c:/tempdir/
+#open开，close关
+send_template_msg = open
+## 微信企业号 内部流程应用
+corpid = wxb32e27565629e284
+corpsecret =  7cJl2weh9eE-fcJv3GW6gd3_lyECr6f6Jb3tAxI1-mzZidyA3-DKs-GXbpWuLDKQ
+
+appId = wxff7e368447f83d59
+appSecret =  ed8c4d3b938c87fb7e20cdb45eb1742e
+
+#appId = wx921ace7cef816326
+#appSecret =  1402ef1d2a2ba34715ed4b56dc71bdb6
+
+#appId = wxc1697ace2f1817a7
+#appSecret =  27d384adf6b5ecb3c85855ced25fdfc4
+
+inviteCode = 170412
+
+htUserIdList = 16497,15337,10269,13293,13338,16034,17097
+##4hour 4*60*60
+login_session_timeout=14400

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>供求信息</title>
+	<link rel="stylesheet" type="text/css" href="css/Tradeleads.css" />
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="favicon.ico">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+</head>
+
+<body>
+<div class="header" style="background: white">
+	<img src="img/back2.png"  onclick="history.go(-1)"/>
+	<span class="title">供求信息</span>
+</div>
+<div class="nav" style="background: white">
+	<div class="nav1 nav_click">
+		采购信息
+	</div>
+	<div class="nav2">
+		供应信息
+	</div>
+</div>
+<!--留言数据渲染-->
+<div class="banner">	</div>
+<script type="text/template7" id="banner-list">
+	{{#each banner}}
+	<div class="bannerConent">
+		<ul style="padding-top: 7px" >
+			<li><span class="type" > {{type}}</span></li>
+			<li style="margin-left: 24%"><span class="type" > {{effectiveTime}}</span></li>
+
+		</ul>
+		<!--详细信息 <p style="margin-left: 20px;" class="grain_message">{{foodRequire}}</p>-->
+		<div style="height: 30px; width: 100%; margin-top: 10px;">
+			<!--	<button onclick="javascript:if(confirm('确定要删除此信息吗？')){alert('删除成功！');return true;}return false;">删除</button>-->
+			<!--		<p class="data">{{time}}</p>-->
+			<ul style="border-bottom: 1px dashed  gainsboro">
+				<li >价格：<span class="price">{{price}}</span>/吨</li>
+				<li>数量：<span class="price">{{number}}吨</span></li>
+				<li>质量：<span class="price">{{quality}}</span></li>
+			</ul>
+		</div>
+		<div>
+			<ul style="margin-top: 10px" data-requireId="{{id}}">
+
+				{{#if butStatus}}
+				<li class="newPrice" data-butStatus="{{butStatus}}"  ><span class="rePrice " >更新报价</span></li>
+				{{else}}
+				<li class="newPriceAfter" ><span class="rePrice " >更新报价</span></li>
+				{{/if}}
+				<li  class="edit" style="float: right;margin-left: 10px" ><span class="">编辑</span></li>
+				<li  class="delete" style="float: right"><span class="">删除</span></li>
+			</ul>
+			<p style="color: red;font-size: 10px;margin-left: 26px">报价有效期至{{effectiveTime}}，到期及时更新报价！</p>
+		</div>
+	</div>
+	{{/each}}
+</script>
+<div class="banner1" style="display: none;"></div>
+<script type="text/template7" id="banner1-list">
+	{{#each banner1}}
+	<div class="bannerConent">
+		<ul style="padding-top: 7px" >
+			<li><span class="type" > {{type}}</span></li>
+			<li style="margin-left: 24%"><span class="type" > {{effectiveTime}}</span></li>
+
+		</ul>
+		<!--详细信息 <p style="margin-left: 20px;" class="grain_message">{{foodRequire}}</p>-->
+		<div style="height: 30px; width: 100%; margin-top: 10px;">
+			<!--	<button onclick="javascript:if(confirm('确定要删除此信息吗？')){alert('删除成功！');return true;}return false;">删除</button>-->
+			<!--		<p class="data">{{time}}</p>-->
+			<ul style="border-bottom: 1px dashed  gainsboro">
+				<li >价格：<span class="price">{{price}}</span>/吨</li>
+				<li>数量：<span class="price">{{number}}吨</span></li>
+				<li>质量：<span class="price">{{quality}}</span></li>
+			</ul>
+		</div>
+		<div>
+			<ul style="margin-top: 10px" data-requireId="{{id}}">
+
+				{{#if butStatus}}
+				<li class="newPrice rePrice" data-butStatus="{{butStatus}}"  ><span class="rePrice " >更新报价</span></li>
+				{{else}}
+				<li class="newPriceAfter" ><span class="rePrice " >更新报价</span></li>
+				{{/if}}
+				<li  class="edit1" onclick="edit1(this)" style="float: right;margin-left: 10px" ><span class="">编辑</span></li>
+				<li  class="delete1" onclick="delete1(this)" style="float: right"><span class="">删除</span></li>
+			</ul>
+			<p style="color: red;font-size: 10px;margin-left: 26px">报价有效期至{{effectiveTime}}，到期及时更新报价！</p>
+		</div>
+	</div>
+	{{/each}}
+</script>
+
+<div class="btn" style="display: block;" onclick="window.location.href = 'purchase.html'">
+	发布求购
+</div>
+<div class="btn1" style="display: none;" onclick="window.location.href = 'apply.html'">
+	发布供应
+</div>
+<!--end-->
+</body>
+<script src="js/common/jquery-1.11.1.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="js/common/restnomd5.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.min.js"></script>
+<script src="js/public.js?v=20170626" type="text/javascript" charset="utf-8"></script>
+<script src="js/Tradeleads.js?v=20170626" type="text/javascript" charset="utf-8"></script>
+<script>
+    /**采购***/
+    /*****更新报价*****/
+    $(".newPrice").click(function () {
+        $(this).children("span").removeClass("newPrice");
+        $(this).children("span").addClass("newPriceAfter");
+        var requireId = $(this).parents().attr("data-requireId");
+        var status = Restful.get('bsuserrequire/updateBsUserModifyTimeById', '{userRequrieid:' + requireId + '}');
+        if (status) {
+            getData();
+        }
+    })
+    /****编辑信息****/
+    $(".edit").click(function () {
+        var type = 1;
+        var requireId = $(this).parents().attr("data-requireId");
+
+        window.location.href = 'purchase.html?id='+requireId+'&type='+type;
+    });
+    /***删除供应***/
+    $(document).on('click','.delete',function () {
+        var that = $(this);
+
+        var requireId = that.parents().attr("data-requireId");
+        var status = Restful.get('bsuserrequire/deleteById', '{userRequrieid:' + requireId + '}');
+        getData();
+    });
+    /***供应****/
+    /*****更新报价*****/
+    $(".rePrice").click(function () {
+        $(this).children("span").removeClass("newPrice");
+        $(this).children("span").addClass("newPriceAfter");
+        var requireId = $(this).parents().attr("data-requireId");
+        var status = Restful.get('bsgoodsinfo/updateBsUserModifyTimeById', '{goodsId:' + requireId + '}');
+        if (status) {
+            getData();
+        }
+    })
+    /****编辑信息****/
+    function edit1(obj) {
+        var type = 2;
+        var requireId = $(obj).parent().attr("data-requireId");
+
+        window.location.href = 'purchase.html?id='+requireId+'&type='+type;
+    }
+    /***删除供应***/
+    function delete1(a){
+
+        var that = $(a);
+
+        var requireId = that.parent().attr("data-requireId");
+
+        var status = Restful.get('bsgoodsinfo/deleteById', '{goodsId:' + requireId + '}');
+        console.log(status)
+        getdiscussList();
+    }
+
+
+</script>
+</html>

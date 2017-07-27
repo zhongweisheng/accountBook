@@ -1,0 +1,109 @@
+.right {
+    float: left;
+    width: calc(100% - 160px);
+    width: -moz-calc(100% - 160px);
+    width: -webkit-calc(100% - 160px);
+    border-left: 1px solid #000;
+}
+
+.rightHead {
+    margin-top: 20px;
+    float: left;
+    width: 100%;
+    height: 85px;
+}
+.rightHead > ul > li > span:nth-child(1){
+    font-size: 18px;
+    color: #00B2EE;
+    line-height: 40px;
+    margin-left: 39px;
+    font-weight: bold;
+}
+.rightHead > ul > li > span:nth-child(2){
+    font-size: 18px;
+    color: #666;
+    line-height: 40px;
+    margin-left: 15px;
+}
+
+.rightHead > ul > li:nth-child(1) {
+    text-align: center;
+    font-size: 24px;
+    color: #000;
+}
+
+.rightHead > ul > li:nth-child(2) {
+    text-align: left;
+}
+.rightContent {
+    width: 1000px;
+    height: 400px;
+    margin-top: 20px;
+    margin-left: 39px;
+    float: left;
+}
+.rightConTop{
+    width: 1029px;
+    margin-left:10px;
+    font-size:16px;
+    float: left;
+}
+.rightConTop > p.title{
+    height: 35px;
+    line-height: 35px;
+    font-size: 18px;
+    width: 100%;
+    background-color: #616161;
+    color: #fff;
+    padding-left: 29px;
+    float: left;
+}
+.rightConTop > ul{
+    width: 1000px;
+    height: 70px;
+    float: left;
+    margin:15px 0 15px 29px;
+}
+.rightConTop ul li{
+    width: 33%;
+    float: left;
+    height: 35px;
+    line-height: 35px;
+}
+
+table {
+    font-size: 14px;
+    width: 100%;
+    padding: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #666;
+
+}
+table > tr{
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #666;
+}
+thead {
+    width: 100%;
+    height: 38px;
+    font-size: 15px;
+}
+
+thead > tr > td {
+    height: 38px;
+    text-align: center;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #666;
+}
+tbody > tr > td {
+    color: #666;
+    text-align: center;
+    height: 32px;
+    line-height: 32px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #666;
+}

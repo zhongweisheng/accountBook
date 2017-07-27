@@ -1,0 +1,66 @@
+<header>
+    <div class="content clearfix">
+        <div class="logo lt">
+
+        </div>
+       <!-- <div class="name lt">
+            粮账本
+        </div>-->
+       <!-- <div class="head-nav">
+           <ul id="nav">
+                <li class="index" onclick="window.location.href='index.html'">首页</li>
+                <li class="news" onclick="window.location.href='news.html'">新闻资讯</li>
+                <li class="work" onclick="jump('inForm')">我的工作台</li>
+            </ul>
+        </div>-->
+        <div class="head-text lt">
+            为粮库带来美好的改变
+        </div>
+        <div class="userInfo">
+            <span id="logout">｜退出</span><span id="userName"></span>
+        </div>
+        <div class="relation ri">
+            客服电话：400-602-9967
+        </div>
+    </div>
+</header>
+<script>
+    //隐藏“我的信息”
+    var _htmlTitle = document.title;
+    var userName,userId;
+    if(_htmlTitle == '首页'){
+        $('.userInfo').css('display','none');
+//        $('.index').addClass('header-active');
+    }else {
+        userName = DES3.decrypt(localStorage.getItem('userName'));
+        userId = DES3.decrypt(localStorage.getItem('userId'));
+    }
+    /* else if(_htmlTitle == '新闻资讯'){
+     $('.news').addClass('header-active');
+     }else{
+     $('.work').addClass('header-active');
+     }*/
+    function jump(url) {
+        if(userId){
+            location.href = url+'.html';
+        }else{
+            alert('请登录');
+        }
+    }
+    if(userName){
+        $('.userInfo').html('<span id="logout">｜退出</span><span id="userName">'+userName+'</span>')
+    }else {
+        $('.userInfo').html('<span id="login">｜登录</span><span id="userName">状态:<span style="color: red">未登录</span></span>')
+    }
+    $(document).on('click','#logout',function () {
+        var sureout = confirm('是否退出登录');
+        if(sureout){
+            localStorage.clear();
+            location.href = 'index.html';
+        }
+    })
+    $(document).on('click','#login',function () {
+        location.href = 'index.html';
+    })
+
+</script>

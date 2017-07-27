@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>员工管理</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/grainDepot.css">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.include.min.js"></script>
+    <script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+    <script type="text/javascript" src="accountData/js/common.min.js"></script>
+    <style type="text/css">
+        .left{
+            width: 159px;
+            margin-top: 90px;
+            float: left;
+        }
+        .parent {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child{
+            padding-left: 15%;
+        }
+        .child p {
+            display: inline-block;
+            width: 100%;
+            margin-left: -15px;
+            height: 40px;
+            line-height: 40px;
+            text-indent: 1rem;
+            font-size: 16px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child p:hover,.parent:hover{
+            cursor: pointer;
+            color: #f5a85d;
+            font-size: 18px;
+        }
+        .parent:hover{
+            font-size: 24px;
+        }
+        .child i {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            line-height: 8px;
+            background-color: #585858;
+            border: 1px solid #585858;
+            border-radius: 4px;
+        }
+        .left_active{
+            color: #f5a85d;
+        }
+        .right{
+            height: 700px;
+        }
+    </style>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml")</script>
+<div class="content clearfix"  style="height: 857px;">
+    <script>$.include("accountData/shtml/left.shtml")</script>
+    <div class="right">
+        <div class="rightHead clearfix">
+            <div class="head-container">
+                <div class="lt head-tab" onclick="window.location.href='companyMsg.html'">基本资料</div>
+                <div class="lt head-tab head-tab-active">员工管理</div>
+                <div class="lt head-tab" onclick="window.location.href='grainDepot.html'">粮库信息</div>
+            </div>
+        </div>
+        <div class="add-container"><button class="add" id="add">添加</button></div>
+        <div class="rightContent">
+            <table style="table-layout: fixed;">
+                <thead>
+                <tr>
+                    <td>序号</td>
+                    <td>姓名</td>
+                    <td>手机号</td>
+                    <td>登录密码</td>
+                    <td>负责仓库数</td>
+                    <td>操作</td>
+                </tr>
+                </thead>
+                <tbody id="list">
+
+                </tbody>
+                <script type="text/template7" id="salePerson-list">
+                    {{#each salePerson}}
+                    <tr>
+                        <td>{{number}}</td>
+                        <td>{{name}}</td>
+                        <td>{{phone}}</td>
+                        <td>{{password}}</td>
+                        <td>{{depotNum}}</td>
+                        <td>
+                            <button id="editbtn" data-id={{staffId}}>编辑</button>
+                            <button id="deletebtn" data-id={{staffId}}>删除</button>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </table>
+        </div>
+        <!--<div class="page" style="margin-left: 39px">
+
+        </div>-->
+    </div>
+</div>
+<script>$.include('accountData/shtml/foot.shtml')</script>
+<div id="addP" class="registerModel">
+    <div class="register-form" style="height: 550px;margin-top: -275px;">
+        <div class="content">
+            <div class="register-form-title">
+                <ul>
+                    <li class="list1"></li>
+                    <li class="list2"><span>员工管理</span></li>
+                </ul>
+            </div>
+            <div class="form">
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">姓名:</span><input id="name" placeholder="请输入姓名" maxlength="10"><p class="reminder">请输入姓名</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>手机号:</span><input id="phone" placeholder="请输入手机号" maxlength="10"><p class="reminder">请输入手机号</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>密码:</span><input id="password" placeholder="请输入密码" maxlength="10"><p class="reminder">请输入密码</p></div>
+                <div class="clearfix">
+                    <span class="field-name">粮库权限:</span>
+                    <div class="field-choice">
+                        <ul>
+                            <li class="choice-con lt" style="width: 100%;"><input type="checkbox" id="checkAll"><label for="checkAll">全部</label></li>
+                        </ul>
+                        <ul id="select">
+                            <li class="choice-con lt"><input type="checkbox" data-id="check-2" id="check-2"><label for="check-2">1</label></li>
+                            <li class="choice-con lt"><input type="checkbox" data-id="check-3" id="check-3"><label for="check-3">2</label></li>
+                            <li class="choice-con lt"><input type="checkbox" data-id="check-4" id="check-4"><label for="check-4">3</label></li>
+                            <li class="choice-con lt"><input type="checkbox" data-id="check-5" id="check-5"><label for="check-5">4</label></li>
+                            <li class="choice-con lt"><input type="checkbox" data-id="check-6" id="check-6"><label for="check-6">5</label></li>
+                            <li class="choice-con lt"><input type="checkbox" data-id="check-7" id="check-7"><label for="check-7">6</label></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="register-btn">
+                <a id="cencel">取消</a>
+                <a id="submit" style="float: right">提交</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="edit" class="registerModel">
+    <div class="register-form" style="height: 550px;margin-top: -275px;">
+        <div class="content">
+            <div class="register-form-title">
+                <ul>
+                    <li class="list1"></li>
+                    <li class="list2"><span>员工管理</span></li>
+                </ul>
+            </div>
+            <div class="form">
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">姓名:</span><input id="name-edit" placeholder="请输入姓名" maxlength="10"><p class="reminder">请输入姓名</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>手机号:</span><input id="phone-edit" placeholder="请输入手机号" maxlength="10"><p class="reminder">请输入手机号</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>密码:</span><input id="password-edit" placeholder="请输入密码" maxlength="10"><p class="reminder">请输入密码</p></div>
+                <div class="clearfix">
+                    <span class="field-name">粮库权限:</span>
+                    <div class="field-choice">
+                        <ul>
+                            <li class="choice-con lt" style="width: 100%;"><input type="checkbox" id="checkAll-edit"><label for="checkAll-edit">全部</label></li>
+                        </ul>
+                        <ul id="select-edit">
+                            <li class="choice-con lt"><input type="checkbox" id="edit-2"><label for="edit-2">1</label></li>
+                            <li class="choice-con lt"><input type="checkbox" id="edit-3"><label for="edit-3">2</label></li>
+                            <li class="choice-con lt"><input type="checkbox" id="edit-4"><label for="edit-4">3</label></li>
+                            <li class="choice-con lt"><input type="checkbox" id="edit-5"><label for="edit-5">4</label></li>
+                            <li class="choice-con lt"><input type="checkbox" id="edit-6"><label for="edit-6">5</label></li>
+                            <li class="choice-con lt"><input type="checkbox" id="edit-7"><label for="edit-7">6</label></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="register-btn">
+                <a id="editCencel" >取消</a>
+                <a id="editSubmit" style="float: right">提交</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="accountData/js/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/rest.min.js"></script>
+<script type="text/javascript" src="accountData/js/page.min.js"></script>
+<script type="text/javascript" src="accountData/js/staffAdmin.min.js"></script>
+</body>
+</html>

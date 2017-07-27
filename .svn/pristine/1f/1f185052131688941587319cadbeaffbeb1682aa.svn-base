@@ -1,0 +1,177 @@
+<div class="left">
+	<div class="index boss">
+		<div class="index-btn" style="cursor: pointer;" onclick="window.location.href='accountCharts.html'">
+			<p class="left-p" style="background: none;">首页</p>
+		</div>
+
+	</div>
+	<div class="inForm">
+		<div class="inForm-btn">
+			<p class="left-p">录库单</p>
+
+		</div>
+		<ul>
+			<li class="title-sec one" data-href="inForm">入库单</li>
+			<li class="title-sec" data-href="noInForm">未完成入库单<span class="noNum finishNum1">0</span></li>
+			<li class="title-sec" data-href="outForm">出库单</li>
+			<li class="title-sec" data-href="noOutForm">未完成出库单<span class="noNum finishNum2">0</span></li>
+			<li class="title-sec" data-href="storageForm">代储录入</li>
+			<li class="title-sec" data-href="noStorageForm">未完成代储<span class="noNum finishNum3">0</span></li>
+		</ul>
+	</div>
+	<div class="record">
+		<div class="record-btn">
+			<p class="left-p">库记录</p>
+
+		</div>
+		<ul>
+			<li class="title-sec" data-href="inTable">入库记录</li>
+			<li class="title-sec" data-href="outTable">出库记录</li>
+			<li class="title-sec" data-href="storageTable">代储凭证</li>
+
+		</ul>
+	</div>
+	<div class="data">
+		<div class="data-btn">
+			<p class="left-p">资料</p>
+
+		</div>
+		<ul>
+			<li class="title-sec" data-href="salePerson">送粮人管理</li>
+			<li class="title-sec" data-href="buyPerson">买粮人管理</li>
+			<li class="title-sec" data-href="driver">司机管理</li>
+			<li class="title-sec" data-href="accountSetting">账户设置</li>
+		</ul>
+	</div>
+	<div class="set">
+		<div class="set-btn">
+			<p class="left-p"> 企业设置</p>
+
+		</div>
+		<ul>
+			<li class="title-sec boss" data-href="companyMsg">公司管理</li>
+
+			<li class="title-sec boss" data-href="staffAdmin">员工管理</li>
+			<li class="title-sec boss" data-href="grainDepot">粮库管理</li>
+			<li class="title-sec boss" data-href="opration">操作记录</li>
+
+		</ul>
+	</div>
+	<div class="teach">
+		<div class="teach-btn">
+			<p class="left-p"> 视屏教学</p>
+
+		</div>
+		<ul>
+			<li class="video" data-href="lzbhowtodo">跟我学</li>
+
+		</ul>
+	</div>
+</div>
+<script type="text/javascript">
+	//获取未完成代储录入数字
+	getNum3();
+	getNum2();
+	getNum1();
+
+	function getNum3() {
+		var params = {};
+		params.userId = userId;
+		params.ownerId = ownerId;
+		params.recordType = 3;
+		$.ajax({
+			type: 'post',
+			url: 'accountBook/bsInventoryStorageTemp/queryCount',
+			dataType: 'json',
+			data: params,
+			success: function(res) {
+				if (res.success) {
+					$(".finishNum3").html(res.retcode);
+				} else {
+					$(".finishNum3").html(0);
+					alert('获取未完成代储录入单数失败，稍后再试');
+				}
+			},
+			error: function(err) {
+			}
+		});
+	}
+
+	function getNum2() {
+		var params = {};
+		params.userId = userId;
+		params.ownerId = ownerId;
+		params.recordType = 2;
+		$.ajax({
+			type: 'post',
+			url: 'accountBook/bsInventoryTemporary/queryCount',
+			dataType: 'json',
+			data: params,
+			success: function(res) {
+				if (res.success) {
+					$(".finishNum2").html(res.retcode);
+				} else {
+					$(".finishNum2").html(0);
+					alert('获取未完成出库单数失败，稍后再试');
+				}
+			},
+			error: function(err) {
+			}
+		});
+	}
+
+	function getNum1() {
+		var params = {};
+		params.userId = userId;
+		params.ownerId = ownerId;
+		params.recordType = 1;
+		$.ajax({
+			type: 'post',
+			url: 'accountBook/bsInventoryTemporary/queryCount',
+			dataType: 'json',
+			data: params,
+			success: function(res) {
+				if (res.success) {
+					$(".finishNum1").html(res.retcode);
+				} else {
+					$(".finishNum1").html(0);
+					alert('获取未完成入库单数失败，稍后再试');
+				}
+			},
+			error: function(err) {
+			}
+		});
+	}
+	if (localStorage.getItem('userType') == 2) {
+		$('.boss').hide();
+		$('.set').hide();
+	}
+	$('.left ul').hide();
+	$('.left>div').find("p").addClass("btn-bg-bf");
+	$('.left>div').on('click', function() {
+		$(this).children("ul").fadeToggle();
+		$(this).find("p").removeClass("btn-bg-bf").addClass("btn-bg-af");
+		$(this).siblings().children("ul").hide();
+		$(this).siblings().find("p").addClass("btn-bg-bf");
+	});
+	$(document).on('click', '.title-sec', function() {
+		var url = $(this).data('href');
+		window.location.href = url + '.html';
+		localStorage.setItem('hrefType', url);
+
+	});
+    $(document).on('click', '.video', function() {
+        var url = $(this).data('href');
+        window.open (url + '.html');
+        localStorage.setItem('hrefType', url);
+
+    });
+	var hrefType = localStorage.getItem('hrefType');
+	if (hrefType) {
+		$('[data-href=' + hrefType + ']').parent('ul').show();
+		$('[data-href=' + hrefType + ']').css({
+			'background': '#f6a85e',
+			'color': '#fff'
+		});
+	}
+</script>

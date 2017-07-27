@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>粮库信息</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/bootstrap.css">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/grainDepot.css">
+    <script type="text/javascript" src="accountData/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/bootstrap.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/jquery.include.min.js?v=20170626"></script>
+    <script type="text/javascript" src="accountData/js/common/common.min.js?v=20170626"></script>
+</head>
+<style type="text/css">
+    .register-form{
+        height: 320px;
+    }
+</style>
+<body>
+<script>$.include("accountData/shtml/head.shtml?v=20170626")</script>
+<div class="content conDiv clearfix">
+    <script>
+            $.include('accountData/shtml/left.shtml?v=20170626');
+    </script>
+    <div class="right">
+        <h2>粮库信息</h2>
+        <p><button id="add">添加粮库</button></p>
+        <div class="table">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="100">序号</th>
+                        <th>库名称</th>
+                        <th>库容 （吨）</th>
+                        <th>库地址</th>
+                        <th>操作</th>
+                    </tr> 
+                </thead>
+                <tbody id="list">
+
+                </tbody>
+                <script type="text/template7" id="salePerson-list">
+                    {{#each salePerson}}
+                    <tr>
+                        <td>{{number}}</td>
+                        <td>{{name}}</td>
+                        <td>{{storageCapacity}}</td>
+                        <td>{{address}}</td>
+                        <td>
+                            <button class="" id="editbtn" data-id={{id}}>编辑</button>
+                            <button class="" id="deletebtn" data-id={{id}}>删除</button>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </table>
+        </div>
+        <div class="page">
+
+        </div>
+    </div>
+</div>
+<script>$.include("accountData/shtml/foot.shtml?v=20170626")</script>
+
+<div id="update" class="registerModel">
+    <div class="register-form">
+        <div class="content">
+            <div class="register-form-title">
+                <ul>
+                    <li class="list1"></li>
+                    <li class="list2"><span>填写粮库信息</span></li>
+                </ul>
+            </div>
+            <div class="form">
+                <div class="clearfix mb10">
+                    <span class="field-name">
+                        <i >*</i>库名称：</span>
+                    <input id="updepotName" placeholder="请输入库名称" maxlength="10">
+                    <p class="reminder">请输入库名称</p>
+                </div>
+                <div class="clearfix mb10">
+                    <span class="field-name">
+                        <i>*</i>库容(吨)：
+                    </span>
+                    <input id="updepotCapacity" placeholder="请输入有效数字" maxlength="10" type="number">
+                    <p class="reminder">请输入有效数字</p>
+                </div>
+                <div class="clearfix mb10">
+                    <span class="field-name">
+                        <i>*</i>库地址：
+                    </span>
+                    <input id="updepotLocation" placeholder="请输入库地址" maxlength="40">
+                    <p class="reminder">请输入库地址</p>
+                </div>
+            </div>
+            <div class="register-btn">
+                <a id="upsubmit">提交</a>
+                <a id="cencel" style="float: left;background-color: #e69423;">取消</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <div id="addP" class="registerModel">
+    <div class="register-form">
+        <div class="content">
+            <div class="register-form-title">
+                <ul>
+                    <li class="list1"></li>
+                    <li class="list2"><span>填写粮库信息</span></li>
+                </ul>
+            </div>
+            <div class="form">
+                <div class="clearfix mb10">
+                    <span class="field-name">
+                        <i >*</i>库名称：</span>
+                    <input id="depotName" placeholder="请输入库名称" maxlength="10">
+                    <p class="reminder">请输入库名称</p>
+                </div>
+                <div class="clearfix mb10">
+                    <span class="field-name">
+                        <i>*</i>库容(吨)：
+                    </span>
+                    <input id="depotCapacity" placeholder="请输入有效数字" maxlength="10" type="number">
+                    <p class="reminder">请输入有效数字</p>
+                </div>
+                <div class="clearfix mb10">
+                    <span class="field-name">
+                        <i>*</i>库地址：
+                    </span>
+                    <input id="depotLocation" placeholder="请输入库地址" maxlength="40">
+                    <p class="reminder">请输入库地址</p>
+                </div>
+            </div>
+            <div class="register-btn">	
+                <a id="submit">提交</a>
+                <a id="cencel">取消</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="edit" class="registerModel">
+    <div class="register-form">
+        <div class="content">
+            <div class="register-form-title">
+                <ul>
+                    <li class="list1"></li>
+                    <li class="list2"><span>修改粮库信息</span></li>
+                </ul>
+            </div>
+            <div class="form">
+                <div class="clearfix mb10">
+                    <span class="field-name">
+                        <i >*</i>库名称：</span>
+                    <input id="depotName-edit" placeholder="请输入库名称" maxlength="10">
+                    <p class="reminder">请输入库名称</p>
+                </div>
+                <div class="clearfix mb10">
+                    <span class="field-name">
+                        <i>*</i>库容(吨)：
+                    </span>
+                    <input id="depotCapacity-edit" placeholder="请输入有效数字" maxlength="10" type="number">
+                    <p class="reminder">请输入有效数字</p>
+                </div>
+                <div class="clearfix mb10">
+                    <span class="field-name">
+                        <i>*</i>库地址：
+                    </span>
+                    <input id="depotLocation-edit" placeholder="请输入库地址" maxlength="40">
+                   <!-- <p class="reminder">请输入库地址</p>-->
+                </div>
+            </div>
+            <div class="register-btn">
+                <a id="editSubmit">提交</a>
+                <a id="editCencel" >取消</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="accountData/js/common/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/rest.min.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/common/page.min.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="accountData/js/common/echarts.common.min.js"></script>
+<script type="text/javascript" src="accountData/js/grainDepot.js?v=20170626" ></script>
+</body>
+</html>

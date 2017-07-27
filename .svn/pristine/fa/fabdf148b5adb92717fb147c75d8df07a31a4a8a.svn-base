@@ -1,0 +1,13 @@
+ $(document).ready(function(e) {
+    $(".tab div").click(function(){
+        $(".tab div").eq($(this).index()).addClass("tab_active").siblings().removeClass("tab_active");
+        $(".wapper .supply").hide().eq($(this).index()).show();
+        $(".wapper .downstream").show().eq($(this).index()).hide();
+    });
+    var $nav_li = $('.downstream ul li');
+    $nav_li.click(function(){
+        $(this).addClass('nav_active').siblings().removeClass('nav_active');
+        var index = $nav_li.index(this);
+        $('.navcontent > div.content').eq(index).show().siblings().hide();
+    }); 
+});

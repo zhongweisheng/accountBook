@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人资料</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/companyMsg.css">
+    <link rel="stylesheet" href="accountData/css/common/bootstrapdate.min.css ">
+    <link rel="stylesheet" href="accountData/css/common/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="accountData/css/select2.min.css">
+    <script type="text/javascript" src="accountData/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/jquery.include.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/common.min.js?v=20170626"></script>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml?v=20170626")</script>
+<div class="content clearfix">
+    <script>$.include("accountData/shtml/left.shtml?v=20170626")</script>
+    <div class="right">
+        <div class="title">您的公司信息</div>
+        <div class="rightContent">
+            <div class="form">
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">公司名称:</span><input id="companyName" placeholder="请输入公司名称" maxlength="32"><p class="reminder">请输入公司名称</p></div>
+                <div class="clearfix" style="margin-bottom: 20px">
+                    <span class="field-name">公司全称:</span>
+                    <input type="text" id="printHead" maxlength="32" autocomplete="off">
+                </div>
+                <div class="clearfix" style="margin-bottom: 20px;vertical-align: middle;height: 20px;margin-top: -10px;">
+                    <span class="field-name">&nbsp;</span>
+                    <span style="float: left;margin-top: 5px;">公司全称用于打印出入库单使用</span>
+                    <input type="checkbox" id="isUseCom" style="width: 15px;margin-left: 20px;cursor: pointer;vertical-align: middle;">
+                    <label for="isUseCom" style="cursor: pointer;vertical-align: middle;display:inline-block;margin-top: 5px;">使用公司名称</label>
+                </div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">公司所在地:</span>
+                    <span class="address">
+                         <div class="addressSelete">
+                            <div class="cityselect"><select id="province" name="province"></select></div>
+                            <div class="cityselect"><select style="margin-left: 10%" id="city" name="city"></select></div>
+                            <div class="cityselect"><select style="margin-left: 10%" id="area" name="area"></select></div>
+                        </div>
+                    </span>
+                </div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">详细地址:</span><input id="address" placeholder=""></div>
+            </div>
+        </div>
+        <div class="rightFooter">
+            <div class="btn" id="submit">保存</div>
+        </div>
+    </div>
+</div>
+<script>$.include('accountData/shtml/foot.shtml')</script>
+<script type="text/javascript" src="accountData/js/common/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/select2.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/jquery.citys.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.zh-CN.js"></script>
+<script type="text/javascript" src="accountData/js/common/rest.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/select.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/companyMsg.js?v=20170626"></script>
+</body>
+</html>

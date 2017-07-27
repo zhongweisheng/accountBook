@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>粮账本</title>
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<link rel="stylesheet" href="css/common.css">
+		<style type="text/css">			
+			.main {
+				margin: 0;
+				padding: 0;
+
+				width: 100%;
+				display: flex;
+				flex-direction: column;
+			}
+					
+			img {
+				height: 100%;
+				width: 100%;
+			}
+			.back{
+				position: absolute;
+				right: 20px;
+				top: 20px;
+			}
+			.imgBanner{
+				position: relative;
+			}
+			.people_img{
+				width: 60px;
+				height: 20px;
+				position: absolute;
+				right: 70px;
+				top: 20px;
+				background: url(img/我的未选.png) left center no-repeat;
+				background-size: 26%;
+			}
+			.searchTol{
+				height: 44px;
+				width: 80%;
+				left: 10.5%;
+				background: orange;
+				position: absolute;
+				bottom: 30px;
+				border-radius: 7px;
+				text-align: center;
+				font-size: 16px;
+				line-height: 44px;
+				color: white;
+			}
+			.btnClick{
+				display: flex;
+	
+			}
+			.btnClick dl{
+				-webkit-flex: 1;
+				-moz-flex: 1;
+				-ms-flex: 1;
+				-o-flex: 1;
+				flex: 1;
+				
+			}
+			.btnClick dl dt img{
+				height: 60%;
+				width: 32%;
+			
+			}
+			.btnClick dl dt{
+				margin-bottom: 16px;
+				text-align: center;
+			}
+			.btnClick dl dd{
+
+				font-size:16px;
+				width: 100%;
+				-webkit-margin-start:0px;
+				color: gray;
+				text-align: center;
+
+			}
+		</style>
+
+	</head>
+
+	<body>
+
+		<div class="main">
+			<div class="imgBanner">
+				<img src="img/35.png" />
+				<div class="people_img">
+					<span style="float: right; color: gray;" id="name"></span>
+				</div>
+				<div class="back" style="color: grey;"  onclick="window.location.href='login.html'">退出</div>
+				<div class="searchTol "  onclick="window.location.href='entry.html?type=3'">
+					查看统计
+				</div>
+			</div>
+			<div class="btnClick">
+				<dl  onclick="window.location.href='entry.html?type=4'">
+					<dt><img src="img/入库单.png"/></dt>
+					<dd>录入库单</dd>
+				</dl>
+				<dl  onclick="window.location.href='entry.html?type=5'">
+					<dt><img src="img/出库单.png"/></dt>
+					<dd>录出库单</dd>
+				</dl>
+				<dl>
+					<dt onclick="window.location.href='storageFormMobile.html?type=10'" ><img src="img/代储.png"/></dt>
+					<dd>录代储单</dd>
+				</dl>
+			</div>
+			<div class="btnClick">
+				<dl  onclick="window.location.href='entry.html?type=1'">
+					<dt><img src="img/看入库单.png"/></dt>
+					<dd>看入库单</dd>
+				</dl>
+				<dl  onclick="window.location.href='entry.html?type=2'">
+					<dt><img src="img/看出库单.png"/></dt>
+					<dd>看出库单</dd>
+				</dl>
+				<dl  onclick="window.location.href='inStorageMobile.html'">
+					<dt><img src="img/看代储.png"/></dt>
+					<dd>看代储单</dd>
+				</dl>
+			</div>
+			
+		</div>
+
+
+		<script src="js/common/jquery-1.11.1.min.js"></script>
+		<script>
+			$('.entryNav').on('click', '.e-nav', function() {
+				$(this).children('.inDiv').toggle();
+			});
+			var name = localStorage.getItem("mlbUserName");
+			
+			 $("#name").html(name);
+			 var userType = localStorage.getItem("userType");
+			 if(userType ==2){
+			     $(".searchTol").hide();
+			 }
+		</script>
+	</body>
+
+</html>

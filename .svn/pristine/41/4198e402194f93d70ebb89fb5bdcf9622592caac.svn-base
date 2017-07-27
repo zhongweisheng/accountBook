@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>粮账本</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="css/bid.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <style type="text/css">
+        /*::-webkit-inner-spin-button { visibility: hidden; }*/
+        /*input[type="date"] {*/
+        /*position: absolute;*/
+        /*top: 50%;*/
+        /*-webkit-transform: translateY(-50%);*/
+        /*}*/
+        i{
+            font-style: normal;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+<div class="nav">
+    <h2></h2>
+    <ul class="select">
+
+    </ul>
+</div>
+<div class="content">
+    <ul>
+        <li class="in-title lineBlock">
+            <div class="item-all">一、基本信息</div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">作物类型:</div>
+            <div class="item-right">
+                <select id="grainType" style="width: 80%;">
+                    <option value="2">玉米</option>
+                    <option value="1">小麦</option>
+                    <option value="3">水稻</option>
+                </select>
+            </div>
+        </li>
+        <li class="lineBlock heiChange" style="vertical-align: middle;">
+            <div class="item-left type">&nbsp;</div>
+            <div class="item-right">
+                <label for="salePerson" style="float: left;width: 80%;">
+                    <select id="salePerson" name="salePerson" style="width: 100%;font-size: 0.7rem;">
+
+                    </select>
+                </label>
+                <span id="change-add"></span>
+                <input id="addPerson" placeholder="请输入姓名" style="display: none;float: left;width: 80%;margin-top: 6px;" maxlength="18">
+                <input id="phone" placeholder="请输入手机号" style="display: none;float: left;width: 80%;margin-top: 6px;" maxlength="11">
+                <span id="change-sel" style="display: none;">选择</span>
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">入库日期:</div>
+            <div class="item-right" style="position: relative;">
+                <input type="date" id="date" disabled><i style="font-size: 0.5rem;font-style: normal">不可修改</i>
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">车号:</div>
+            <div class="item-right">
+                <input type="text" id="licensePlate"  maxlength="10">
+            </div>
+        </li>
+        <li class="lineBlock heiChange1" style="vertical-align: middle;">
+            <div class="item-left">司机:</div>
+            <div class="item-right">
+                <label for="driver" style="float: left;width: 80%;">
+                    <select id="driver" name="driver" style="width: 100%;font-size: 0.7rem;">
+
+                    </select>
+                </label>
+                <span id="driver-add"></span>
+                <input id="addDriver" placeholder="请输入姓名" style="display: none;float: left;width: 80%;margin-top: 6px;" maxlength="18">
+                <input id="driverPhone" placeholder="请输入手机号" style="display: none;float: left;width: 80%;margin-top: 6px;" maxlength="11">
+                <span id="driver-sel" style="display: none;">选择</span>
+            </div>
+        </li>
+        <li class="in-title lineBlock">
+            <div class="item-all paymsg"></div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">毛重(公斤)<i style="color: #ef6272;font-size: 0.9rem;">*</i>:</div>
+            <div class="item-right">
+                <input type="number" oninput="if(value.length>11)value=value.slice(0,11)" id="grossWeightIn" placeholder="">
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">皮重(公斤)<i style="color: #ef6272;font-size: 0.9rem;width: 1%;">*</i>:</div>
+            <div class="item-right">
+                <input type="number" oninput="if(value.length>11)value=value.slice(0,11)" id="tareWeightIn" placeholder="">
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">扣重(公斤):</div>
+            <div class="item-right">
+                <input type="number" oninput="if(value.length>11)value=value.slice(0,11)" id="deduction" placeholder="">
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">净重(公斤):</div>
+            <div class="item-right">
+                <input type="number" disabled id="netWeightIn" placeholder="自动计算">
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">单价(元/斤)<i style="color: #ef6272;font-size: 0.9rem;">*</i>:</div>
+            <div class="item-right">
+                <input type="number" oninput="if(value.length>6)value=value.slice(0,6)" id="unitPrice" placeholder="">
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">金额(元):</div>
+            <div class="item-right">
+                <input type="number" disabled id="moneyIn" placeholder="自动计算">
+            </div>
+        </li>
+        <li class="in-title lineBlock">
+            <div class="item-all">三、粮食信息</div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">水分(%):</div>
+            <div class="item-right">
+                <input type="number" oninput="if(value.length>4)value=value.slice(0,4)" id="water" placeholder="">
+            </div>
+        </li>
+        <li class="lineBlock meibian">
+            <div class="item-left">霉变(%):</div>
+            <div class="item-right">
+                <input type="number" oninput="if(value.length>4)value=value.slice(0,4)" id="meibian" placeholder="" class="">
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">容重(g/l):</div>
+            <div class="item-right">
+                <input type="number" oninput="if(value.length>3)value=value.slice(0,3)" id="rongzhong">
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">不完善粒(%):</div>
+            <div class="item-right">
+                <input type="number" oninput="if(value.length>4)value=value.slice(0,4)" id="buwanshanli" placeholder="">
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">杂质(%):</div>
+            <div class="item-right">
+                <input type="number" oninput="if(value.length>4)value=value.slice(0,4)" id="impurity" placeholder="">
+            </div>
+        </li>
+        <li class="lineBlock xmlist">
+            <div class="item-left">产地:</div>
+            <div class="item-right">
+                <div class="addressSelete">
+                    <div class="cityselect" style="float: left;width: 33.3%;"><select style="font-size: 0.7rem;padding: 0;width: 100%;" id="province" name="province"></select></div>
+                    <div class="cityselect" style="float: left;width: 33.3%;"><select style="font-size: 0.7rem;padding: 0;width: 100%;" id="city" name="city"></select></div>
+                    <div class="cityselect" style="float: left;width: 33.3%;"><select style="font-size: 0.7rem;padding: 0;width: 100%;" id="area" name="area"></select></div>
+                </div>
+            </div>
+        </li>
+        <li class="lineBlock xmlist">
+            <div class="item-left">品种:</div>
+            <div class="item-right">
+                <select name="varietyType" id="varietyType" style="width: 80%">
+                    <option value="0">请选择</option>
+                    <option value="1">混合麦</option>
+                    <option value="2">白麦</option>
+                    <option value="3">红麦</option>
+                </select>
+            </div>
+        </li>
+        <li class="lineBlock xmlist">
+            <div class="item-left">气味:</div>
+            <div class="item-right">
+                <select name="smell" id="smell" style="width: 80%">
+                    <option value="0">请选择</option>
+                    <option value="1">正常</option>
+                    <option value="2">微有异味</option>
+                    <option value="3">霉味、酸臭或其他</option>
+                </select>
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">质量:</div>
+            <div class="item-right">
+                <select name="quality" id="quality" style="width: 80%">
+                    <option value="0">请选择</option>
+                    <option value="1">一等</option>
+                    <option value="2">二等</option>
+                    <option value="3">三等</option>
+                    <option value="4">四等</option>
+                    <option value="5">五等</option>
+                    <option value="6">等外</option>
+                </select>
+            </div>
+        </li>
+        <li class="lineBlock xmlist">
+            <div class="item-left">包装类型:</div>
+            <div class="item-right">
+                <select name="packingType" id="packingType" style="width: 80%">
+                    <option value="0">请选择</option>
+                    <option value="1">散集</option>
+                    <option value="2">袋集</option>
+                </select>
+            </div>
+        </li>
+        <li class="lineBlock xmlist">
+            <div class="item-left">生产年份:</div>
+            <div class="item-right">
+                <select name="productionNiafe" id="productionNiafe" style="width: 80%">
+                    <option value="0">请选择</option>
+                    <option value="2017">2017</option>
+                    <option value="2016">2016</option>
+                    <option value="2015">2015</option>
+                    <option value="2014">2014</option>
+                    <option value="2013">2013</option>
+                </select>
+            </div>
+        </li>
+        <li class="lineBlock">
+            <div class="item-left">备注:</div>
+            <div class="item-right">
+                <input type="text" id="remark" style="width: 80%">
+            </div>
+        </li>
+        <li class="lineBlock" style="border-bottom: 0;">
+            <div style="width: 100%;margin-top: 20px;">
+                <div id="one" style="width:90%;margin:0 auto">
+                    <a id="delete"  style="background: #aaa;line-height:1.55rem;width: 40%;color: #fff;border: 0;text-align:center;float: left;cursor:pointer;">删除</a>
+                    <a id="editSub" style="background: #ed9028;line-height:1.55rem;width: 40%;color: #fff;border: 0;text-align:center;float: right;cursor:pointer;">编辑</a>
+                </div>
+                <div id="two" style="width:90%;margin:0 auto;display: none">
+                    <a id="save" style="background: #ed9028;line-height:1.55rem;width: 40%;color: #fff;border: 0;text-align:center;float: left;cursor:pointer;">保存</a>
+                    <a id="cencel" style="background: #aaa;line-height:1.55rem;width: 40%;color: #fff;border: 0;text-align:center;float: right;cursor:pointer;">取消</a>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+<!-- libs js -->
+
+<script type="text/javascript" src='js/md5.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='js/common/jquery-1.11.1.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='js/common/jquery.citys.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='libs/template7/1.1.4/template7.min.js' charset='utf-8'></script>
+<script type="text/javascript" src='js/sha1.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='js/common/rest.min.js' charset='utf-8'></script>
+<!-- common js -->
+<!-- page js -->
+<script type='text/javascript' src='js/select2.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='js/editMoblie.js' charset='utf-8'></script>
+</body>
+</html>

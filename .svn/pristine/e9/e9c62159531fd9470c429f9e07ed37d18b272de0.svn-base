@@ -1,0 +1,71 @@
+.divcenter{
+    width: 80%;
+    margin:1rem auto 0;
+    text-align: center;
+}
+.loginintpu{
+    background-color: white;
+    height: 1.8rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 1rem;
+}
+.input-left{
+    font-size: 0.8rem;
+    margin:0 0.5rem 0;
+    float: left;
+    color: #a3a3a3;
+    line-height: 1.6rem;
+}
+.item-after{
+    line-height: 1.6rem;
+    font-size: 0.7rem;
+    float: left;
+}
+.disable-btn {
+    opacity: 0.5;
+}
+.get-text-code{
+
+}
+.input-right{
+    float: left;
+    width: 60%;
+    height: 1rem;
+    margin-top: 0.1rem;
+}
+.input-right input{
+    width: 100%;
+    border-style: none;
+    height: 1.5rem;
+    font-size: 0.7rem;
+}
+.loginintpu input-left{
+    color: #a3a3a3;
+    width: 90%;
+}
+.submitbtn{
+    width: 100%;
+    height: 1.7rem;
+    border: 1px solid #ed9029;
+    background-color: #ed9029;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    color: white;
+    line-height: 1.8rem;
+}
+.active{
+    border: 0.5px solid #37a333;
+}
+.divcenter textarea{
+    width: 100%;
+    height: 4rem;
+}
+.reminder{
+    display: none;
+    width: 80%;
+    margin:1rem auto 0;
+    text-align: center;
+}
+.show{
+    display: block;
+}

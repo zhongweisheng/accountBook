@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代储凭证</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/inStorageMobile.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <style type="text/css">
+	.back {
+				display: inline-block;
+				background: url(img/back.png) no-repeat center;
+				height: 20px;
+				width: 20px;
+				background-size: 100%;
+				position: absolute;
+				left: 5px;
+				top: 12px;
+			}
+    </style>
+</head>
+<body>
+<div class="inStorage" style="background: #ed9029; color: white; text-align: center; height: 50px; line-height: 50px;">
+	代储凭证
+</div>
+<div class="top" style="background: white;">
+<span class="back" onclick="history.go(-1)"></span>
+    <h2></h2>
+    <ul class="select">
+
+    </ul>
+</div>
+
+<div class="content" id="list">
+
+</div>
+<div class="more">
+    <div class="more-text" onclick="loadMore();">轻触加载更多...</div>
+    <div class="spinner hiden">
+        <div class="rect1"></div>
+        <div class="rect2"></div>
+        <div class="rect3"></div>
+        <div class="rect4"></div>
+        <div class="rect5"></div>
+    </div>
+</div>
+<script type="text/template7" id="inStorage-list">
+    {{#each inStorage}}
+    <div class="card clearfix">
+        {{#js_compare "this.type === 1"}}
+        <div class="list clearfix" data-id="{{id}}" onclick="toList(this)" style="border-bottom: solid 1px #e6e6e6">
+            <ul>
+                <li style="width: 50%">送粮人：<span>{{staffName}}</span></li>
+                <li style="width: 50%;text-align: right;">日期：<span>{{date}}</span></li>
+            </ul>
+            <ul >
+                <li style="width: 50%">净重：<span>{{netWeight}}</span>(公斤)</li>
+
+            </ul>
+        </div>
+        <div class="list clearfix">
+            <ul>
+                <li style="width: 100% ">
+                    <span>已结算：</span>
+                    <span  class="paidMoney" type="number" style="margin-right: 40%;">{{tareWeight}}</span>
+                    <span>未结算:</span>
+                    <span  class="paidMoney" type="number">{{grossWeight}}</span>
+           
+             <!--       <input class="paidMoney" type="number" value="{{paidMoney}}" disabled style="width: 35%;">
+                    <span class="changepay" style="color:#31b0d5;cursor: pointer;">修改</span>
+                    <span class="pay" data-id="{{id}}" style="color:#31b0d5;cursor: pointer;display: none;">确定</span>-->
+                </li>
+                <li style="width: 100%">
+                    <span>已付款：</span>
+                    <span class="unpaidMoney"  style="margin-right: 40%;">{{paidMoney}}</span>
+                    <a href="###" data-id={{id}} style="color: skyblue;  margin-right: 50px; float: right;">添加结算</a>
+                </li>
+            </ul>
+        </div>
+        {{else}}
+        <div class="list clearfix">
+            <ul>
+                <li style="width: 100%;">日期：<span>{{timeUnit}}</span></li>
+            </ul>
+            <ul>
+                <li style="width: 50%">送粮人：<span class="tdName">全部</span></li>
+                <li style="width: 50%;text-align: right;">净重：<span>{{netWeight}}</span>(公斤)</li>
+            </ul>
+            <ul >
+                <li style="width: 50%">金额：<span>{{money}}</span>(元)</li>
+                <li style="width: 50%;text-align: right;">未付款：<span>{{unpaidMoney}}</span>(元)</li>
+            </ul>
+        </div>
+        {{/js_compare}}
+    </div>
+    {{/each}}
+</script>
+	<div class="form-modal addDriver">
+        <div class="modal-container">
+            <div class="modal-content">
+                <ul style="font-size: 14px;">
+                    <li>
+                        <span>今日结算数(公斤):</span>
+                        <input class="kg" type="text" maxlength="10">
+                    </li>
+                    <li>
+                        <span>今日结算价(元/斤):</span>
+                        <input class="price" type="number" maxlength="11">
+                    </li>
+                     <li>
+                        <span>实付款(元):</span>
+                        <input class="pay" type="number" maxlength="11">
+                    </li>
+                    
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <ul>
+                    <li>
+                        <div class="modal-btn addDriverbtn">添加</div>
+                    </li>
+                    <li>
+                        <div class="modal-btn addDrivercencel">取消</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+<script type="text/javascript" src='js/md5.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="js/common/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/select2.min.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="js/classie.min.js"></script>
+<script type="text/javascript" src='js/sha1.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="js/common/rest.min.js"></script>
+<script type="text/javascript" src="js/storageList.js"></script>
+</body>
+</html>

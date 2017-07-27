@@ -1,0 +1,326 @@
+/**
+ * Created by new on 2017/3/28.
+ */
+//查询条件
+var paidMoney,unpaidMoney;
+var grainType = 2;
+var searchType = 1;
+var currentPage = 1;
+var pages;
+var name = '';
+var searchStaffId = '';
+
+var userId = DES3.decrypt(localStorage.getItem('userId'));
+
+
+if(fromId == 1 ||fromId == ''){
+    $('.right').addClass('leftborder');
+}
+getData();
+initPaging();
+var select2Array = [];
+var person = Restful.post('bsinventorystaff/list',{userId:userId,staffType:2,pageSize:1000});
+if(person){
+    if(person.success){
+        var personArr = person.dataList;
+        select2Array.push({id: 0, text: '请选择', phone: ''});
+        $.each(personArr,function (index,val) {
+            select2Array.push({id: val.staffId, text: val.trueName, phone: val.phone});
+        })
+    }else {
+        select2Array.push({id:0,text:'无',phone:''});
+    }
+}
+$('#salePerson').select2({
+    data: select2Array,
+    templateResult: formatState
+});
+//select格式化
+function formatState(state) {
+    if (!state.id) {
+        return state.text;
+    }
+    var $state = '';
+    if(state.text != '请选择'){
+        $state = $(
+            '<span style="display: inline-block;height: 2rem;">姓名: ' + state.text + '</br><span>手机号:' + state.phone + '</span></span>'
+        );
+    }else {
+        $state = $(
+            '<span style="display: inline-block;">' + state.text+'</span>'
+        );
+    }
+    return $state;
+};
+$(".leftContent > div:nth-child(6)> p:nth-child(4)").addClass("left_active");
+$(".leftContent > div:nth-child(5)").addClass("left_active");
+$(".child").eq(2).css('display','block');
+
+$(document).on('mouseover','#accountRemark',function () {
+    $(this).siblings('div').slideDown(100);
+});
+$(document).on('mouseout','#accountRemark',function () {
+    $(this).siblings('div').css('display','none');
+});
+
+//删除表格列
+function deleteTd() {
+    $(".rightContent thead > tr > td:nth-child(8)").css("display", "none");
+    $(".rightContent tbody > tr > td:nth-child(8)").css("display", "none");
+    $(".rightContent thead > tr > td:nth-child(10)").css("display", "none");
+    $(".rightContent tbody > tr > td:nth-child(10)").css("display", "none");
+    $(".rightContent thead > tr > td:nth-child(12)").css("display", "none");
+    $(".rightContent tbody > tr > td:nth-child(12)").css("display", "none");
+}
+
+//修改买(送)粮人字段
+function changePerson() {
+    var text = $("#salePerson").find('option:selected').text();
+    if(text != '请选择'){
+        $(".staffName").html(text);
+    }else{
+        $(".staffName").html('全部');
+    }
+}
+
+$("#timeChange").on('click', 'a', function () {
+    if($(this).attr('id') == 'excelBtn'){
+        return;
+    }
+    searchType = $(this).attr("data-timeType");
+    currentPage = 1;
+    getData();
+    if (searchType != 1) {
+        deleteTd();
+        changePerson();
+    } else {
+        $(".rightContent td").css("display", "table-cell");
+    }
+    $(this).removeClass('watch').addClass('watchActive');
+    $(this).parent().siblings().find('a').removeClass('watchActive').addClass('watch');
+});
+
+
+$("#grainType").on('change', function () {
+    grainType = $("#grainType").val();
+    currentPage = 1;
+    getData();
+    if (searchType != 1) {
+        deleteTd();
+        changePerson();
+    } else {
+        $(".rightContent td").css("display", "table-cell");
+    }
+});
+$("#salePerson").on('change', function () {
+    searchStaffId = $("#salePerson").val();
+    currentPage = 1;
+    getData();
+    if (searchType != 1) {
+        deleteTd();
+        changePerson();
+    } else {
+        $(".rightContent td").css("display", "table-cell");
+    }
+});
+
+$(".page").on('click',function () {
+    currentPage = $('.activP').text();
+    getData(1);
+    if (searchType != 1) {
+        deleteTd();
+        changePerson();
+    } else {
+        $(".rightContent td").css("display", "table-cell");
+    }
+});
+
+function getData(isinit) {
+    var params = {};
+    params.grainType = grainType;
+    params.currentPage = currentPage;
+    params.searchType = searchType;
+    params.userId = userId;
+    params.recordType = 2;
+    params.pageSize = 10;
+    params.staffName = name;
+    params.staffId = searchStaffId;
+    var res = Restful.post('bsinventoryrecord/search', params);
+    if (res.success) {
+        var data = res.dataList;
+        for(var i=0,len=data.length;i<len;i++){
+            if(data[i].paidMoney == ''){
+                data[i].paidMoney = 0;
+            }
+            if(searchType == 1 && data[i].paidMoney != ''){
+                data[i].paidMoney = data[i].paidMoney.split(',').join('');
+            }
+            if(data[i].unpaidMoney == ''){
+                data[i].unpaidMoney = data[i].money;
+            }
+        }
+        var msg = $('#outTable-list').html();
+        var compiledTemplate = Template7.compile(msg);
+        var html = compiledTemplate({"outTable": data});
+        $("#list").html(html);
+        pages = Math.ceil(res.total/10);
+        if(isinit == 1){
+
+        }else{
+            initPaging();
+        }
+    }else{
+        pages = 1;
+        initPaging();
+        $("#list").html('');
+        $("#list").html('<tr><td colspan="12"><div style="width: 100%;height: 400px;line-height: 400px;font-size: 30px;text-align: center;margin:0 auto;color: #c1c1c1;text-shadow: #999999;">暂无数据</div>');
+    }
+}
+
+function initPaging() {
+    //分页初始化
+    $('.page').page({
+        leng: pages,//分页总数
+        activeClass: 'activP' , //active 类样式定义
+    });
+}
+//导出表格
+function rptDownLoad(){
+    var form = $("<form>");
+    form.attr('style', 'display:none');
+    form.attr('target', '');
+    form.attr('method', 'post');
+    form.attr('action', '/accountBook/bsinventoryrecord/export');
+    var input1 = $('<input>');
+    input1.attr('type', 'hidden');
+    input1.attr('name', 'grainType');
+    input1.attr('value', grainType);
+    var input2 = $('<input>');
+    input2.attr('type', 'hidden');
+    input2.attr('name', 'searchType');
+    input2.attr('value', searchType);
+    var input3 = $('<input>');
+    input3.attr('type', 'hidden');
+    input3.attr('name', 'userId');
+    input3.attr('value', userId);
+    var input4 = $('<input>');
+    input4.attr('type', 'hidden');
+    input4.attr('name', 'recordType');
+    input4.attr('value', 2);
+    $('body').append(form);
+    form.append(input1);
+    form.append(input2);
+    form.append(input3);
+    form.append(input4);
+    form.submit();
+    form.remove();
+}
+
+$('#excelBtn').on('click',function () {
+    if(confirm('导出表格?')){
+        rptDownLoad();
+    }
+});
+
+function toEdit(e) {
+    var id = $(e).attr('data-id');
+    // var id = $('.id'+10073).attr('data-id');
+    // alert(id)
+    location.href = 'edit.html?id='+id;
+}
+function showEdit() {
+    if (searchType != 1) {
+        deleteTd();
+    } else {
+        $(".rightContent td").css("display", "table-cell");
+    }
+    if(currentPage == 1){
+        $('.edit').css('display','inline-block');
+    }
+}
+function fmoney(s, n) {
+    n = n > 0 && n <= 20 ? n : 2;
+    s = parseFloat((s + "").replace(/[^\d\.-]/g, "")).toFixed(n) + "";
+    var l = s.split(".")[0].split("").reverse(),
+        r = s.split(".")[1];
+    t = "";
+    for(i = 0; i < l.length; i ++ )
+    {
+        t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
+    }
+    return t.split("").reverse().join("") + "." + r;
+}
+
+$('#list').on('focus','.paidMoney',function () {
+    $(this).val('');
+});
+
+$('#list').on('click','#print',function () {
+    var id = $(this).attr('data-id');
+    window.open('dataPrint.html?id='+id);
+});
+
+$('#list').on('click','#delete',function () {
+    var id = $(this).attr('data-id');
+    var isDelete = confirm('是否删除本条数据?');
+    if(isDelete){
+        var params = {};
+        params.recordId = id;
+        var result = Restful.post('bsinventoryrecord/deleteRecordOrdre',params);
+        if(result.success){
+            getData();
+        }
+    }
+});
+
+$('#list').on('click','.changepay',function () {
+    $(this).hide();
+    $(this).next().show();
+    $(this).siblings('input').prop('disabled',false);
+});
+$('#list').on('input','.paidMoney',function () {
+    paidMoney = $(this).val()||'0';
+    var money = $(this).parent().siblings('.money').html().split(',').join('');
+    unpaidMoney = parseFloat(money) - parseFloat(paidMoney);
+    $(this).parents().siblings('.unpaidMoney').html(fmoney(unpaidMoney));
+});
+$('#list').on('click','.pay',function () {
+    paidMoney = $(this).siblings('input').val();
+    if(paidMoney == ''){
+        alert('请输入付款金额');
+        return;
+    }
+    var id = $(this).attr('data-id');
+    $(this).hide();
+    $(this).siblings('input').prop('disabled',true);
+    $(this).siblings('span').show();
+    var params = {};
+    params.id = id;
+    params.paidMoney = paidMoney;
+    params.unpaidMoney = unpaidMoney||'0';
+    var result = Restful.post('bsinventoryrecord/updatePaidMoney',params);
+    if(result.success){
+
+    }else{
+        alert('修改未成功');
+    }
+});
+
+
+$('#list').on('click','.delete',function () {
+    var id = $(this).attr('data-id');
+    var isDelete = confirm('是否删除本条数据?');
+    if(isDelete){
+        var params = {};
+        params.recordId = id;
+        var result = Restful.post('bsinventoryrecord/deleteRecordOrdre',params);
+        if(result.success){
+            getData();
+            if (searchType != 1) {
+                deleteTd();
+            } else {
+                $(".rightContent td").css("display", "table-cell");
+            }
+        }
+    }
+});

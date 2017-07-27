@@ -1,0 +1,203 @@
+var currentPage = 1;
+var pages;
+var userId = DES3.decrypt(localStorage.getItem('userId'));
+var userType = localStorage.getItem('userType');
+
+
+if(userType == 1){
+    $(".leftContent > div:nth-child(8)> p:nth-child(8)").addClass("left_active");
+    $(".leftContent > div:nth-child(7)").addClass("left_active");
+}else{
+    $(".leftContent > div:nth-child(8)> p:nth-child(6)").addClass("left_active");
+    $(".leftContent > div:nth-child(7)").addClass("left_active");
+}
+
+
+$(document).on('mouseover','#accountRemark',function () {
+    $(this).siblings('div').slideDown(100);
+});
+$(document).on('mouseout','#accountRemark',function () {
+    $(this).siblings('div').css('display','none');
+});
+getData();
+initPaging();
+
+$('.page').on('click',function () {
+    currentPage = $('.activP').text();
+    getData();
+});
+
+function initPaging() {
+    //分页初始化
+    $('.page').page({
+        leng: pages,//分页总数
+        activeClass: 'activP' , //active 类样式定义
+    });
+}
+
+$(document).on('click','#submit',function () {
+    var tureName = $('#trueName').val();
+    var phone = $('#phone').val();
+    var idCard = $('#idCard').val();
+    var cardNumber = $('#cardNumber').val();
+    var licensePlate = $('#licensePlate').val();
+    var company = $('#company').val();
+    var remark = $('#remark').val();
+
+    if(!tureName){
+        $('#trueName').nextAll('p').css('display','inline-block');
+        return;
+    }
+    if(!phone){
+        $('#phone').nextAll('p').css('display','inline-block');
+        return;
+    }
+    var params = {};
+    params.userId = userId;
+    params.staffType = 3;
+    params.trueName = tureName;
+    params.phone = phone;
+    params.idCard = idCard;
+    params.cardNumber = cardNumber;
+    params.licensePlate = licensePlate;
+    params.company = company;
+    params.remark = remark;
+    var telParams = {};
+    telParams.userId = userId;
+    telParams.staffType = 3;
+    telParams.phone = $("#phone-edit").val();
+    var telTest = Restful.post('bsinventorystaff/isExist', telParams);
+    if(!telTest) {
+        var result = Restful.post('bsinventorystaff',params);
+        if(result){
+            if(result.success){
+                getData();
+                initPaging();
+                $(".registerModel").fadeOut(200);
+            }else {
+                alert('修改司机失败');
+            }
+        }else {
+            alert('账号别处登录或者网络有问题');
+        }
+    }else{
+        alert('手机号已存在');
+    }
+
+});
+
+function getData() {
+    var params = {};
+    params.currentPage = currentPage;
+    params.userId = userId;
+    params.staffType = 3;
+    var res = Restful.post('bsinventorystaff/list', params);
+    if(res.success) {
+        var data = res.dataList;
+        var msg = $('#salePerson-list').html();
+        var compiledTemplate = Template7.compile(msg);
+        var html = compiledTemplate({"salePerson": data});
+        $("#list").html(html);
+        pages = Math.ceil(res.total/10);
+    }else{
+        $("#list").html('');
+        $("#list").html('<tr><td colspan="9"><div style="width: 100%;height: 400px;line-height: 100px;font-size: 30px;text-align: center;margin:0 auto;color: #c1c1c1;text-shadow: #999999;">暂无数据</div>');
+    }
+}
+//打开添加层
+$(document).on('click','#add',function () {
+    $('.register-form input,textarea').val('');
+    $('#addP').fadeIn(200);
+});
+//关闭添加层
+$(document).on('click','#cencel',function () {
+    $('.registerModel').fadeOut(200);
+    $('.register-form input,textarea').val('')
+});
+
+
+//删除记录
+$(document).on('click','#deletebtn',function () {
+    var id = $(this).attr('data-id');
+    var isDelete = confirm('确定删除本条记录?');
+    if(isDelete){
+        var result = Restful.deletestaff('bsinventorystaff/'+id);
+        if(result){
+            if(result.success){
+                getData();
+                initPaging();
+            }else {
+                alert('司机删除失败');
+            }
+        }else {
+            alert('账号别处登录或者网络有问题');
+        }
+
+    }
+});
+//打开修改记录
+var staffId;
+$(document).on('click','#editbtn',function () {
+    $('#edit').fadeIn(200);
+
+    var id = $(this).attr('data-id');
+    staffId = id;
+    var result = Restful.get('bsinventorystaff/'+id);
+    if(result){
+        $('#trueName-edit').val(result.trueName);
+        $('#phone-edit').val(result.phone);
+        $('#idCard-edit').val(result.idCard);
+        $('#cardNumber-edit').val(result.cardNumber);
+        $('#company-edit').val(result.company);
+        $('#remark-edit').val(result.remark);
+        $('#licensePlate-edit').val(result.licensePlate);
+    }
+});
+//保存修改
+$(document).on('click','#editSubmit',function () {
+    var tureName = $('#trueName-edit').val();
+    var phone = $('#phone-edit').val();
+    var idCard = $('#idCard-edit').val();
+    var cardNumber = $('#cardNumber-edit').val();
+    var licensePlate = $('#licensePlate-edit').val();
+    var company = $('#company-edit').val();
+    var remark = $('#remark-edit').val();
+    if(!tureName){
+        $('#trueName').nextAll('p').css('display','inline-block');
+        return;
+    }
+    if(!phone){
+        $('#phone').nextAll('p').css('display','inline-block');
+        return;
+    }
+    var params = {};
+    params.userId = userId;
+    params.staffType = 3;
+    params.trueName = tureName;
+    params.phone = phone;
+    params.idCard = idCard;
+    params.cardNumber = cardNumber;
+    params.licensePlate = licensePlate;
+    params.company = company;
+    params.remark = remark;
+
+        var result = Restful.post('bsinventorystaff/'+staffId,params);
+        if(result){
+            if(result.success){
+                getData();
+                initPaging();
+                $('#edit').fadeOut(200);
+            }else {
+                alert('司机编辑失败');
+            }
+        }else {
+            alert('账号别处登录或者网络有问题');
+        }
+
+
+
+});
+//关闭修改层
+$(document).on('click','#editCencel',function () {
+    $('#edit').fadeOut(200);
+});

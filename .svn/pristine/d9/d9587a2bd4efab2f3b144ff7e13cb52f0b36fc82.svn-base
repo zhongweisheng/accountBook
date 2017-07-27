@@ -1,0 +1,25 @@
+.right{
+    float: left;
+    width:calc(100% - 160px);
+    width:-moz-calc(100% - 160px);
+    width:-webkit-calc(100% - 160px);
+    border-left: 1px solid #000;
+}
+.rightHead{
+    margin-top: 20px;
+}
+.rightHead > ul > li:nth-child(1){
+    text-align: center;
+    font-size: 24px;
+    color: #000;
+    margin-bottom: 50px
+}
+.rightHead > ul > li:nth-child(2){
+    text-align: right;
+    margin-bottom: 20px;
+}
+.rightContent{
+    width: 1000px;
+    height: 480px;
+    margin-left: 39px;
+}

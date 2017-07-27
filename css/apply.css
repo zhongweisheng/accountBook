@@ -1,0 +1,71 @@
+body {
+    font-size: 0.5rem;
+}
+div {
+    font-size: 0.7rem;
+}
+.fromtop{
+    margin: 0.5rem 0 0 0;
+}
+.cityselect{
+    float: left;
+    width: 33.3%;
+}
+.cityselect selector{
+    padding: 0;
+}
+.selectwith{
+    width: 100%;
+}
+.submitbtn{
+    height: 1.5rem;
+    width: 5rem;
+}
+.triangle{
+    float: left;
+    display: inline-block;width: 0;height: 0;border-top: 10px solid #000;border-left:5px solid transparent;border-right: 5px solid transparent;border-bottom: 0px solid transparent;"></span>
+}
+.selectwith select {
+    border-radius: 2px;
+    border:1px solid #e0e0e0;
+
+    font-size: 0.7rem;
+    height: 1rem;
+    /*Chrome和Firefox里面的边框是不一样的，所以复写了一下*/
+
+    /*很关键：将默认的select选择框样式清除*/
+    appearance:none;
+    -moz-appearance:none;
+    -webkit-appearance:none;
+
+    /*在选择框的最右侧中间显示小箭头图片*/
+    background: url("http://ourjs.github.io/static/2015/arrow.png") no-repeat scroll right center transparent;
+
+
+    /*为下拉小箭头留出一点位置，避免被文字覆盖*/
+    padding-right: 14px;
+}
+.bottombtn{
+    position: relative;
+    width:4.5rem;
+    background: #fff;
+    margin: 0 auto;
+}
+.whitebtn{
+    border-color: #333;
+    color: #333;
+}
+.bottombtn >input{
+    display: block;
+    position: absolute;
+    top: 11px;
+    left: 0;
+    width: 100%;
+    height: 1.35rem;
+    z-index: 1;
+    opacity: 0;
+}
+
+.triangle{
+    float:left;width: 0;height: 0;border-width:5px;border-style:solid dashed dashed dashed;border-color:black transparent transparent transparent;
+}

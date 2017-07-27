@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <title>Title</title>
+</head>
+<body>
+<script type="text/javascript" src='js/md5.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="js/common/rest.min.js?version=201759"></script>
+<script type="text/javascript">
+	var type = Restful.getQueryString('type');
+	type = parseInt(type);
+	if(type!=6){
+	localStorage.setItem('type',type);
+	}
+	function jump(url) {
+	    window.location.href = url + '.html';
+	}
+	var userId = localStorage.getItem('ud');
+	var mlbUserId = localStorage.getItem('mlbUserId');
+	if (userId || mlbUserId) {
+	    switch (type) {
+	        case 1:
+	            jump('inStorage');
+	            break;
+	        case 2:
+	            jump('outStorage');
+	            break;
+	        case 3:
+	            jump('accountChartsMobile');
+	            break;
+	        case 4:
+	            jump('inFormMobile');
+	            break;
+	        case 5:
+	            jump('outFormMobile');
+	            break;
+            case 7:
+                jump('noInFormMobile');
+                break;
+            case 8:
+                jump('noOutFormMobile');
+                break;
+            case 9:
+                jump('apply');
+                break;
+	        case 6:
+	            localStorage.clear();
+	            jump('login');
+	            break;
+	    default:
+	        jump('inStorage');
+            localStorage.setItem('type',1);
+	            break;
+	    }
+	} else {
+	    jump('login');
+	}
+
+</script>
+</body>
+</html>

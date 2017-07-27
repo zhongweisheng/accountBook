@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>求购信息</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link rel="stylesheet" href="libs/sui/0.6.2/css/sm.css">
+    <link rel="stylesheet" href="libs/sui/0.6.2/css/sm-extend.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/downstream.css">
+</head>
+<style>
+    .itemAfter{
+        display: inline-block;
+        height: 9px;
+        width: 9px;
+        background: red;
+        border-radius: 20px;
+        padding-left: 5px;
+        line-height: 20px;
+        position: absolute;
+        left: 97px;
+        top: 10px;
+
+    }
+    .topOne{
+       height: 40px;
+        width: 100%;
+        background: #e89b2c;
+        line-height: 40px;
+
+    }
+    .headImg{
+        height: 18px;
+        width: 16px;
+        background: url("img/我.png");
+        margin-top: 3%;
+        float: left;
+        margin-left: 5%;
+
+    }
+    .headTitle{
+        color: white;
+        float: left;
+        margin: 0 auto;
+        margin-left: 33%;
+        font-size: 16px;
+    }
+    .okImg{
+        margin: 0 auto;
+
+        width: 100%;
+        background-size: 100%;
+        text-align: center;
+    }
+    .text1{
+        margin: 5% auto;
+        margin-left: 2%;
+        height: 20px;
+        width: 100%;
+        text-align: center;
+    }
+    .text2{
+        width: 100%;
+        margin: 0 auto;
+        line-height: 24px;
+        text-align: center;
+    }
+    .sureBtn{
+        height: 35px;
+        width: 150px;
+        background:#00B2EE ;
+        margin: 0 auto;
+        border-radius: 2px;
+        margin-top: 5%;
+        color: whitesmoke;
+        text-align: center;
+        line-height: 35px;
+    }
+    .main{
+        height: 188px;
+        width: 295px;
+        background: white;
+        margin: 0 auto;
+        border-radius: 5px;
+        margin-top: 50%;
+        font-size: 12px;
+    }
+    .errorMsg{
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        background: rgba(0,0,0,.4);
+
+        z-index: 1000;
+    }
+</style>
+<body>
+<div class="wapper">
+    <div class="tab" style="z-index: 1000">
+        <div class="tab_active lf" style="color: orange;"><i class="selficon icon-purchase-active"></i>求购</div>
+        <div class="lf" onclick="window.location.href='applyed.html'"><i class="selficon icon-apply"></i>供应</div>
+        <div class="lf" onclick="window.location.href='refuse.html'" style="position: relative"><span></span><i class="selficon icon-my "></i>拒收</div>
+    </div>
+    <div class="downstream">
+        <div class="top" style="z-index: 1000;">
+            <div class="topOne">
+                <div class="headImg"></div>
+                <div class="headTitle">卖粮宝</div>
+            </div>
+            <div class="nav_ul">
+                <ul class="nav">
+                    <li class="nav_active lf">100公里以内</li>
+                    <li class="lf">200公里以内</li>
+                    <li class="rt">200公里以外</li>
+                </ul>
+            </div>
+            <!--<div class="top_search">
+                <ul>
+                    <li>卖粮宝帮忙</li>
+                    <li data-phone="4006029967" class="phone">联系客服</li>
+                    &lt;!&ndash;<li>筛选</li>&ndash;&gt;
+                </ul>
+            </div>-->
+        </div>
+        <div class="navcontent">
+            <script type="text/template" id="down-list">
+                {{#each down}}
+                <div class="infor" data-id="{{id}}">
+                    <div class="title" style="position: relative;text-align: left" >
+                        <span class="frist">
+                            <i class="name">{{companyName}}</i>
+                        </span>
+                        <span class="rt">{{trueName}}</span>
+                    </div>
+                    <ul>
+                        <li>
+                            <span>{{foodName}}</span>
+                            <span>{{quality}}</span>
+                            <span class="orange">{{foodPrice}}</span>
+                        </li>
+                    </ul>
+                    <div class="distance">
+                        <span class="time">更新：{{updateTime}}</span>
+                        <span class="long">距离：{{distance}}公里</span>
+                    </div>
+                </div>
+                {{/each}}
+            </script>
+            <div class="content" id="downlist" style="margin-top: 90px; margin-bottom: 3.7rem">
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="searchModel">
+    <div class="s-container">
+        <div class="s-top">查询</div>
+        <div class="s-content">
+            <ul>
+                <li class="s-line">
+                    <span>粮食种类:</span>
+                    <select name="grainType" id="grainType">
+                        <option value="0">全部</option>
+                        <option value="2">玉米</option>
+                        <option value="1">小麦</option>
+                    </select>
+                </li>
+                <li class="s-line">
+                    <span style="float: left">所在地区:</span>
+                    <div class="addressSelete" >
+                        <div class="cityselect"><select id="province" name="province" style="width: 80%;"></select></div>
+                        <div class="cityselect"><select id="city" name="city" style="width: 80%;"></select></div>
+                        <div class="cityselect"><select id="area" name="area" style="width: 80%;"></select></div>
+                    </div>
+                </li>
+                <li>
+                    <div class="s-btn">
+                        <button class="lf cencel">取消</button>
+                        <button class="rt submit">确定</button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div data-phone="4006029967" class="phonePic phone" style="width: 100%;height: 60px;background: url('img/联系客服.png') no-repeat center;background-size:100%;position: fixed;bottom: 2rem;left: 0;cursor: pointer;"></div>
+<div class="pushMsg" onclick="$('.balanceModel').show()">
+    <span class="restext">推荐</span>
+</div>
+<div class="replease" onclick="window.location.href='purchase.html'">
+    <span class="restext">求购</span>
+</div>
+<div class="search">
+    <span class="restext">筛选</span>
+</div>
+
+
+<div class="panel-overlay"></div>
+<div class="panel panel-left panel-cover" style="background-color: #efefef;color: #1c1d1f" id="personCenter">
+    <div class="card" style="margin: 0;padding: 0;">
+        <div class="card-content">
+            <div class="card-content-inner">
+                <div class="userPic" style="margin:0 auto">
+                    <img id="headimg" src="">
+                </div>
+                <div class="userName"><span id="trueName"></span></div>
+            </div>
+        </div>
+    </div>
+    <div class="list-block">
+        <ul>
+            <li class="item-content item-link" onclick="window.location.href='Tradeleads.html'">
+                <div class="item-media"><i class="selficon icon1"></i></div>
+                <div class="item-inner">
+                    <div class="item-title">我发布的供求信息</div>
+                    <!-- <div class="item-after"></div>-->
+                </div>
+            </li>
+            <li class="item-content item-link" onclick="window.location.href='interest.html'">
+                <div class="item-media"><i class="selficon icon2"></i></div>
+                <div class="item-inner">
+                    <div class="item-title">我的关注与粉丝</div>
+                    <!--<div class="item-after">新关注</div>-->
+                </div>
+            </li>
+            <li class="item-content item-link" onclick=" gain();window.location.href='comment.html'">
+                <div class="item-media"><i class="selficon icon3"></i></div>
+                <div class="item-inner">
+                    <div class="item-title">我的通知</div>
+                    <div class="item-after " style="color: white"></div>
+                </div>
+            </li>
+            <li class="item-content item-link" onclick="$.toast('暂未开放')">
+                <div class="item-media"><i class="selficon icon4"></i></div>
+                <div class="item-inner">
+                    <div class="item-title">我的订单</div>
+                    <!--  <div class="item-after"></div>-->
+                </div>
+            </li>
+            <!--<li class="item-content item-link">
+                <div class="item-media"><i class="icon icon-f7"></i></div>
+                <div class="item-inner">
+                    <div class="item-title">认证管理</div>
+                    <div class="item-after">未认证</div>
+                </div>
+            </li>-->
+            <li class="item-content item-link" onclick="window.location.href='companyMsgMobile.html'">
+                <div class="item-media"><i class="selficon icon5"></i></div>
+                <div class="item-inner">
+                    <div class="item-title">公司信息</div>
+                    <!--<div class="item-after">待完善</div>-->
+                </div>
+            </li>
+            <li class="item-content item-link" onclick="window.location.href='accountSet.html'">
+                <div class="item-media"><i class="selficon icon6"></i></div>
+                <div class="item-inner">
+                    <div class="item-title">账号设置</div>
+                    <!--<div class="item-after"></div>-->
+                </div>
+            </li>
+            <li class="item-content item-link" onclick="window.location.href='feedback.html'">
+                <div class="item-media"><i class="selficon icon7"></i></div>
+                <div class="item-inner">
+                    <div class="item-title">意见反馈</div>
+                    <!--<div class="item-after"></div>-->
+                </div>
+            </li>
+            <li class="item-content item-link" onclick="window.location.href='mlbintro.html'">
+                <div class="item-media"><i class="selficon icon8"></i></div>
+                <div class="item-inner">
+                    <div class="item-title">关于卖粮宝</div>
+                    <!--<div class="item-after"></div>-->
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-------消息推送------->	
+<div class="balanceModel" style="position: fixed;top:0;left:0;z-index: 100;display: none;">
+    <div class="b-content">
+        	<ul>
+        		<li style="font-size: 20px; margin-left: 11%">采购商推荐<span class="close" style="float: right;background: none;color: #000;">&times;</span></li>
+        	</ul>
+        <ul class="jumpdetail1">
+
+
+        </ul>
+        <script type="text/template" id="gooMsg">
+            {{#each msg}}
+            {{#js_compare "this.number <= 5"}}
+            <li data-id="{{userId}}" class="jumpdetail clearfix ">
+
+                <span style="float: left;width: 60%;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;font-weight: bold;background: none;color: #000;text-align: left;">{{userName}}</span>
+                <span style="color: #fff;background: #f5a85d;float: right;font-size: 0.5rem;">卖粮宝认证</span>
+                <p class="isshowp" style="text-align: left;margin: 0 10px;font-size: 0.5rem;">{{content}}</p>
+
+
+            </li>
+            {{else}}
+            {{/js_compare}}
+            {{/each}}
+        </script>
+        <div class="btoggle" style="width: 30%;height: 1.5rem;line-height: 1.5rem;text-align: center;background: #f6a85e;color: #fff;margin-left: 35%;">换一换</div>
+        <p style="text-align: center;color: #7e7e7e;">查看更多优质求购商家</p>
+    </div>
+</div>
+<div class="balanceModel1" style="position: fixed;top:0;left:0;z-index: 1000;display: none;">
+    <div class="b-content">
+        	<ul>
+        		<li style="font-size: 20px;margin-left: 11%">采购商推荐<span class="close" style="float: right;background: none;color: #000;">&times;</span></li>
+        	</ul>
+        <ul class="jumpdetail2">
+
+
+
+        </ul>
+        <script type="text/template" id="gooMsg2">
+            {{#each msg}}
+            <li data-id="{{userId}}" class="jumpdetail clearfix ">
+                {{#js_compare "this.number > 5"}}
+                <span style="float: left;width: 60%;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;font-weight: bold;background: none;color: #000000;text-align: left;">{{userName}}</span>
+                <span style="color: #fff;background: #f5a85d;float: right;font-size: 0.5rem;">卖粮宝认证</span>
+                <p class="isshowp" style="text-align: left;margin: 0 10px;font-size: 0.5rem;">{{content}}</p>
+            {{else}}
+                {{/js_compare}}
+
+            </li>
+            {{/each}}
+        </script>
+        <div class="btoggle" style="width: 30%;height: 1.5rem;line-height: 1.5rem;text-align: center;background: #f6a85e;color: #fff;margin-left: 35%;">换一换</div>
+        <p style="text-align: center;color: #7e7e7e;">查看更多优质求购商家</p>
+    </div>
+</div>
+<div class="errorMsg"  style="display: none">
+    <div class="main">
+        <h2  class="okImg" style="font-weight: normal">通知</h2>
+        <div class="text1">您的账号存在操作异常！</div>
+        <div class="text2">详情请联系客服：<span style="color: #00B2EE">400-602-9967</span></div>
+        <div class="sureBtn" onclick="window.location.href='login.html?loginType=10'" >切换账号</div>
+    </div>
+
+</div>
+<!-- libs js -->
+<script type='text/javascript' src='libs/zepto/zepto.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='libs/sui/0.6.2/js/sm.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='libs/sui/0.6.2/js/sm-extend.min.js' charset='utf-8'></script>
+
+<script type="text/javascript" src='js/md5.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="js/common/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/common/jweixin-1.0.0.js"></script>
+<script type="text/javascript" src="js/common/jquery.citys.js"></script>
+<script type="text/javascript" src="js/common/rest.js?v=20170626"></script>
+<script type="text/javascript" src="js/util.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="js/downstream.js?v=20170626"></script>
+<script type="text/javascript">
+    jQuery.noConflict();
+    var mlbUserId = localStorage.getItem('mlbUserId');
+
+    getGain();
+    jQuery('.btoggle').click(function () {
+        jQuery('.balanceModel1').toggle();
+    });
+    /****读取新消息条数******/
+    function  getGain() {
+        jQuery.ajax({
+            type: 'get',
+            url: 'accountBook/bsleaveword/getNoRead?userId='+mlbUserId,
+            dataType: 'json',
+            contentType: "application/json; charset=utf-8",
+            async: false,
+            /*beforeSend:function () {
+             $.showIndicator();
+             },*/
+            success: function(data) {
+                // $.hideIndicator();
+                jsonData = data;
+
+                if(jsonData>0){
+                    jQuery(".item-after").addClass("itemAfter");
+                    jQuery(".lf").find("span").addClass("itemAfter")
+                }
+            }
+
+        });
+
+
+    }
+    function  gain() {
+        jQuery.ajax({
+            type: 'get',
+            url: 'accountBook/bsleaveword/updateRead?userId='+mlbUserId,
+            dataType: 'json',
+            contentType: "application/json; charset=utf-8",
+            async: false,
+            /*beforeSend:function () {
+             $.showIndicator();
+             },*/
+            success: function(data) {
+                // $.hideIndicator();
+                clickAffter = data.success;
+
+            }
+
+        });
+
+
+    }
+
+
+    jQuery('.top').click(function () {
+        $.openPanel("#personCenter");
+
+    });
+    $("#headimg").attr('src',localStorage.getItem('headimgurl'));
+    function toPersonCertification() {
+        location.href='Tradeleads.html'
+    }
+
+</script>
+</body>
+</html>

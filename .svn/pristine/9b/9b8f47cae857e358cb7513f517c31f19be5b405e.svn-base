@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>供应下游</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/applyed.css">
+</head>
+<body>
+<div class="wapper">
+    <div class="tab">
+        <div class="lf" onclick="window.location.href='downstream.html'">求购</div>
+        <div class="tab_active rt">供应</div>
+    </div>
+    <div class="supply" id="supplylist" style="font-size: 14px;background-color: #eee;padding-top: 2.2rem;">
+
+    </div>
+    <script type="text/template" id="supply-list">
+        {{#each supply}}
+        <div class="card clearfix">
+            <div class="card-head">
+                <span class="lf item-inner white-space">供应方：{{people}}</span>
+                <b data-phone="4006029967" class="rt phone"></b>
+                <span class="lf i-con">类型：{{type}}</span>
+            </div>
+            <div class="card-content">
+                <ul class="clearfix">
+                    <li class="content-inner">
+                        <span class="lf item-inner">价格：<i>{{price}}</i>元/吨</span>
+                        <span class="rt item-inner">数量：<i>{{number}}</i>吨</span>
+                    </li>
+                    <li class="content-inner">
+                        <span class="lf">质量：&nbsp;</span>
+                        <span class="lf white-space" style="max-width: 85%;">{{foodRequire}}</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <span class="lf item-inner gray">地址：{{location}}</span>
+                <span class="rt item-inner gray" style="text-align: right;">日期：{{time}}</span>
+            </div>
+        </div>
+        {{/each}}
+    </script>
+</div>
+<div class="searchModel">
+    <div class="s-container">
+        <div class="s-top">查询</div>
+        <div class="s-content">
+            <ul>
+                <li class="s-line">
+                    <span>粮食种类:</span>
+                    <select name="grainType" id="grainType">
+                        <option value="0">全部</option>
+                        <option value="2">玉米</option>
+                        <option value="1">小麦</option>
+                    </select>
+                </li>
+                <li class="s-line">
+                    <span>粮食质量:</span>
+                    <select name="quality" id="quality">
+                        <option value="0">全部</option>
+                        <option value="1">一等粮</option>
+                        <option value="2">二等粮</option>
+                        <option value="3">三等粮</option>
+                        <option value="4">四等粮</option>
+                        <option value="5">五等粮</option>
+                    </select>
+                </li>
+                <li class="s-line">
+                    <span>所在地区(省、市、县):</span>
+                    <div class="addressSelete" style="margin-left: 4.5rem;">
+                        <div class="cityselect"><select id="province" name="province" style="width: 85%;"></select></div>
+                        <div class="cityselect"><select id="city" name="city" style="width: 85%;"></select></div>
+                        <div class="cityselect"><select id="area" name="area" style="width: 85%;"></select></div>
+                    </div>
+                </li>
+                <li>
+                    <div class="s-btn">
+                        <button class="lf cencel">取消</button>
+                        <button class="rt submit">确定</button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="replease" onclick="window.location.href='apply.html'">
+    <span class="restext">发供应</span>
+</div>
+<div class="search">
+    <span class="restext">筛选</span>
+</div>
+<script type="text/javascript" src='js/md5.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="js/common/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/common/jquery.citys.js"></script>
+<script type="text/javascript" src="js/common/rest.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="js/applyed.js"></script>
+</body>
+</html>

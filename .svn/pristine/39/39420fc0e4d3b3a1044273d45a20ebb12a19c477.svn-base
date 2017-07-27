@@ -1,0 +1,113 @@
+<component name="libraryTable">
+  <library name="Generated files" type="javaScript">
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$PROJECT_DIR$/js/accountSta.min.js" />
+        <item url="file://$PROJECT_DIR$/js/uisearch.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/swfobject.min.js" />
+        <item url="file://$PROJECT_DIR$/js/accountChartsMobile.min.js" />
+        <item url="file://$PROJECT_DIR$/js/outStorage.min.js" />
+        <item url="file://$PROJECT_DIR$/js/common/rest.min.js" />
+        <item url="file://$PROJECT_DIR$/js/common/jquery.citys.min.js" />
+        <item url="file://$PROJECT_DIR$/js/login.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/workIndex.min.js" />
+        <item url="file://$PROJECT_DIR$/js/live.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/index.min.js" />
+        <item url="file://$PROJECT_DIR$/js/inStorage.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/convertCurrency.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/page.min.js" />
+        <item url="file://$PROJECT_DIR$/js/bidout.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/outTable.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/driver.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/edit.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/rest.min.js" />
+        <item url="file://$PROJECT_DIR$/js/sha1.min.js" />
+        <item url="file://$PROJECT_DIR$/js/select2.min.js" />
+        <item url="file://$PROJECT_DIR$/js/editMoblie.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/news.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/outForm.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/buyPerson.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/jquery.include.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/noInForm.min.js" />
+        <item url="file://$PROJECT_DIR$/js/classie.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/common.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/noOutForm.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/editnoCom.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/bootstrap.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/select2.min.js" />
+        <item url="file://$PROJECT_DIR$/js/findPassword.min.js" />
+        <item url="file://$PROJECT_DIR$/js/noInFormMobile.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/accountStaPC.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/jquery.citys.min.js" />
+        <item url="file://$PROJECT_DIR$/js/noOutFormMobile.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/accountCharts.min.js" />
+        <item url="file://$PROJECT_DIR$/js/editnoComMoblie.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/salePerson.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/accountSetting.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/inTable.min.js" />
+        <item url="file://$PROJECT_DIR$/accountData/js/inForm.min.js" />
+        <item url="file://$PROJECT_DIR$/js/bid.min.js" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/js/test.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/test.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/html5media.min.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/html5media.min.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/inFormTest.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/inFormTest.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/md5.min.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/md5.min.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/md5.min.min.js" />
+      <root url="file://$PROJECT_DIR$/js/jquery.searchableSelect.min.js" />
+      <root url="file://$PROJECT_DIR$/js/jquery.searchableSelect.min.js" />
+      <root url="file://$PROJECT_DIR$/js/convertCurrency.min.js" />
+      <root url="file://$PROJECT_DIR$/js/accountSta.min.js" />
+      <root url="file://$PROJECT_DIR$/js/uisearch.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/swfobject.min.js" />
+      <root url="file://$PROJECT_DIR$/js/accountChartsMobile.min.js" />
+      <root url="file://$PROJECT_DIR$/js/outStorage.min.js" />
+      <root url="file://$PROJECT_DIR$/js/common/rest.min.js" />
+      <root url="file://$PROJECT_DIR$/js/common/jquery.citys.min.js" />
+      <root url="file://$PROJECT_DIR$/js/login.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/workIndex.min.js" />
+      <root url="file://$PROJECT_DIR$/js/live.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/index.min.js" />
+      <root url="file://$PROJECT_DIR$/js/inStorage.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/convertCurrency.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/page.min.js" />
+      <root url="file://$PROJECT_DIR$/js/bidout.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/outTable.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/driver.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/edit.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/rest.min.js" />
+      <root url="file://$PROJECT_DIR$/js/sha1.min.js" />
+      <root url="file://$PROJECT_DIR$/js/select2.min.js" />
+      <root url="file://$PROJECT_DIR$/js/editMoblie.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/news.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/outForm.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/buyPerson.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/jquery.include.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/noInForm.min.js" />
+      <root url="file://$PROJECT_DIR$/js/classie.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/common.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/noOutForm.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/editnoCom.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/bootstrap.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/select2.min.js" />
+      <root url="file://$PROJECT_DIR$/js/findPassword.min.js" />
+      <root url="file://$PROJECT_DIR$/js/noInFormMobile.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/accountStaPC.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/jquery.citys.min.js" />
+      <root url="file://$PROJECT_DIR$/js/noOutFormMobile.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/accountCharts.min.js" />
+      <root url="file://$PROJECT_DIR$/js/editnoComMoblie.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/salePerson.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/accountSetting.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/inTable.min.js" />
+      <root url="file://$PROJECT_DIR$/accountData/js/inForm.min.js" />
+      <root url="file://$PROJECT_DIR$/js/bid.min.js" />
+    </CLASSES>
+    <SOURCES />
+  </library>
+</component>

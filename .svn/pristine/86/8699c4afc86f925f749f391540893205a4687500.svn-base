@@ -1,0 +1,118 @@
+package lb.rest.user.db.dao;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
+
+import lb.rest.user.db.mapper.CommonMapper;
+
+import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.stereotype.Repository;
+
+import com.mlb.bo.DistanceBO;
+import com.mlb.bo.LocationBO;
+import com.mlb.bo.MlbUserBO;
+import com.mlb.util.TGeographyUtils;
+
+@Repository
+public class CommonDao {
+
+	@Resource
+	private CommonMapper mapper;
+
+	public List<MlbUserBO> selectMlbUserList(double lat, double lng, double maxDistance, double minDistance,
+			int foodType, String location) {
+
+		List<MlbUserBO> list = mapper.selectMlbUserList(2,foodType,location);
+
+		List<MlbUserBO> usersAll = new ArrayList<MlbUserBO>();
+
+		if (list != null && lat > 0 && lng > 0) {
+			for (MlbUserBO destBO : list) {
+				int origLocation = NumberUtils.toInt(destBO.getLocation());
+				if (origLocation > 0) {
+					double distance = TGeographyUtils.getDistance(destBO.getLat(), destBO.getLng(), lat, lng);
+					if (minDistance < distance && distance < maxDistance) {
+						destBO.setMatchDistance(distance);
+						usersAll.add(destBO);
+					}
+				}
+			}
+		}
+		return usersAll;
+	}
+
+	public double getAveragePriceIn(int userId) {
+		Double result = mapper.getAveragePriceIn(userId);
+		double resultDouble = 0;
+		if (result != null) {
+			resultDouble = result.doubleValue();
+		}
+		return resultDouble;
+	}
+
+	public Map<String, Double> getStatMap(int userId) {
+		return mapper.getStatMap(userId);
+	}
+
+	public LocationBO getAreaLocation(int location) {
+		return mapper.getAreaLocation(location);
+	}
+
+	public Map<Integer, DistanceBO> getDistanceMapByDest(int location) {
+		Map<Integer, DistanceBO> map = new HashMap<Integer, DistanceBO>();
+		List<DistanceBO> list = mapper.getDistanceMapByDest(location);
+		if (list != null) {
+			for (DistanceBO item : list) {
+				int orig = item.getOrigLocation();
+				map.put(orig, item);
+			}
+		}
+		return map;
+	}
+
+	public DistanceBO getDistance(int origLocation, int destLocation) {
+		return mapper.getDistance(origLocation, destLocation);
+	}
+
+	public int insertDistance(int origLocation, int destLocation, double distance) {
+		return mapper.insertDistance(origLocation, destLocation, distance);
+	}
+
+	public boolean insertDistanceList(List<DistanceBO> list) {
+		boolean result = false;
+		try {
+			if (list != null && list.size() > 0) {
+				Set<String> keyFilter = new HashSet<String>();
+				for (DistanceBO distance : list) {
+					String key = distance.getOrigLocation() + "-" + distance.getDestLocation();
+					if (!keyFilter.contains(key)) {
+						keyFilter.add(key);
+						if (distance.getDistance() <= 0) {
+							continue;
+						}
+						int origLocation = distance.getOrigLocation();
+						int destLocation = distance.getDestLocation();
+						double distanceTmp = distance.getDistance();
+						mapper.insertDistance(origLocation, destLocation, distanceTmp);
+					}
+				}
+				result = true;
+			}
+		} catch (Exception e) {
+			result = false;
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public int getLastInsertId() {
+		return mapper.getLastInsertId();
+	}
+
+}

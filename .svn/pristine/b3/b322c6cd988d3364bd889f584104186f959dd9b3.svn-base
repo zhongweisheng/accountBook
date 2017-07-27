@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>记账统计</title>
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/accountCharts.css">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.include.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common.min.js"></script>
+    <style type="text/css">
+        .left {
+            width: 159px;
+            height: 100%;
+            margin-top: 100px;
+            float: left;
+        }
+
+        .parent {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            transition: color 0.5s, font-size 0.5s;
+        }
+
+        .child {
+            padding-left: 15%;
+        }
+
+        .child p {
+            display: inline-block;
+            width: 100%;
+            margin-left: -15px;
+            height: 40px;
+            line-height: 40px;
+            text-indent: 1rem;
+            font-size: 16px;
+            transition: color 0.5s, font-size 0.5s;
+        }
+
+        .child p:hover, .parent:hover {
+            cursor: pointer;
+            color: #f5a85d;
+            font-size: 18px;
+        }
+
+        .parent:hover {
+            font-size: 24px;
+        }
+
+        .child i {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            line-height: 8px;
+            background-color: #585858;
+            border: 1px solid #585858;
+            border-radius: 4px;
+        }
+
+        .left_active {
+            color: #f5a85d;
+        }
+    </style>
+    <script type="text/javascript">
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);  //获取url中"?"符后的字符串并正则匹配
+            var context = "";
+            if (r != null)
+                context = r[2];
+            reg = null;
+            r = null;
+            return context == null || context == "" || context == "undefined" ? "" : context;
+        }
+    </script>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml")</script>
+     <div class="lt" style="width: 30%; float: right; margin-top: 0px; margin-right: 12px;">
+                        <span style="color: #000; font-size: 16px;" >请选择粮库：</span>
+                           <select name="depot" id="depot" class="depot" style="width: 60%;">
+                        
+                        </select>
+                    </div>
+<div class="content clearfix">
+    <script>
+            $.include('accountData/shtml/left.shtml');
+    </script>
+    <div class="right">
+        <div class="t-container clearfix" id="list">
+
+        </div>
+   
+        <script type="text/template" id="table-list">
+            {{#each table1}}
+             
+            <div class="t-top" style="margin-top: 20px;"><span class="t-top-text">今日概况</span></div>
+            <div class="t-left">
+                <ul>
+                    <li class="t-item">
+                        <div class="item-media"></div>
+                        <div class="item-inner">
+                            <div class="lt inner-text">
+                                今日共买粮:<span class="inner-color">{{sumRkAmount}}</span>(吨)
+                            </div>
+                            <div class="lt inner-text">
+                                今日共支出:<span class="inner-color">{{sumRkMoney}}</span>(元)
+                            </div>
+                        </div>
+                    </li>
+                    <li class="t-item">
+                        <div class="item-media"></div>
+                        <div class="item-inner">
+                            <div class="lt inner-text">
+                                今日共卖粮:<span class="inner-color">{{sumCkAmount}}</span>(吨)
+                            </div>
+                            <div class="lt inner-text">
+                                今日共收入:<span class="inner-color">{{sumCkMoney}}</span>(元)
+                            </div>
+                        </div>
+                    </li>
+                    <li class="t-item">
+                        <div class="item-media"></div>
+                        <div class="item-inner">
+                            <div class="lt inner-text">
+                                当前库存:<span class="inner-color">{{sumBalance}}</span>(吨)
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="t-right">
+                <div class="t-r-top"><span class="t-top-text">明细</span></div>
+                <div class="t-r-table">
+                    <table border="1" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td class="t-top-text">品种</td>
+                            <td>收粮(吨)</td>
+                            <td>卖粮(吨)</td>
+                            <td>库存(吨)</td>
+                        </tr>
+                        <tr>
+                            <td class="t-top-text">玉米</td>
+                            <td>{{ymNetWeightIn}}</td>
+                            <td>{{ymNetWeightOut}}</td>
+                            <td>{{ymkc}}</td>
+                        </tr>
+                        <tr>
+                            <td class="t-top-text">小麦</td>
+                            <td>{{xmNetWeightIn}}</td>
+                            <td>{{xmNetWeightOut}}</td>
+                            <td>{{xmkc}}</td>
+                        </tr>
+                        <tr>
+                            <td class="t-top-text">水稻</td>
+                            <td>{{sdNetWeightIn}}</td>
+                            <td>{{sdNetWeightOut}}</td>
+                            <td>{{sdkc}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {{/each}}
+        </script>
+        <div class="tab-container">
+            <div class="tab-container clearfix" id="timeChange">
+                <div class="tab-col-first">筛选条件:</div>
+                <div class="tab-col">
+                    <span>种类:</span>
+                    <select name="grainType" id="grainType" class="selectReset">
+                        <option value="2">玉米</option>
+                        <option value="1">小麦</option>
+                        <option value="3">水稻</option>
+                    </select>
+                </div>
+                <div class="tab-col">
+                    <span>单位:</span>
+                    <select name="searchType" id="searchType" class="selectReset">
+                        <option value="1">吨</option>
+                        <option value="2">金额</option>
+                    </select>
+                </div>
+                <div class="tab-col">
+                    <span>时间:</span>
+                    <select name="searchType" id="timeType" class="selectReset">
+                        <option value="1">按天看</option>
+                        <option value="2">按周看</option>
+                        <option value="3">按月看</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="c-container">
+            <div class="c-div">
+                <div id="c-inLine" style="width: 500px;height: 250px;margin-top: 50px;"></div>
+            </div>
+            <div class="c-div c-margin">
+                <div id="c-inBar" style="width: 500px;height: 250px;margin-top: 50px;"></div>
+            </div>
+            <div class="c-div">
+                <div id="c-outLine"style="width: 500px;height: 250px;margin-top: 50px;"></div>
+            </div>
+            <div class="c-div c-margin">
+                <div id="c-outBar"style="width: 500px;height: 250px;margin-top: 50px;"></div>
+            </div>
+            <div class="c-div">
+                <div id="c-hasBar" style="width: 500px;height: 250px;margin-top: 50px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>$.include("accountData/shtml/foot.shtml")</script>
+
+<script type="text/javascript" src="accountData/js/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/rest.min.js"></script>
+<script type="text/javascript" src="accountData/js/page.min.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="accountData/js/echarts.common.min.js"></script>
+<script type="text/javascript" src="accountData/js/accountCharts.js"></script>
+</body>
+</html>

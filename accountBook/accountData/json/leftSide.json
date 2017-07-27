@@ -1,0 +1,50 @@
+{
+  "data":[
+    {
+      "parent":"首页",
+      "children":[
+
+      ],
+      "parentHref":"accountCharts.html",
+      "childHref":[
+
+      ]
+    },
+    {
+      "parent":"录库单",
+      "children":[
+        "入库单","出库单","代储录入","未完成入库单","未完成出库单","未完成代储"
+      ],
+      "parentHref":"#",
+      "childHref":["inForm.html","outForm.html","storageForm.html","noInForm.html","noOutForm.html","noStorageForm.html"]
+    },
+    {
+      "parent":"库记录",
+      "children":[
+        "入库单记录","出库单记录","代储凭证"
+      ],
+      "parentHref":"#",
+      "childHref":["inTable.html","outTable.html","storageTable.html"]
+    },
+    {
+      "parent":"企业管理",
+      "children":[
+        "公司信息管理","送粮人管理","买粮人管理","司机管理","操作记录"
+      ],
+      "parentHref":"#",
+      "childHref":[
+        "companyMsg.html","salePerson.html","buyPerson.html","driver.html","opration.html"
+      ]
+    },
+    {
+      "parent":"账户设置",
+      "children":[
+
+      ],
+      "parentHref":"accountSetting.html",
+      "childHref":[
+
+      ]
+    }
+  ]
+}

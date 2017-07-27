@@ -1,0 +1,370 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>入库单</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/inForm.css">
+    <link rel="stylesheet" href="accountData/css/common/bootstrapdate.min.css ">
+    <link rel="stylesheet" href="accountData/css/common/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="accountData/css/select2.min.css">
+    <script type="text/javascript" src="accountData/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/jquery.include.min.js?v=20170626"></script>
+    <script type="text/javascript" src="accountData/js/common/common.min.js?v=20170626"></script>
+</head>
+<body>
+    <script>$.include("accountData/shtml/head.shtml?v=20170626")</script>
+    <div class="content clearfix">
+        <script>
+            $.include('accountData/shtml/left.shtml?v=20170626');
+        </script>
+        <div class="right">
+            <div class="title">入库单</div>
+            <div class="form-content">
+                <div class="form-head">
+                    <div class="head-title">基本信息</div>
+                </div>
+                <div class="form-article clearfix">
+                    <ul>
+                        <li class="form-item">
+                            <span class="item-title item-w30">入库日期：</span>
+                            <input type="text" id="date" data-date-format="yyyy-mm-dd">
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">入库粮库：</span>
+                            <select name="depot" id="depot" class="depot"></select>
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">入库种类：</span>
+                            <select name="grainType" id="grainType">
+                                <option value="1">小麦</option>
+                                <option value="2">玉米</option>
+                                <option value="3">水稻</option>
+                            </select>
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-article clearfix">
+                    <ul>
+                        <li class="form-item">
+                            <span class="item-title item-w30">送粮人：</span>
+                            <select name="salePerson" id="salePerson"></select>
+                            <span class="add-person"></span>
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">司机：</span>
+                            <select name="driver" id="driver" class="driver"></select>
+                            <span class="add-driver"></span>
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">车牌号：</span>
+                            <input type="text" id="licensePlate" maxlength="10">
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-head">
+                    <div class="head-title">付款信息</div>
+                </div>
+                <div class="form-article clearfix">
+                    <ul>
+                        <li class="form-item">
+                            <span class="item-title item-w30">毛重(公斤)<b class="import">*</b>：</span>
+                            <input type="number"  id="grossWeightIn" oninput="numberCtrl(this,2)">
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">皮重(公斤)<b class="import">*</b>：</span>
+                            <input type="number"  id="tareWeightIn" oninput="numberCtrl(this,2)">
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">扣重(公斤)：</span>
+                            <input type="number"  id="deduction" oninput="numberCtrl(this,2)">
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-article clearfix">
+                    <ul>
+                        <li class="form-item">
+                            <span class="item-title item-w30">净重(公斤)：</span>
+                            <input type="number" id="netWeightIn" disabled style="color: red;cursor:not-allowed;background: #fff;" placeholder="自动计算">
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">单价(元/斤)<b class="import">*</b>：</span>
+                            <input type="number"  id="unitPrice" oninput="numberCtrl(this,3)">
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">金额(元)：</span>
+                            <input type="number"  onkeyup="value=value.replace(/\D/g,'');" id="moneyIn"style="color: red;background: #fff;" placeholder="自动计算,可修改">
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div  class="form-article clearfix">
+                    <li class="form-item">
+                        <span class="item-title item-w30">付款(元)：</span>
+                        <input type="number"   id="paidMoney"style="color: red;background: #fff;" >
+                        <p></p>
+                    </li>
+                </div>
+                <div class="form-head">
+                    <div class="head-title">粮食信息</div>
+                </div>
+                <div class="form-article notGrain clearfix">
+                    <ul>
+                        <li class="form-item">
+                            <span class="item-title item-w30">水分(%)：</span>
+                            <input type="number" id="water" oninput="if(value.length>4)value=value.slice(0,4)">
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">霉变(%)：</span>
+                            <input type="number" id="meibian" oninput="if(value.length>4)value=value.slice(0,4)">
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">不完善粒(%)：</span>
+                            <input type="number" id="buwanshanli" oninput="if(value.length>4)value=value.slice(0,4)">
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-article notGrain clearfix">
+                    <ul>
+                        <li class="form-item">
+                            <span class="item-title item-w30">杂质(%)：</span>
+                            <input type="number" id="impurity" oninput="if(value.length>4)value=value.slice(0,4)">
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">质量：</span>
+                            <select name="quality" id="quality">
+                                <option value="0">请选择</option>
+                                <option value="1">一等</option>
+                                <option value="2">二等</option>
+                                <option value="3">三等</option>
+                                <option value="4">四等</option>
+                                <option value="5">五等</option>
+                                <option value="6">等外</option>
+                            </select>
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">容重：</span>
+                            <input type="number" id="rongzhong" oninput="if(value.length>4)value=value.slice(0,4)">
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-article notGrain clearfix">
+                    <ul>
+                        <li class="form-item item-w100">
+                            <span class="item-title">备注：</span>
+                            <input type="text" id="remark" style="width: 86.5%;">
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-article grain clearfix">
+                    <ul>
+                        <li class="form-item">
+                            <span class="item-title item-w30">水分(%)：</span>
+                            <input type="number" id="waterxm" oninput="if(value.length>4)value=value.slice(0,4)">
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">气味：</span>
+                            <select name="smell" id="smell">
+                                <option value="0">请选择</option>
+                                <option value="1">正常</option>
+                                <option value="2">微有异味</option>
+                                <option value="3">霉味、酸臭或其他</option>
+                            </select>
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">不完善粒(%)：</span>
+                            <input type="number" id="buwanshanlixm" oninput="if(value.length>4)value=value.slice(0,4)">
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-article grain clearfix">
+                    <ul>
+                        <li class="form-item">
+                            <span class="item-title item-w30">杂质(%)：</span>
+                            <input type="number" id="impurityxm" oninput="if(value.length>4)value=value.slice(0,4)">
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">质量：</span>
+                            <select name="quality" id="qualityxm">
+                                <option value="0">请选择</option>
+                                <option value="1">一等</option>
+                                <option value="2">二等</option>
+                                <option value="3">三等</option>
+                                <option value="4">四等</option>
+                                <option value="5">五等</option>
+                                <option value="6">等外</option>
+                            </select>
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">容重：</span>
+                            <input type="number" id="rongzhongxm" oninput="if(value.length>4)value=value.slice(0,4)">
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-article grain clearfix">
+                    <ul>
+                        <li class="form-item">
+                            <span class="item-title item-w30">品种：</span>
+                            <select name="varietyType" id="varietyType">
+                                <option value="0">请选择</option>
+                                <option value="1">混合麦</option>
+                                <option value="2">白麦</option>
+                                <option value="3">红麦</option>
+                            </select>
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">包装类型：</span>
+                            <select name="packingType" id="packingType">
+                                <option value="0">请选择</option>
+                                <option value="1">散集</option>
+                                <option value="2">袋集</option>
+                            </select>
+                            <p></p>
+                        </li>
+                        <li class="form-item">
+                            <span class="item-title item-w30">生产年份：</span>
+                            <select name="productionNiafe" id="productionNiafe">
+                                <option value="0">请选择</option>
+                                <option value="2017">2017</option>
+                                <option value="2016">2016</option>
+                                <option value="2015">2015</option>
+                                <option value="2014">2014</option>
+                                <option value="2013">2013</option>
+                            </select>
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-article grain clearfix">
+                    <ul>
+                        <li class="form-item item-w100">
+                            <span class="item-title">产地：</span>
+                            <div class="addressSelete" style="display: inline-block;vertical-align: middle;width: 90%;">
+                                <select id="province" name="province" style="width: 15%;"></select>
+                                <select id="city" name="city" style="width: 15%;margin-left: 20px;"></select>
+                                <select id="area" name="area" style="width: 15%;margin-left: 20px;"></select>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-article grain clearfix">
+                    <ul>
+                        <li class="form-item item-w100">
+                            <span class="item-title">备注：</span>
+                            <input type="text" id="remarkxm" style="width: 86.5%;">
+                            <p></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="form-btn-container clearfix">
+                    <ul>
+                        <li class="lt item-w50 btn-con">
+                            <div class="btn btn-align-center" id="submit">保存入库单</div>
+                        </li>
+                        <li class="ri item-w50 btn-conr">
+                            <div class="btn btn-align-center" id="temporary">暂存</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-modal addPerson">
+        <div class="modal-container">
+            <div class="modal-head">添加送粮人</div>
+            <div class="modal-content">
+                <ul>
+                    <li>
+                        <span>姓&nbsp;&nbsp;&nbsp;&nbsp;名：</span>
+                        <input class="addname" type="text" maxlength="10" style="line-height:30px">
+                    </li>
+                    <li>
+                        <span>手机号：</span>
+                        <input class="addphone" type="number" maxlength="11" style="line-height:30px">
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <ul>
+                    <li>
+                        <div class="modal-btn addPersonbtn">添加</div>
+                    </li>
+                    <li>
+                        <div class="modal-btn addPersoncencel">取消</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="form-modal addDriver">
+        <div class="modal-container">
+            <div class="modal-head">添加司机</div>
+            <div class="modal-content">
+                <ul>
+                    <li>
+                        <span>姓&nbsp;&nbsp;&nbsp;&nbsp;名：</span>
+                        <input class="addname" type="text" maxlength="10" style="line-height:30px">
+                    </li>
+                    <li>
+                        <span>手机号：</span>
+                        <input class="addphone" type="number" maxlength="11" style="line-height:30px">
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <ul>
+                    <li>
+                        <div class="modal-btn addDriverbtn">添加</div>
+                    </li>
+                    <li>
+                        <div class="modal-btn addDrivercencel">取消</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="addDriver">
+    <input type="hidden" id="driverPhone">
+    <input type="hidden" id="addPerson">
+    <input type="hidden" id="phone">
+    <script>$.include("accountData/shtml/foot.shtml?v=20170626")</script>
+    <script type="text/javascript" src="accountData/js/common/md5.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/select2.min.js?v=20170626"></script>
+    <script type="text/javascript" src="accountData/js/common/jquery.citys.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script type="text/javascript" src="accountData/js/common/rest.js?v=20170626"></script>
+    <script type="text/javascript" src="accountData/js/select.js?v=20170626"></script>
+    <script type="text/javascript" src="accountData/js/inForm.js?v=20170626"></script>
+</body>
+</html>

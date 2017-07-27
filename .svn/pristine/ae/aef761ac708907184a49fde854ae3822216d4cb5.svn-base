@@ -1,0 +1,1054 @@
+package lb.rest.user.web.action;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import lb.rest.user.db.dao.BsInventoryDepotDao;
+import lb.rest.user.db.dao.BsNumberDao;
+import lb.rest.user.db.dao.BsUnionUserDao;
+import lb.rest.user.db.dao.UserActionDao;
+import lb.rest.user.db.entity.BsInventoryCompany;
+import lb.rest.user.db.entity.BsInventoryDepot;
+import lb.rest.user.db.entity.BsInventoryUser;
+import lb.rest.user.db.entity.BsInventoryUserDepot;
+import lb.rest.user.db.entity.BsInventoryUserDepotExample;
+import lb.rest.user.db.entity.BsInventoryUserExample;
+import lb.rest.user.db.entity.BsInventoryUserKey;
+import lb.rest.user.db.entity.BsNumber;
+import lb.rest.user.db.entity.Mlbuser;
+import lb.rest.user.db.entity.MlbuserAddition;
+import lb.rest.user.db.entity.MlbuserExample;
+import lb.rest.user.db.mapper.BsInventoryCompanyMapper;
+import lb.rest.user.db.mapper.BsInventoryDepotMapper;
+import lb.rest.user.db.mapper.BsInventoryUserDepotMapper;
+import lb.rest.user.db.mapper.BsInventoryUserMapper;
+import lb.rest.user.db.mapper.MlbuserAdditionMapper;
+import lb.rest.user.db.mapper.MlbuserMapper;
+import lombok.extern.slf4j.Slf4j;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.mlb.enums.InviteCodeEnum;
+import com.mlb.enums.UserActionEnum;
+import com.mlb.util.JsonDataUtils;
+import com.mlb.util.SequenceUtil;
+import com.mlb.util.SessionConfig;
+import com.mlb.util.SessionUtils;
+import com.mlb.util.ThreeDes;
+
+import fc.wpf.rest.utils.BeanFactory;
+import fc.wpf.rest.utils.DBBean;
+import fc.wpf.rest.web.action.BasicCtrl;
+import fc.wpf.rest.web.bean.DbCondi;
+import fc.wpf.rest.web.bean.ReturnInfo;
+import fc.wpf.rest.web.bean.SqlMaker;
+import fc.wpf.rest.web.bind.FieldUtils;
+
+@Slf4j
+@Controller
+@RequestMapping("/mlbuserinventoryuser")
+public class MlbuserInventoryUserCtrl extends BasicCtrl {
+
+	private static BsInventoryUserMapper bsInventoryUserMapper = (BsInventoryUserMapper) BeanFactory
+			.getBean("bsInventoryUserMapper");
+
+	private static UserActionDao userActionDao = (UserActionDao) BeanFactory.getBean("userActionDao");
+	private static BsNumberDao bsNumberDao = (BsNumberDao) BeanFactory.getBean("bsNumberDao");
+
+	private static BsInventoryDepotMapper bsInventoryDepotMapper = (BsInventoryDepotMapper) BeanFactory
+			.getBean("bsInventoryDepotMapper");
+	private static BsInventoryCompanyMapper bsInventoryCompanyMapper = (BsInventoryCompanyMapper) BeanFactory
+			.getBean("bsInventoryCompanyMapper");
+
+	private static BsInventoryUserDepotMapper bsInventoryUserDepotMapper = (BsInventoryUserDepotMapper) BeanFactory
+			.getBean("bsInventoryUserDepotMapper");
+	private static BsInventoryDepotDao bsInventoryDepotDao = (BsInventoryDepotDao) BeanFactory
+			.getBean("bsInventoryDepotDao");
+
+	private static MlbuserMapper mlbuserMapper = (MlbuserMapper) BeanFactory.getBean("mlbuserMapper");
+	private static MlbuserAdditionMapper mlbuserAdditionMapper = (MlbuserAdditionMapper) BeanFactory
+			.getBean("mlbuserAdditionMapper");
+	private static BsUnionUserDao bsUnionUserDao = (BsUnionUserDao) BeanFactory.getBean("bsUnionUserDao");
+
+	private static final long SENDSMS_TIMEOUT = 2 * 60 * 1000; // 两分钟有效期
+
+	/**
+	 * ajax单条数据插入 url:'http://ip/rest/mlbuser'
+	 * data:'{"key1":"value1","key2":"value2",...}' type:’POST
+	 */
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo insert(HttpServletRequest req) {
+		try {
+			String userName = StringUtils.defaultIfEmpty(req.getParameter("userName"), "");
+			String loginname = StringUtils.defaultIfEmpty(req.getParameter("loginName"), "");
+			String loginnameDE = StringUtils.defaultIfEmpty(req.getParameter("loginName"), "");
+			String password = StringUtils.defaultIfEmpty(req.getParameter("password"), "111111");
+			String passwordDE = StringUtils.defaultIfEmpty(req.getParameter("passwordDE"), "111111");
+			// String inviteCode =
+			// StringUtils.defaultIfEmpty(req.getParameter("inviteCode"), "");
+			// 验证码
+			String smscode = StringUtils.defaultIfEmpty(req.getParameter("smscode"), "");
+			String invitecode = StringUtils.defaultIfEmpty(req.getParameter("invitecode"), "-1");
+			String openId = StringUtils.defaultIfEmpty(req.getParameter("openId"), "");
+			// 地域编码
+			int location = NumberUtils.toInt(req.getParameter("location"), 0);
+			// 地域
+			String locationDesc = StringUtils.defaultIfEmpty(req.getParameter("locationDesc"), "");
+			// openid = "ofawLxBuQyUk02gl-dBjCu3UHl7E";
+			// 微信注册用户 默认来源为1
+			HttpSession session = req.getSession();
+			String sendSmscode = StringUtils.defaultIfEmpty((String) session.getAttribute("sendSmscodeSession"), "");
+			long sendSmsTime = NumberUtils.toLong((String) session.getAttribute("sendSmsTimeSession"), 0);
+
+			boolean result = false;
+			String message = validSmsCode(smscode, sendSmscode, sendSmsTime);
+			// 验证码错误
+			if (StringUtils.isNotEmpty(message)) {
+				return new ReturnInfo(message, 1000, null, false);
+			}
+			// TODO 修改为固定的邀请码
+			// String message = "";
+			// String inviteCode = PropertiesUtil.getProperty("inviteCode");
+			List<BsNumber> numberList = bsNumberDao.selectListByExample(invitecode);
+			// 邀请码错误
+			if (numberList == null || numberList.size() == 0) {
+				message = "邀请码错误！";
+				// return new ReturnInfo(message, 1010, null, false);
+			}
+			// 手机号 加密（前三、后四不加密中间des 加密）TODO
+			loginname = ThreeDes.encryptPhone("", loginname);
+			// 用户登录名
+			BsInventoryUserExample example = new BsInventoryUserExample();
+			example.createCriteria().andPhoneEqualTo(loginname);
+			List<BsInventoryUser> userList = bsInventoryUserMapper.selectByExample(example);
+
+			if (userList != null && userList.size() > 0) {
+				return new ReturnInfo("手机号已经注册", 1000, null, result);
+			} else {
+				BsInventoryUser info = new BsInventoryUser();
+				int id = SequenceUtil.getInstance().nextValue("user");
+				info.setUserId(id);
+				info.setTrueName(userName);
+				info.setPhone(loginname);
+				info.setLoginName(loginname);
+				info.setPassWord(password);
+				info.setOpenid(openId);
+				info.setRegTime(new Date());
+				info.setUpdateTime(new Date());
+				info.setLocation(location);
+				info.setLocationDesc(locationDesc);
+				info.setBsNumberId(NumberUtils.toInt(invitecode));
+
+				bsInventoryUserMapper.insertSelective(info);
+				bsUnionUserDao.saveByLzb(info);
+
+				JSONObject retObj = new JSONObject();
+				retObj.put("userId", info.getUserId());
+				retObj.put("userName", info.getTrueName());
+				SessionConfig sessionConfig = new SessionConfig();
+				sessionConfig.setUserId(info.getUserId());
+				SessionUtils.setAbSessionConfig(req, sessionConfig);
+				// 更新邀请码，邀请码只用一次.
+				if (numberList != null && numberList.size() > 0) {
+					for (BsNumber numberItem : numberList) {
+						numberItem.setStatus(InviteCodeEnum.已用.getCode());
+						// 注释掉 需求变更 验证码可以一直使用
+						// bsNumberDao.updateByPrimaryKey(numberItem);
+					}
+				}
+
+				// 注册用户默认 为其创建 粮库和公司。
+				int ownerId = id;
+				BsInventoryDepot inventoryDepot = new BsInventoryDepot();
+
+				inventoryDepot.setId(SequenceUtil.getInstance().nextValue("bs_inventory_depot"));
+				inventoryDepot.setStorageCapacity(0d);
+				inventoryDepot.setName("未命名库");
+				inventoryDepot.setAddress("请填写对应的库地址");
+				inventoryDepot.setOwnerId(ownerId);
+				inventoryDepot.setCreateTime(new Date());
+				bsInventoryDepotMapper.insertSelective(inventoryDepot);
+
+				BsInventoryCompany inventoryCompany = new BsInventoryCompany();
+				inventoryCompany.setId(SequenceUtil.getInstance().nextValue("bs_inventory_company"));
+				inventoryCompany.setAddress("");
+				inventoryCompany.setOwnerId(ownerId);
+				inventoryCompany.setCreateTime(new Date());
+				bsInventoryCompanyMapper.insertSelective(inventoryCompany);
+
+				// 卖粮宝用户 注册 后， 返回
+				MlbuserExample mlbuserExample = new MlbuserExample();
+				mlbuserExample.createCriteria().andPhoneEqualTo(loginname);
+				List<Mlbuser> mlbuserList = mlbuserMapper.selectByExample(mlbuserExample);
+
+				if (mlbuserList != null && mlbuserList.size() > 0) {
+					Mlbuser mlbuser = mlbuserList.get(0);
+					retObj.put("mlbUserId", mlbuser.getUserid());
+					retObj.put("mlbUserName", mlbuser.getTruename());
+				} else {
+
+					Mlbuser mlbuser = new Mlbuser();
+					int fromType = 1; // 微信
+					int industry = 3; // 个人
+					int mlbId = SequenceUtil.getInstance().nextValue("user");
+					mlbuser.setUserid(mlbId);
+					mlbuser.setTruename(userName);
+					mlbuser.setPhone(loginnameDE);
+					mlbuser.setLoginname(loginnameDE);
+					mlbuser.setPassword(passwordDE);
+					mlbuser.setFromtype(fromType);
+					mlbuser.setRegtime(new Date());
+					mlbuser.setUpdatetime(new Date());
+					mlbuser.setClientName("粮账本");
+					mlbuser.setLocation(location + "");
+					mlbuser.setLocationdesc(locationDesc);
+					mlbuserMapper.insertSelective(mlbuser);
+					// 同时插入 新的统一用户表
+					bsUnionUserDao.saveByMlb(mlbuser);
+
+					MlbuserAddition userAddtion = new MlbuserAddition();
+					userAddtion.setUserId(mlbId);
+					userAddtion.setIndustry(industry);
+					userAddtion.setUserCategory(1);
+					mlbuserAdditionMapper.insert(userAddtion);
+					retObj.put("mlbUserId", mlbuser.getUserid());
+					retObj.put("mlbUserName", mlbuser.getTruename());
+				}
+
+				return new ReturnInfo("注册成功", id, retObj, true);
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryUserCtrl insert error..", e);
+			// e.printStackTrace();
+		}
+		return ReturnInfo.Faild;
+	}
+
+	@RequestMapping(value = "/list", method = RequestMethod.POST)
+	@ResponseBody
+	public Object getList(HttpServletRequest req) {
+		int ownerId = NumberUtils.toInt(req.getParameter("ownerId"));
+		int currentPage = NumberUtils.toInt(req.getParameter("currentPage"), 1);
+		int pageSize = NumberUtils.toInt(req.getParameter("pageSize"), 10);
+
+		BsInventoryUserExample example = new BsInventoryUserExample();
+		example.createCriteria().andOwnerIdEqualTo(ownerId);
+		int offset = (currentPage - 1) * pageSize;
+		example.setLimit(pageSize);
+		example.setOffset(offset);
+
+		List<BsInventoryUser> list = bsInventoryUserMapper.selectByExample(example);
+		int total = bsInventoryUserMapper.countByExample(example);
+		boolean success = false;
+		JsonDataUtils json = new JsonDataUtils();
+
+		if (list != null && list.size() > 0) {
+			success = true;
+			int number = offset + 1;
+			success = true;
+			json.addTitle("number", "userId", "trueName", "phone", "passWord", "depotCount");
+			if (list != null) {
+				for (BsInventoryUser item : list) {
+					String phone = ThreeDes.decryptPhone("", item.getPhone());
+					// String formattedDate =
+					// DateUtil.format(item.getCreateTime(),
+					// DateStyle.YYYY_MM_DD_HH_MM_SS);
+					json.addOneRow(number++, item.getUserId(), item.getTrueName(), phone, item.getPassWord(),
+							item.getDepotCount());
+				}
+			}
+		}
+		json.setSuccess(success);
+		json.setTotal(total);
+
+		return json.toJsonObj();
+	}
+
+	@RequestMapping(value = "/editUser", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo addUser(BsInventoryUser info, HttpServletRequest req) {
+		try {
+
+			String action = req.getParameter("action");
+			String phone = StringUtils.defaultIfEmpty(req.getParameter("phone"), "");
+
+			// 手机号 加密
+			phone = ThreeDes.encryptPhone("", phone);
+			info.setPhone(phone);
+			info.setLoginName(phone);
+
+			int flag = 0;
+			int id = 0;
+			if ("add".equalsIgnoreCase(action)) {
+				// 用户登录名
+				BsInventoryUserExample example = new BsInventoryUserExample();
+				example.createCriteria().andPhoneEqualTo(phone);
+				List<BsInventoryUser> userList = bsInventoryUserMapper.selectByExample(example);
+				if (userList != null && userList.size() > 0) {
+					return new ReturnInfo("手机号已经注册", 2000, null, false);
+				}
+
+				id = SequenceUtil.getInstance().nextValue("user");
+				info.setIsDeleted(0);
+				info.setUserType(2);
+				info.setUserId(id);
+				info.setRegTime(new Date());
+				// 默认设置未激活
+				info.setIsActived(2);
+				info.setUpdateTime(new Date());
+				flag = bsInventoryUserMapper.insertSelective(info);
+				bsUnionUserDao.saveByLzb(info);
+			} else {
+				id = info.getUserId();
+				// 用户登录名
+				BsInventoryUserExample example = new BsInventoryUserExample();
+				example.createCriteria().andPhoneEqualTo(phone).andUserIdNotEqualTo(id);
+				List<BsInventoryUser> userList = bsInventoryUserMapper.selectByExample(example);
+				if (userList != null && userList.size() > 0) {
+					return new ReturnInfo("手机号已经注册", 2000, null, false);
+				}
+				info.setIsDeleted(0);
+				info.setUserType(2);
+				info.setUpdateTime(new Date());
+				flag = bsInventoryUserMapper.updateByPrimaryKey(info);
+			}
+
+			if (flag > 0) {
+				// 删除之前 用户 有权限的粮库IDs。
+				String depotIds = StringUtils.trimToEmpty(req.getParameter("depotIds"));
+				BsInventoryUserDepotExample bsInventoryUserDepotExample = new BsInventoryUserDepotExample();
+				bsInventoryUserDepotExample.createCriteria().andUserIdEqualTo(id);
+				bsInventoryUserDepotMapper.deleteByExample(bsInventoryUserDepotExample);
+				// 循环 插入修改后的粮库IDs
+				String[] articleIds = depotIds.split(",");
+				int depotCount = 0;
+				for (String str : articleIds) {
+					if (StringUtils.isNotEmpty(str)) {
+						int depotId = NumberUtils.toInt(str);
+						BsInventoryUserDepot record = new BsInventoryUserDepot();
+
+						record.setUserId(id);
+						record.setDepotId(depotId);
+						bsInventoryUserDepotMapper.insertSelective(record);
+						depotCount++;
+					}
+				}
+				info.setDepotCount(depotCount);
+				bsInventoryUserMapper.updateByPrimaryKeySelective(info);
+
+				return new ReturnInfo("保存员工成功", id, info, true);
+			} else {
+				return new ReturnInfo("保存员工失败", 1000, null, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryDepotCtrl editUser error..", e);
+			// e.printStackTrace();
+		}
+		return new ReturnInfo("保存员工失败", 1000, null, false);
+	}
+
+	@RequestMapping(value = "/setActive", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo setActive(HttpServletRequest req) {
+		try {
+
+			String smscode = StringUtils.defaultIfEmpty(req.getParameter("smscode"), "");
+			HttpSession session = req.getSession();
+			String sendSmscode = StringUtils.defaultIfEmpty((String) session.getAttribute("sendSmscodeSession"), "");
+			long sendSmsTime = NumberUtils.toLong((String) session.getAttribute("sendSmsTimeSession"), 0);
+
+			System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+			log.warn("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&setActive&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+			log.warn("smscode:" + smscode);
+			log.warn("sendSmscode:" + sendSmscode);
+			log.warn("sendSmsTime:" + sendSmsTime);
+			log.warn("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&setActive&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+
+			boolean result = false;
+			String message = "";
+
+			Date d = new Date();
+			// 短信验证码是否超时
+			if (d.getTime() - sendSmsTime > SENDSMS_TIMEOUT) {// 两分钟有效期
+				// TODO
+				message = "短信验证码超时！";
+				result = false;
+				return new ReturnInfo(message, 1000, null, result);
+			} else { // 短信验证码是否正确
+				if (!sendSmscode.equals(smscode)) {
+					message = "短信验证码错误！";
+					result = false;
+					return new ReturnInfo(message, 1000, null, result);
+				}
+			}
+
+			int userId = NumberUtils.toInt(req.getParameter("userId"));
+			if (userId > 0) {
+				BsInventoryUser info = new BsInventoryUser();
+				info.setIsActived(1);
+				info.setUserId(userId);
+				int flag = bsInventoryUserMapper.updateByPrimaryKeySelective(info);
+				if (flag > 0) {
+					JSONObject retObj = new JSONObject();
+					BsInventoryUser user = bsInventoryUserMapper.selectByPrimaryKey(info);
+					retObj.put("userId", user.getUserId());
+					retObj.put("userName", user.getTrueName());
+					retObj.put("userType", user.getUserType());
+					retObj.put("ownerId", user.getOwnerId());
+					return new ReturnInfo("激活成功", userId, retObj, true);
+				}
+			} else {
+				return new ReturnInfo("激活失败", 1000, null, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryDepotCtrl setActive error..", e);
+		}
+		return new ReturnInfo("激活失败", 1000, null, false);
+	}
+
+	private String validSmsCode(String smscode, String sendSmscode, long sendSmsTime) {
+
+		String message = "";
+		Date d = new Date();
+		// 短信验证码是否超时
+		if (d.getTime() - sendSmsTime > SENDSMS_TIMEOUT) {// 两分钟有效期
+			message = "短信验证码超时！";
+		} else {
+			// 短信验证码是否正确
+			if (!sendSmscode.equals(smscode)) {
+				message = "短信验证码错误！";
+
+			}
+		}
+		return message;
+	}
+
+	@RequestMapping(value = "/getBackPassword", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo getBackPassword(HttpServletRequest req) {
+		try {
+
+			String loginname = StringUtils.defaultIfEmpty(req.getParameter("phone"), "");
+			String password = StringUtils.defaultIfEmpty(req.getParameter("password"), "111111");
+			String smscode = StringUtils.defaultIfEmpty(req.getParameter("smscode"), "");
+
+			// String openId =
+			// StringUtils.defaultIfEmpty(req.getParameter("openId"), "");
+			String openId = req.getParameter("openId");
+
+			HttpSession session = req.getSession();
+			String sendSmscode = StringUtils.defaultIfEmpty((String) session.getAttribute("sendSmscodeSession"), "");
+			long sendSmsTime = NumberUtils.toLong((String) session.getAttribute("sendSmsTimeSession"), 0);
+
+			System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+			log.warn("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&getBackPassword&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+			log.warn("sendSmscode:" + sendSmscode);
+			log.warn("sendSmsTime:" + sendSmsTime);
+			log.warn("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&getBackPassword&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+
+			boolean result = false;
+			String message = "";
+
+			Date d = new Date();
+			// 短信验证码是否超时
+			if (d.getTime() - sendSmsTime > SENDSMS_TIMEOUT) {// 两分钟有效期
+				// TODO
+				message = "短信验证码超时！";
+				result = false;
+				return new ReturnInfo(message, 1000, null, result);
+			} else { // 短信验证码是否正确
+				if (!sendSmscode.equals(smscode)) {
+					message = "短信验证码错误！";
+					result = false;
+					return new ReturnInfo(message, 1000, null, result);
+				}
+			}
+			// 手机号 加密（前三、后四不加密中间des 加密）TODO
+			loginname = ThreeDes.encryptPhone("", loginname);
+
+			// 用户登录名
+			BsInventoryUserExample example = new BsInventoryUserExample();
+			example.createCriteria().andPhoneEqualTo(loginname);
+			List<BsInventoryUser> userList = bsInventoryUserMapper.selectByExample(example);
+
+			if (userList != null && userList.size() > 0) {
+				BsInventoryUser info = userList.get(0);
+				BsInventoryUser user = new BsInventoryUser();
+				user.setUserId(info.getUserId());
+				user.setPassWord(password);
+				user.setUpdateTime(new Date());
+				user.setOpenid(openId);
+				bsInventoryUserMapper.updateByPrimaryKeySelective(user);
+				bsUnionUserDao.saveByLzb(info);
+				JSONObject retObj = new JSONObject();
+				retObj.put("userId", info.getUserId());
+				retObj.put("userName", info.getTrueName());
+				retObj.put("userType", info.getUserType());
+				retObj.put("ownerId", info.getOwnerId());
+				return new ReturnInfo("找回密码成功", info.getUserId(), retObj, true);
+			} else {
+				return ReturnInfo.Faild;
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryUserCtrl insert error..", e);
+			// e.printStackTrace();
+		}
+		return ReturnInfo.Faild;
+	}
+
+	@RequestMapping(value = "/binding", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo binding(HttpServletRequest req) {
+		try {
+			int userId = NumberUtils.toInt(req.getParameter("userId"), 0);
+			String openId = StringUtils.defaultIfEmpty(req.getParameter("openId"), "");
+
+			if ("undefined".equals(openId)) {
+				openId = "";
+			}
+			if (StringUtils.isEmpty(openId) || userId <= 0) {
+				return new ReturnInfo("绑定失败！", 10000, null, false);
+			}
+			if (StringUtils.isNotEmpty(openId) && userId > 0) {
+				BsInventoryUser akey = new BsInventoryUser();
+				akey.setUserId(userId);
+				BsInventoryUser user = bsInventoryUserMapper.selectByPrimaryKey(akey);
+				user.setUpdateTime(new Date());
+				if (StringUtils.isNotEmpty(openId)) {
+					user.setOpenid(openId);
+					bsInventoryUserMapper.updateByPrimaryKeySelective(user);
+				}
+				JSONObject retObj = new JSONObject();
+				retObj.put("userId", user.getUserId());
+				retObj.put("userName", user.getTrueName());
+				return new ReturnInfo("绑定成功！", userId, retObj, true);
+			} else {
+				return new ReturnInfo("绑定失败！", 10000, null, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryUserCtrl get by binding error..", e);
+		}
+		return ReturnInfo.Faild;
+	}
+
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo login(HttpServletRequest req) {
+		List<BsInventoryUser> list = null;
+		JSONObject retObj = new JSONObject();
+		try {
+			String loginname = StringUtils.defaultIfEmpty(req.getParameter("loginName"), "");
+			String loginnameDE = StringUtils.defaultIfEmpty(req.getParameter("loginName"), "");
+			String password = StringUtils.defaultIfEmpty(req.getParameter("password"), "111111");
+			String passwordDE = StringUtils.defaultIfEmpty(req.getParameter("passwordDE"), "111111");
+			String openId = StringUtils.defaultIfEmpty(req.getParameter("openId"), "");
+
+			if ("undefined".equals(openId)) {
+				openId = "";
+			}
+
+			// 手机号 加密（前三、后四不加密中间des 加密）TODO
+			loginname = ThreeDes.encryptPhone("", loginname);
+
+			boolean isInventoryUser = false;
+			boolean isMlbUser = false;
+			BsInventoryUser user = null;
+			// 通过 登录名和密码
+			if (StringUtils.isNotEmpty(loginname) && StringUtils.isNotEmpty(password)) {
+				BsInventoryUserExample example = new BsInventoryUserExample();
+				example.createCriteria().andLoginNameEqualTo(loginname).andPassWordEqualTo(password);
+				list = bsInventoryUserMapper.selectByExample(example);
+				if (list != null && list.size() > 0) {
+					user = list.get(0);
+					isInventoryUser = true;
+				}
+			}
+			// // 通过openId
+			// if ((list == null || list.size() == 0) &&
+			// StringUtils.isNotEmpty(openId)) {
+			// BsInventoryUserExample example = new BsInventoryUserExample();
+			// example.createCriteria().andOpenidEqualTo(openId);
+			// list = bsInventoryUserMapper.selectByExample(example);
+			// }
+
+			List<Mlbuser> mlbuserList = null;
+			// 通过 登录名和密码
+			if (StringUtils.isNotEmpty(loginname) && StringUtils.isNotEmpty(password)) {
+
+				MlbuserExample example = new MlbuserExample();
+				example.createCriteria().andLoginnameEqualTo(loginnameDE).andPasswordEqualTo(passwordDE);
+				mlbuserList = mlbuserMapper.selectByExample(example);
+				if (mlbuserList != null && mlbuserList.size() > 0) {
+					isMlbUser = true;
+					Mlbuser mlbuser = mlbuserList.get(0);
+					retObj.put("mlbUserId", mlbuser.getUserid());
+					retObj.put("mlbUserName", mlbuser.getTruename());
+					// 如果有卖粮宝用户 没有粮账本
+					if (list == null || list.size() == 0) {
+						BsInventoryUserExample examplePhone = new BsInventoryUserExample();
+						examplePhone.createCriteria().andLoginNameEqualTo(loginname);
+						list = bsInventoryUserMapper.selectByExample(examplePhone);
+						if (list != null && list.size() > 0) {
+							user = list.get(0);
+							isInventoryUser = true;
+						} else {
+							user = new BsInventoryUser();
+							int id = SequenceUtil.getInstance().nextValue("user");
+							user.setUserId(id);
+							user.setTrueName(mlbuser.getTruename());
+							user.setPhone(loginname);
+							user.setLoginName(loginname);
+							user.setPassWord(password);
+							user.setOpenid(openId);
+							user.setRegTime(new Date());
+							user.setUpdateTime(new Date());
+							user.setLocation(NumberUtils.toInt(mlbuser.getLocation()));
+							user.setLocationDesc(mlbuser.getLocationdesc());
+							user.setBsNumberId(10000);
+							bsInventoryUserMapper.insertSelective(user);
+							bsUnionUserDao.saveByLzb(user);
+							// 注册用户默认 为其创建 粮库和公司。
+							int ownerId = id;
+							BsInventoryDepot inventoryDepot = new BsInventoryDepot();
+
+							inventoryDepot.setId(SequenceUtil.getInstance().nextValue("bs_inventory_depot"));
+							inventoryDepot.setStorageCapacity(0d);
+							inventoryDepot.setName("未命名库");
+							inventoryDepot.setAddress("请填写对应的库地址");
+							inventoryDepot.setOwnerId(ownerId);
+							inventoryDepot.setCreateTime(new Date());
+							bsInventoryDepotMapper.insertSelective(inventoryDepot);
+
+							BsInventoryCompany inventoryCompany = new BsInventoryCompany();
+							inventoryCompany.setId(SequenceUtil.getInstance().nextValue("bs_inventory_company"));
+							inventoryCompany.setAddress("");
+							inventoryCompany.setOwnerId(ownerId);
+							inventoryCompany.setCreateTime(new Date());
+							bsInventoryCompanyMapper.insertSelective(inventoryCompany);
+						}
+						if (user != null) {
+							retObj.put("userId", user.getUserId());
+							retObj.put("userName", user.getTrueName());
+							retObj.put("userType", 1);
+							retObj.put("ownerId", user.getUserId());
+							SessionConfig sessionConfig = new SessionConfig();
+							sessionConfig.setUserId(user.getUserId());
+							SessionUtils.setAbSessionConfig(req, sessionConfig);
+							return new ReturnInfo("登录成功！", user.getUserId(), retObj, true);
+						}
+					}
+				} else {
+					Mlbuser mlbuser = null;
+					if (isInventoryUser) {
+						MlbuserExample examplePhone = new MlbuserExample();
+						examplePhone.createCriteria().andPhoneEqualTo(loginnameDE);
+						mlbuserList = mlbuserMapper.selectByExample(examplePhone);
+						if (mlbuserList != null && mlbuserList.size() > 0) {
+							mlbuser = mlbuserList.get(0);
+							isMlbUser = true;
+						}
+					}
+					if (isInventoryUser && mlbuser == null) {
+						String trueName = "";
+						String location = "";
+						String locationdesc = "";
+						if (user != null) {
+							trueName = StringUtils.trimToEmpty(user.getTrueName());
+							location = user.getLocation() + "";
+							locationdesc = StringUtils.trimToEmpty(user.getLocationDesc());
+						}
+						mlbuser = new Mlbuser();
+						int fromType = 1; // 微信
+						int industry = 3; // 个人
+						int mlbId = SequenceUtil.getInstance().nextValue("user");
+						mlbuser.setUserid(mlbId);
+						mlbuser.setPhone(loginnameDE);
+						mlbuser.setLoginname(loginnameDE);
+						mlbuser.setPassword(passwordDE);
+						mlbuser.setFromtype(fromType);
+						mlbuser.setRegtime(new Date());
+						mlbuser.setUpdatetime(new Date());
+						mlbuser.setTruename(trueName);
+						mlbuser.setLocation(location);
+						mlbuser.setLocationdesc(locationdesc);
+						mlbuserMapper.insertSelective(mlbuser);
+						bsUnionUserDao.saveByMlb(mlbuser);
+
+						MlbuserAddition userAddtion = new MlbuserAddition();
+						userAddtion.setUserId(mlbId);
+						userAddtion.setIndustry(industry);
+						userAddtion.setUserCategory(1);
+						mlbuserAdditionMapper.insert(userAddtion);
+						isMlbUser = true;
+					}
+					if (isInventoryUser && mlbuser != null) {
+						retObj.put("mlbUserId", mlbuser.getUserid());
+						retObj.put("mlbUserName", mlbuser.getTruename());
+					}
+				}
+			}
+
+			if (isInventoryUser) {
+				user = list.get(0);
+				int userId = user.getUserId();
+				int actived = user.getIsActived() == null ? 0 : user.getIsActived();
+				if (actived == 2) {
+					retObj.put("userId", user.getUserId());
+					retObj.put("userName", user.getTrueName());
+					retObj.put("userType", user.getUserType());
+					retObj.put("ownerId", user.getOwnerId());
+					return new ReturnInfo("初次登陆未激活！", 20000, retObj, true);
+				} else {
+					user.setUpdateTime(new Date());
+					String dbOpenId = StringUtils.trimToEmpty(user.getOpenid());
+					if (StringUtils.isNotEmpty(openId)) {
+						// if (StringUtils.isEmpty(dbOpenId)) {
+						user.setOpenid(openId);
+						bsInventoryUserMapper.updateByPrimaryKeySelective(user);
+						// }
+					} else {
+						openId = dbOpenId;
+					}
+					retObj.put("userId", user.getUserId());
+					retObj.put("userName", user.getTrueName());
+					retObj.put("userType", user.getUserType());
+					retObj.put("ownerId", user.getOwnerId());
+
+					SessionConfig sessionConfig = new SessionConfig();
+					sessionConfig.setUserId(user.getUserId());
+
+					SessionUtils.setAbSessionConfig(req, sessionConfig);
+
+					return new ReturnInfo("登录成功！", userId, retObj, true);
+				}
+			} else {
+				return new ReturnInfo("登录失败！", 10000, null, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryUserCtrl get by key error..", e);
+		}
+		return ReturnInfo.Faild;
+	}
+
+	@RequestMapping(value = "/logout", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo logout(HttpServletRequest req) {
+		List<BsInventoryUser> list = null;
+		try {
+			int userId = NumberUtils.toInt(req.getParameter("userId"), 0);
+			String openId = StringUtils.defaultIfEmpty(req.getParameter("openId"), "");
+			BsInventoryUser user = null;
+			if (userId > 0) {
+				BsInventoryUserKey key = new BsInventoryUserKey();
+				key.setUserId(userId);
+				user = bsInventoryUserMapper.selectByPrimaryKey(key);
+			}
+			// 通过openId
+			if (user == null && StringUtils.isNotEmpty(openId)) {
+				BsInventoryUserExample example = new BsInventoryUserExample();
+				example.createCriteria().andOpenidEqualTo(openId);
+				list = bsInventoryUserMapper.selectByExample(example);
+				if (list != null && list.size() > 0) {
+					user = list.get(0);
+				}
+			}
+			// 通过 登录名和密码
+			if (user != null) {
+				// 清空openId
+				user.setOpenid("");
+				bsInventoryUserMapper.updateByPrimaryKeySelective(user);
+				JSONObject retObj = new JSONObject();
+				retObj.put("userId", user.getUserId());
+				retObj.put("userName", user.getTrueName());
+				req.getSession().setAttribute(SessionUtils.AB_SESSION_CONFIG, null);
+				return new ReturnInfo("注销成功！", userId, retObj, true);
+			} else {
+				return new ReturnInfo("注销失败！", 10000, null, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryUserCtrl get by key error..", e);
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * ajax根据ID主键查询 请求 url: 'http://ip/app/mlbuser/(_id值)' dataType: 'json'
+	 * type: 'get'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.GET)
+	@ResponseBody
+	public Object get(@PathVariable String key, HttpServletRequest req) {
+		BsInventoryUser mlbuser = new BsInventoryUser();
+		int keyInt = NumberUtils.toInt(key);
+		if (keyInt <= 0) {
+			return "";
+		}
+		List<BsInventoryUser> list = null;
+		try {
+			BsInventoryUser akey = new BsInventoryUser();
+
+			Field keyField = FieldUtils.allDeclaredField(BsInventoryUserKey.class).get(0);
+
+			if (keyField.getType().isInstance(1)) {
+				FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+			} else if (keyField.getType().isInstance(1L)) {
+				FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+			} else {
+				FieldUtils.setObjectValue(akey, keyField, key);
+			}
+			if (true && akey.getUserId() == null) {
+				list = new ArrayList<BsInventoryUser>();
+			} else {
+				BsInventoryUserExample example = new BsInventoryUserExample();
+				example.createCriteria().andUserIdEqualTo(akey.getUserId());
+				list = bsInventoryUserMapper.selectByExample(example);
+				if (list != null && list.size() > 0) {
+					mlbuser = list.get(0);
+					// 手机号 加密（前三、后四不加密中间des 加密）TODO
+					String loginname = ThreeDes.decryptPhone("", mlbuser.getLoginName());
+					String phone = ThreeDes.decryptPhone("", mlbuser.getPhone());
+					mlbuser.setPhone(phone);
+					mlbuser.setLoginName(loginname);
+					int hasDepotIds = NumberUtils.toInt(req.getParameter("depotIds"), 0);
+					if (hasDepotIds == 1) {
+						String depotIds = bsInventoryDepotDao.getIds(mlbuser.getUserId());
+						mlbuser.setUserImage(depotIds);
+					}
+				}
+			}
+
+			// String htUserIdList = PropertiesUtil.getProperty("htUserIdList");
+		} catch (Exception e) {
+			log.warn("BsInventoryUserCtrl get by key error..", e);
+		}
+		return mlbuser;
+	}
+
+	/**
+	 * ajax根据主键删除 url:'http://ip/app/mlbuser/(_id值)' type: 'DELETE' dataType:
+	 * 'json'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public ReturnInfo delete(@PathVariable String key, HttpServletRequest req) {
+		try {
+			BsInventoryUser akey = new BsInventoryUser();
+
+			Field keyField = FieldUtils.allDeclaredField(BsInventoryUserKey.class).get(0);
+
+			if (keyField.getType().isInstance(1)) {
+				FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+			} else if (keyField.getType().isInstance(1L)) {
+				FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+			} else {
+				FieldUtils.setObjectValue(akey, keyField, key);
+			}
+
+			if (true && akey.getUserId() != null) {
+				bsInventoryUserMapper.deleteByPrimaryKey(akey);
+				return ReturnInfo.Success;
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryUserCtrl delete by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * 个人信息认证 action = authUserInfo trueName : ID ： imageIds: json 对象
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo update(@PathVariable String key, HttpServletRequest req) {
+		try {
+			String action = StringUtils.trimToEmpty(req.getParameter("action"));
+			boolean result = false;
+			if ("modifyUserInfo".equalsIgnoreCase(action)) {
+				String trueName = StringUtils.trimToEmpty(req.getParameter("trueName"));
+				// String ID =
+				// StringUtils.trimToEmpty(req.getParameter("IDCard"));
+				// String imageIds =
+				// StringUtils.trimToEmpty(req.getParameter("imageIds"));
+				// String email =
+				// StringUtils.trimToEmpty(req.getParameter("email"));
+				// String phone = req.getParameter("phone");
+				// // 手机号 加密（前三、后四不加密中间des 加密）TODO
+				// phone = ThreeDes.encryptPhone("", phone);
+
+				// String phone2 =
+				// StringUtils.trimToEmpty(req.getParameter("phone2"));
+				String address = req.getParameter("address");
+				String printHead = req.getParameter("printHead");
+				String location = req.getParameter("location");
+				String locationDesc = req.getParameter("locationDesc");
+				String password = req.getParameter("password");
+
+				int userId = NumberUtils.toInt(key);
+				BsInventoryUser info = new BsInventoryUser();
+				info.setUserId(userId);
+				info.setTrueName(trueName);
+				// info.setClientName(ID); // 身份证
+				// info.setPhone(phone);
+				info.setAddress(address);
+				info.setLocation(NumberUtils.toInt(location));
+				info.setLocationDesc(locationDesc);
+				info.setPassWord(password);
+				info.setUserId(userId);
+				info.setPrintHead(printHead);
+
+				if (info != null) {
+					BsInventoryUser akey = new BsInventoryUser();
+					Field keyField = FieldUtils.allDeclaredField(BsInventoryUserKey.class).get(0);
+					if (keyField.getType().isInstance(1)) {
+						FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+					} else if (keyField.getType().isInstance(1L)) {
+						FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+					} else {
+						FieldUtils.setObjectValue(akey, keyField, key);
+					}
+					BsInventoryUserExample example = new BsInventoryUserExample();
+					example.createCriteria().andUserIdEqualTo(akey.getUserId());
+					bsInventoryUserMapper.updateByExampleSelective(info, example);
+					result = true;
+					bsUnionUserDao.saveByLzb(info);
+				}
+			} else if ("authUserInfo".equalsIgnoreCase(action)) {
+				String trueName = StringUtils.trimToEmpty(req.getParameter("trueName"));
+				String ID = StringUtils.trimToEmpty(req.getParameter("IDCard"));
+				String imageIds = StringUtils.trimToEmpty(req.getParameter("imageIds"));
+
+				int userId = NumberUtils.toInt(key);
+				BsInventoryUser info = new BsInventoryUser();
+				info.setTrueName(trueName);
+				// info.setClientName(ID); // 身份证
+
+				// // 更新图片对应关系
+				// String[] iid = StringUtils.trimToEmpty(imageIds).split(",",
+				// -1);
+				// for (int i = 0; i < iid.length; i++) {
+				// if (iid[i].length() > 0) {
+				// ImageKey key2 = new ImageKey();
+				// key2.setId(Integer.parseInt(iid[i]));
+				// Image image = imageDao.selectByPrimaryKey(key2);
+				// if (image != null) {
+				// image.setForeignkey(userId);
+				// imageDao.updateByPrimaryKey(image);
+				// // image = ImageService.saveImageBO(image);
+				// }
+				// }
+				// }
+				if (info != null) {
+					BsInventoryUser akey = new BsInventoryUser();
+					Field keyField = FieldUtils.allDeclaredField(BsInventoryUserKey.class).get(0);
+					if (keyField.getType().isInstance(1)) {
+						FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+					} else if (keyField.getType().isInstance(1L)) {
+						FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+					} else {
+						FieldUtils.setObjectValue(akey, keyField, key);
+					}
+					BsInventoryUserExample example = new BsInventoryUserExample();
+					example.createCriteria().andUserIdEqualTo(akey.getUserId());
+					bsInventoryUserMapper.updateByExampleSelective(info, example);
+					result = true;
+					userActionDao.saveAuthTime(UserActionEnum.点击个人认证.getCode(), userId, trueName);
+				}
+			} else if ("authCompanyInfo".equalsIgnoreCase(action)) {
+				// 企业名称
+				String companyName = StringUtils.trimToEmpty(req.getParameter("companyName"));
+				// 详细地址
+				String address = StringUtils.trimToEmpty(req.getParameter("address"));
+				// 地域编码
+				String location = StringUtils.trimToEmpty(req.getParameter("location"));
+				// 地域
+				String locationDesc = StringUtils.trimToEmpty(req.getParameter("locationDesc"));
+				// 图片IDs
+				String imageIds = StringUtils.trimToEmpty(req.getParameter("imageIds"));
+
+				int userId = NumberUtils.toInt(key);
+				BsInventoryUser info = new BsInventoryUser();
+				info.setAddress(address);
+				info.setLocationDesc(locationDesc);
+				info.setLocation(NumberUtils.toInt(location));
+
+				if (info != null) {
+					BsInventoryUser akey = new BsInventoryUser();
+					Field keyField = FieldUtils.allDeclaredField(BsInventoryUserKey.class).get(0);
+					if (keyField.getType().isInstance(1)) {
+						FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+					} else if (keyField.getType().isInstance(1L)) {
+						FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+					} else {
+						FieldUtils.setObjectValue(akey, keyField, key);
+					}
+					BsInventoryUserExample example = new BsInventoryUserExample();
+					example.createCriteria().andUserIdEqualTo(akey.getUserId());
+					bsInventoryUserMapper.updateByExampleSelective(info, example);
+					result = true;
+					userActionDao.saveAuthTime(UserActionEnum.点击企业认证.getCode(), userId, companyName);
+				}
+
+			} else {/*
+					 * 
+					 * if (info != null) { BsInventoryUser akey = new
+					 * BsInventoryUser();
+					 * 
+					 * Field keyField =
+					 * FieldUtils.allDeclaredField(BsInventoryUserKey
+					 * .class).get(0);
+					 * 
+					 * if (keyField.getType().isInstance(1)) {
+					 * FieldUtils.setObjectValue(akey, keyField,
+					 * Integer.parseInt(key)); } else if
+					 * (keyField.getType().isInstance(1L)) {
+					 * FieldUtils.setObjectValue(akey, keyField,
+					 * Long.parseLong(key)); } else {
+					 * FieldUtils.setObjectValue(akey, keyField, key); }
+					 * BsInventoryUserExample example = new
+					 * BsInventoryUserExample(); example.createCriteria
+					 * ().andUserIdEqualTo(akey.getUserId());
+					 * bsInventoryUserMapper.updateByExampleSelective(info,
+					 * example); }
+					 */
+			}
+			return new ReturnInfo("", 0, null, result);
+		} catch (Exception e) {
+			log.warn("BsInventoryUser update by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+
+	private void setTableName(DbCondi dc) {
+		String tName = DBBean.getTableName2Class(BsInventoryUser.class);
+		if (dc.getOther() == null) {
+			Map<String, Object> o = new HashMap<String, Object>();
+			o.put(SqlMaker.TABLE_NAME, tName);
+			dc.setOther(o);
+		} else {
+			dc.getOther().put(SqlMaker.TABLE_NAME, tName);
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class BsInventoryUsers extends ArrayList<BsInventoryUser> {
+		public BsInventoryUsers() {
+			super();
+		}
+	}
+
+}

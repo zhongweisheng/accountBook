@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.include.min.js"></script>
+    <script type="text/javascript" src="libs/template7/1.1.4/template7.min.js"></script>
+    
+    <style type="text/css">
+        #recordNumber{
+            color: red;
+        }
+        input{
+            border: none;
+            outline: none;
+            background: none;
+            width: 43%;
+            font-size: 18px;
+        }
+        select{
+            border: 0;
+            outline: 0;
+            background: 0;
+            -moz-appearance:textfield;
+            font-size: 18px;
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .btn {
+            margin: 20px auto;
+            cursor: pointer;
+            width: 350px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            color: #fff;
+            font-size: 22px;
+            background-color: #aaa;
+            transition: background-color 1s;
+        }
+
+        .table-c table {
+            border-bottom: 1px solid #000
+        }
+
+        .table-c table td {
+            font-size: 14px;
+            border-left: 1px solid #000;
+            border-top: 1px solid #000
+        }
+    </style>
+    <style media="print">
+        @page {
+            size: auto;  /* auto is the initial value */
+        }
+    </style>
+</head>
+<body class="clearfix">
+<div class="content clearfix" style="width: 1000px" id="printTable">
+    
+</div>
+
+<script type="text/template7" id="printTable-content">
+    <div>
+        <div align="center">{{printHead}}</div>
+        <div align="center">{{editType}}</div>
+    </div>
+    <div class="table-c" style="margin-bottom: 20px;" id="list">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tbody>
+            <tr>
+                <td colspan="2" style="border: 0;">{{recordNumber}}</td>
+                <td style="border: 0;">&nbsp;</td>
+                <td style="border: 0;">&nbsp;</td>
+                <td style="border: 0;">&nbsp;</td>
+                <td style="border: 0;">&nbsp;</td>
+                <td align="center" id="printData" style="border: 0;">{{printData}}</td>
+                <td align="center" style="border: 0;">{{date}}</td>
+            </tr>
+            <tr>
+                <td align="center">{{person}}</td>
+                <td align="center">{{staffName}}</td>
+                <td align="center">联系电话</td>
+                <td align="center">{{phone}}</td>
+                <td align="center">司机</td>
+                <td align="center">{{driverName}}</td>
+                <td align="center">司机电话</td>
+                <td align="center" style="border-right: 1px solid #000;">{{driverPhone}}</td>
+            </tr>
+            <tr>
+                <td align="center">车号</td>
+                <td align="center">品种</td>
+                <td align="center">毛重(公斤)</td>
+                <td align="center">皮重(公斤)</td>
+                <td align="center">扣重(公斤)</td>
+                <td align="center">净重(公斤)</td>
+                <td align="center">单价(元/斤)</td>
+                <td align="center" style="border-right: 1px solid #000;">金额</td>
+            </tr>
+            <tr>
+                <td align="center">&nbsp;{{licensePlate}}</td>
+                <td align="center">{{grainTypePrint}}</td>
+                <td align="center">{{grossWeightOut}}</td>
+                <td align="center">{{tareWeightOut}}</td>
+                <td align="center">{{deduction}}</td>
+                <td align="center">{{netWeightOut}}</td>
+                <td align="center">{{unitPrice}}</td>
+                <td align="center" style="border-right: 1px solid #000">{{moneyOut}}</td>
+            </tr>
+            <tr>
+                <td align="center">质量</td>
+                <td align="center">水分(%)</td>
+                <td align="center">容重(g/l)</td>
+                <td align="center">杂质(%)</td>
+                <td align="center">不完善粒(%)</td>
+                {{#js_compare "this.grainType === 1"}}
+                <td align="center">气味</td>
+                {{else}}
+                <td align="center">霉变(%)</td>
+                {{/js_compare}}
+                <td align="center">已付款</td>
+                <td align="center" style="border-right: 1px solid #000;">未付款</td>
+            </tr>
+            <tr>
+                <td align="center">&nbsp;{{productQuality}}</td>
+                <td align="center">{{water}}</td>
+                <td align="center">{{rongzhong}}</td>
+                <td align="center">{{impurity}}</td>
+                <td align="center">{{buwanshanli}}</td>
+                {{#js_compare "data.grainType === 1"}}
+                <td align="center">{{smell}}</td>
+                {{else}}
+                <td align="center">{{meibian}}</td>
+                {{/js_compare}}
+                <td align="center">{{paidMoney}}</td>
+                <td align="center" style="border-right: 1px solid #000;">{{unpaidMoney}}</td>
+            </tr>
+            {{#js_compare "data.grainType === 1"}}
+            <tr>
+                <td align="center">类型</td>
+                <td align="center">生产年份</td>
+                <td align="center" colspan="2">产地</td>
+                <td align="left" colspan="4" rowspan="2" style="border-right: 1px solid #000;padding-left: 1rem;">备注:
+                </td>
+            </tr>
+            {{else}}
+            {{/js_compare}}
+            <tr>
+                <td align="center">{{varietyType}}</td>
+                <td align="center">{{productionNiafe}}</td>
+                <td align="center" colspan="2">{{locationDesc}}</td>
+            </tr>
+            <tr>
+                <td align="center">大写金额</td>
+                <td colspan="7" id="big" style="border-right: 1px solid #000;">{{big}}</td>
+            </tr>
+            {{#js_compare "data.grainType === 1"}}
+            {{else}}
+            <tr>
+                <td align="center">备注</td>
+                <td colspan="7" style="border-right: 1px solid #000;"></td>
+            </tr>
+            {{/js_compare}}
+            </tbody>
+        </table>
+    </div>
+    <div style="display:inline;">{{personSign}}</div>
+    <div style="display:inline;margin-left:55%;">经办人（签字）：</div>
+    <div class="btn" id="print">打印</div>
+
+</script>
+<script type="text/javascript" src="accountData/js/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common.min.js"></script>
+<script type="text/javascript" src="accountData/js/rest.min.js"></script>
+<script type="text/javascript" src="accountData/js/convertCurrency.min.js"></script>
+<script type="text/javascript">
+
+    $("input").attr("disabled",true);
+    function fmoney(s, n) {
+        n = n > 0 && n <= 20 ? n : 2;
+        s = parseFloat((s + "").replace(/[^\d\.-]/g, "")).toFixed(n) + "";
+        var l = s.split(".")[0].split("").reverse(),
+            r = s.split(".")[1];
+        t = "";
+        for(i = 0; i < l.length; i ++ )
+        {
+            t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
+        }
+        return t.split("").reverse().join("") + "." + r;
+    }
+    function getQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);  //获取url中"?"符后的字符串并正则匹配
+        var context = "";
+        if (r != null)
+            context = r[2];
+        reg = null;
+        r = null;
+        return context == null || context == "" || context == "undefined" ? "" : context;
+    }
+    var id = getQueryString('id');
+    var data = Restful.get('bsinventoryrecord/'+id);
+    var recordType = data.recordType;
+    var big = convertCurrency(recordType == 1 ? data.moneyIn : data.moneyOut);
+    data.big = big;
+    if(data.recordType == 1){
+       data.personSign='送粮人(签字)：';
+        $("title").html('入库单');
+       data.editType='入 库 单';
+       data.person='送粮人';//'+'<input type="text" value="'+data.staffName+'">
+       data.printData='入库日期';
+    }else if(data.recordType == 2){
+       data.personSign='买粮人(签字)：';
+        $("title").html('出库单');
+       data.editType='出 库 单';
+       data.person='买粮人';
+       data.printData='出库日期';
+    }
+    var quality;
+    if(data.productQuality == 0){
+        quality = '';
+    }else if(data.productQuality == 1){
+        quality = '一等';
+
+    }else if(data.productQuality == 2){
+        quality = '二等';
+
+    }else if(data.productQuality == 3){
+        quality = '三等';
+
+    }else if(data.productQuality == 4){
+        quality = '四等';
+
+    }else if(data.productQuality == 5){
+        quality = '五等';
+
+    }else if(data.productQuality == 6){
+        quality = '等外';
+    }
+   data.productQuality=quality;
+   data.printHead=data.strColumn1;
+   data.staffName=data.staffName;
+   data.phone=data.staffPhone;
+   data.date=data.date;
+   data.recordNumber='No.' + data.recordNumber;
+   data.licensePlate=data.licensePlate;
+   data.rongzhong=data.bulkDensity;
+   data.buwanshanli=data.imperfectGrains;
+   data.water=data.moistureContent;
+   data.meibian=data.mildew;
+   if(data.smell == 0){
+       data.smell = '';
+   }else if(data.smell == 1){
+       data.smell = '正常';
+   }else if(data.smell == 2){
+       data.smell = '微有异味';
+   }else if(data.smell == 3){
+       data.smell = '霉味、酸臭或其他';
+   }
+   data.impurity=data.impurity;
+    if(data.grainType == 1){
+       data.grainTypePrint='小麦';
+    }else if (data.grainType == 2){
+       data.grainTypePrint='玉米';
+    }else if(data.grainType == 3){
+       data.grainTypePrint='水稻';
+    }
+    data.paidMoney = data.paidMoney?fmoney(data.paidMoney, 2):'';
+    data.unpaidMoney = data.unpaidMoney?fmoney(data.unpaidMoney, 2):'';
+   data.grossWeightOut=(recordType == 1 ? fmoney(data.grossWeightIn, 2) : fmoney(data.grossWeightOut, 2));
+   data.tareWeightOut=(recordType == 1 ? fmoney(data.tareWeightIn, 2) : fmoney(data.tareWeightOut, 2));
+    data.deduction = fmoney(data.deduction, 2);
+   data.netWeightOut=(recordType == 1 ? fmoney(data.netWeightIn, 2) : fmoney(data.netWeightOut, 2));
+   data.unitPrice=fmoney(data.unitPrice, 3);
+   data.moneyOut=(recordType == 1 ? fmoney(data.moneyIn, 2) : fmoney(data.moneyOut, 2));
+   if(data.varietyType == 0){
+       data.varietyType = ' ';
+   }else if(data.varietyType == 1){
+       data.varietyType = '混合麦';
+   }else if(data.varietyType == 2){
+       data.varietyType = '白麦';
+   }else{
+       data.varietyType = '红麦';
+   }
+   data.productionNiafe = data.productionNiafe == 0?'':data.productionNiafe;
+   data.locationDesc = data.locationDesc;
+    /* $("#print").click(function () {
+        $(this).hide();
+        window.print();
+        $(this).show();
+    }); */
+    
+    
+    var msg = $('#printTable-content').html();
+    var compiledTemplate = Template7.compile(msg);
+    var html = compiledTemplate(data);
+    $("#printTable").html(html);
+    
+</script>
+</body>
+</html>

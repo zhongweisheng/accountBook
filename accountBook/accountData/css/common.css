@@ -1,0 +1,288 @@
+body,button,dd,dt,dl,form,h1,h2,h3,h4,h5,h6,input,li,ol,p,select,table,td,textarea,ul{margin:0;padding:0;}
+html{font-size:20px;-ms-touch-action:none;}
+body,button,input,select,textarea{font-family:"苹方","圆体-简","方正兰亭细黑简体","微软雅黑",Verdana,Arial,Helvetica,sans-serif;line-height:1.5;}
+img{border:0;}
+html{overflow-x:auto;background-color: white;}
+ol,ul,li{list-style:none;}
+a{color:#333;text-decoration:none;outline:none;}
+img{vertical-align:middle;}
+*{-webkit-tap-highlight-color:rgba(0,0,0,0);}
+.clearfix:after{visibility:hidden;display:block;font-size:0;content:" ";clear:both;height:0;}
+th{font-weight: normal;}
+.lt{float: left;}
+.ri{float: right;}
+.tleft{text-align: left;}
+.tcenter{text-align: center;}
+.tright{text-align: right;}
+.left{
+    width: 260px;
+    float: left;
+    background-color: #eee;
+    height: 100vh;
+    position: fixed;
+    top: 100px;
+    left: 0;
+}
+.left-p{float: left; margin-left: 80px; font-size: 20px;}
+.title-sec{
+    font-size: 18px;
+    height: 45px;
+    line-height: 45px;
+    color: #5a5a5a;
+    cursor: pointer;
+    padding-left: 100px;
+}
+.video{
+    font-size: 18px;
+    height: 45px;
+    line-height: 45px;
+    color: #5a5a5a;
+    cursor: pointer;
+    padding-left: 100px;
+}
+.title-sec:hover{
+    background-color: #f6a85e;
+    color: #fff;
+}
+.video:hover{
+    background-color: #f6a85e;
+    color: #fff;
+}
+.index,.inForm-btn,.record-btn,.data-btn,.set-btn,.teach-btn{
+    margin-top: 9px;
+    line-height: 50px;
+    height: 50px;
+    width: 240px;
+}
+.inForm,.record,.data,.set,.teach{
+    width: 240px;
+}
+.index{
+    background:url(../img/inform4.png) 30px center no-repeat white;
+}
+.inForm-btn{
+    background: url(../img/inform2.png) 30px center no-repeat white;
+}
+.record-btn{
+    background: url(../img/inform1.png) 30px center no-repeat white;
+}
+.data-btn{
+    background:url(../img/inform5.png) 30px center no-repeat white;
+}
+.set-btn{
+    background:url(../img/inform3.png) 30px center no-repeat white;
+}
+.btn-bg-af{
+    width: 200px;
+    background: url(../img/11.png) 130px center no-repeat;
+}
+.teach-btn{
+	  background:url(../img/play.png) 28px center no-repeat white;
+	  background-size: 26px 26px;
+}
+.btn-bg-bf{
+    width: 200px;
+    background: url(../img/10.png) 130px center no-repeat;
+}
+
+header{
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #f7941d;
+    min-width: 1200px;
+    font-family: "圆体-简";
+    z-index: 1000;
+}
+.content{
+    width: 100%;
+    margin: 0 auto;
+}
+.conDiv{
+   min-height: 700px;
+}
+.right{
+    margin-left: 280px;
+    margin-top: 100px;
+    padding-right: 59px;
+    min-width: 900px;
+}
+.logo{
+    width: 100px;
+    height: 100px;
+    background: url("../img/logo.png") no-repeat center;
+    background-size: 100%;
+}
+.name{
+    color: #585858;
+    font-size: 50px;
+    line-height: 100px;
+    margin-left: 10px;
+}
+.head-nav{
+    color: white;
+    font-size: 20px;
+    line-height: 100px;
+}
+#nav li{
+    display: block;
+    float: left;
+    margin-left: 140px;
+    cursor:pointer;
+}
+footer{
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+    background-color: #717171;
+    text-align: center;
+    color: white;
+    font-size: 12px;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+}
+.userInfo{
+    float: right;
+    line-height: 100px;
+    margin:0 20px;
+}
+.userInfo span{
+    display: block;
+    cursor: pointer;
+    float: right;
+    color: #fff;
+    font-size: 20px;
+}
+
+/*分页样式*/
+.page{
+    margin-left: 40px;
+    margin-bottom: 60px;
+    float: left;
+}
+.activP{
+	text-align: center;
+    border: 1px solid #f7941d!important;
+    background-color: #f7941d!important;
+    color: #fff!important;
+}
+.pagingUl{
+    float: left;
+    padding:0;
+    margin:0;
+    list-style: none;
+}
+.pagingUl li{
+    float: left;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+}
+.pagesNum{
+	float: right;
+	font-size: 14px;
+	line-height: 30px;
+	margin-left: 10px;
+}
+.pagingUl li a{
+    text-decoration: none;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    line-height: 35px;
+    padding: 0;
+    background: #fafafa;
+    color: #666;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.prv, .next {
+    width: 60px;
+    height: 30px;
+    float: left;
+    text-align: center;
+    line-height: 30px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+.first, .last {
+    width: 60px;
+    height: 30px;
+    font-size: 12px;
+    text-align: center;
+    line-height: 30px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+.header-active{
+    color:#ef4136;
+}
+input,textarea{
+    padding-left: 5px;
+    border: 1px solid #aaa;
+    outline: 0;
+    border-radius: 5px;
+    font-size: 0.8rem;
+}
+input[type='number'] {
+    -moz-appearance:textfield;
+}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.head-text{
+    color: white;
+    font-size: 27px;
+    margin-left: 20px;
+    line-height: 100px;
+}
+.relation {
+    font-size: 18px;
+    line-height: 100px;
+    color: #fff;
+}
+select{
+    outline: 0;
+    border-radius: 5px;
+    display: inline-block;
+    width: 100px;
+    background-color: white;
+}
+
+
+/*粮库*/
+.choseDepot{
+    float: left;
+    display: inline-block;
+
+}
+.depotN{
+    float: left;
+    margin-right: 10px;
+    display: inline-block;
+}
+#depot{
+    display: inline-block;
+    left: 10px;
+    right: 10px;
+}
+.rightHead li{
+    margin-bottom: 1rem;
+}
+.noNum{
+    margin-left: 3px;
+    padding-left:3px;
+    padding-right:3px;
+    height: 26px;
+    border-radius: 3px;
+    background-color: red;
+    color: #fff;
+}

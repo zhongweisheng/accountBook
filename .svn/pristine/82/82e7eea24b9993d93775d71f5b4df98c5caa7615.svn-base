@@ -1,0 +1,373 @@
+package lb.rest.user.db.mapper;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.InsertProvider;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.SelectProvider;
+import org.apache.ibatis.type.JdbcType;
+
+import com.mlb.bo.DistanceBO;
+import com.mlb.bo.InventoryRecordBO;
+import com.mlb.bo.InventoryStorageBO;
+import com.mlb.bo.LocationBO;
+import com.mlb.bo.MlbUserBO;
+import com.mlb.bo.UserAuthBO;
+import com.mlb.bo.UserClickCountBO;
+
+public interface CommonMapper {
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "selectMlbUserList")
+	@Results({ @Result(column = "userid", property = "id", jdbcType = JdbcType.INTEGER, id = true),
+
+	@Result(column = "truename", property = "trueName", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "phone", property = "phone", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "loginname", property = "loginName", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "usertype", property = "usertype", jdbcType = JdbcType.INTEGER),
+			@Result(column = "location", property = "location", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "address", property = "address", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "locationdesc", property = "locationDesc", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "companyname", property = "companyName", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "createuserid", property = "createuserid", jdbcType = JdbcType.INTEGER),
+			@Result(column = "updatetime", property = "updatetime", jdbcType = JdbcType.TIMESTAMP),
+			@Result(column = "traderuserid", property = "traderUserId", jdbcType = JdbcType.INTEGER),
+			@Result(column = "tradername", property = "traderName", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "lng", property = "lng", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "lat", property = "lat", jdbcType = JdbcType.DOUBLE) })
+	List<MlbUserBO> selectMlbUserList(@Param("industry") int industry, @Param("foodType") int foodType,
+			@Param("location") String location);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "selectMlbUserHasBuyList")
+	@Results({ @Result(column = "userid", property = "id", jdbcType = JdbcType.INTEGER, id = true),
+			@Result(column = "truename", property = "trueName", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "phone", property = "phone", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "loginname", property = "loginName", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "usertype", property = "usertype", jdbcType = JdbcType.INTEGER),
+			@Result(column = "location", property = "location", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "address", property = "address", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "locationdesc", property = "locationDesc", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "companyname", property = "companyName", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "createuserid", property = "createuserid", jdbcType = JdbcType.INTEGER),
+			@Result(column = "updatetime", property = "updatetime", jdbcType = JdbcType.TIMESTAMP),
+			@Result(column = "traderuserid", property = "traderUserId", jdbcType = JdbcType.INTEGER),
+			@Result(column = "tradername", property = "traderName", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "lng", property = "lng", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "lat", property = "lat", jdbcType = JdbcType.DOUBLE) })
+	List<MlbUserBO> selectMlbUserHasBuyList(@Param("industry") int industry, @Param("foodType") int foodType,
+			@Param("location") String location, @Param("createTime") String createTime);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getAreaLocation")
+	@Results({ @Result(column = "ID", property = "location", jdbcType = JdbcType.INTEGER, id = true),
+			@Result(column = "Lat", property = "lat", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "lng", property = "lng", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "bd_lng", property = "bdlng", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "bd_lat", property = "bdlat", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "MergerName", property = "name", jdbcType = JdbcType.VARCHAR) })
+	LocationBO getAreaLocation(@Param("location") int location);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getDistanceMapByDest")
+	@Results({ @Result(column = "orig_location", property = "origLocation", jdbcType = JdbcType.INTEGER),
+			@Result(column = "dest_location", property = "destLocation", jdbcType = JdbcType.INTEGER),
+			@Result(column = "distance", property = "distance", jdbcType = JdbcType.DOUBLE), })
+	List<DistanceBO> getDistanceMapByDest(@Param("location") int location);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getDistance")
+	@Results({ @Result(column = "orig_location", property = "origLocation", jdbcType = JdbcType.INTEGER),
+			@Result(column = "dest_location", property = "destLocation", jdbcType = JdbcType.INTEGER),
+			@Result(column = "distance", property = "distance", jdbcType = JdbcType.DOUBLE), })
+	DistanceBO getDistance(@Param("origLocation") int origLocation, @Param("destLocation") int destLocation);
+
+	@Insert({ "insert into offerprice_distance ( orig_location, ", "dest_location, distance)",
+			"values ( #{origLocation,jdbcType=INTEGER}, ",
+			"#{destLocation,jdbcType=INTEGER}, #{distance,jdbcType=DOUBLE})" })
+	int insertDistance(@Param("origLocation") int origLocation, @Param("destLocation") int destLocation,
+			@Param("distance") double distance);
+
+	@InsertProvider(type = CommonSqlProvider.class, method = "insertList")
+	int insertList(@Param("list") List<DistanceBO> list);
+
+	@Select({ "SELECT LAST_INSERT_ID()" })
+	int getLastInsertId();
+
+	@Select({ "SELECT SUM(t.money_in) / SUM(t.net_weight_in) FROM  bs_inventory_record t WHERE t.user_id = #{userId,jdbcType=INTEGER} and t.record_type = 1 " })
+	Double getAveragePriceIn(@Param("userId") int userId);
+
+	@Select({ "SELECT SUM(t.money_in) moneyInTotal ,SUM(t.money_out) moneyOutTotal , SUM(t.net_weight_in) netWeightInTotal FROM  bs_inventory_record t WHERE t.user_id = #{userId,jdbcType=INTEGER}  " })
+	Map<String, Double> getStatMap(@Param("userId") int userId);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getSearchCount")
+	int getSearchCount(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("recordType") int recordType,
+			@Param("searchType") int searchType, @Param("staffId") int staffId, @Param("startDate") String startDate,
+			@Param("endDate") String endDate);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getSearchList")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "grossInTotal", property = "grossInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "tareInTotal", property = "tareInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "netInTotal", property = "netInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyInTotal", property = "moneyInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "grossOutTotal", property = "grossOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "tareOutTotal", property = "tareOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "netOutTotal", property = "netOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "unpaidMoney", property = "unpaidMoney", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "deduction", property = "deduction", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyOutTotal", property = "moneyOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "averageCost", property = "averageCost", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> getSearchList(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("recordType") int recordType,
+			@Param("searchType") int searchType, @Param("staffId") int staffId, @Param("startDate") String startDate,
+			@Param("endDate") String endDate, @Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getSearchStorageCount")
+	int getSearchStorageCount(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("recordType") int recordType,
+			@Param("searchType") int searchType, @Param("staffId") int staffId, @Param("startDate") String startDate,
+			@Param("endDate") String endDate);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getSearchStorageList")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "grossInTotal", property = "grossInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "tareInTotal", property = "tareInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "netInTotal", property = "netInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyInTotal", property = "moneyInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "grossOutTotal", property = "grossOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "tareOutTotal", property = "tareOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "netOutTotal", property = "netOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "paidMoney", property = "paidMoney", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "unpaidMoney", property = "unpaidMoney", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "hasSettled", property = "hasSettled", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "notSettled", property = "notSettled", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "deduction", property = "deduction", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyOutTotal", property = "moneyOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "averageCost", property = "averageCost", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> getSearchStorageList(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("recordType") int recordType,
+			@Param("searchType") int searchType, @Param("staffId") int staffId, @Param("startDate") String startDate,
+			@Param("endDate") String endDate, @Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getSearchStatCount")
+	int getSearchStatCount(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("recordType") int recordType, @Param("searchType") int searchType);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getSearchStat")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "balance", property = "balance", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "profit", property = "profit", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "inventoryMoney", property = "inventoryMoney", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "totalProfit", property = "totalProfit", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "averageCost", property = "averageCost", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> getSearchStat(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("recordType") int recordType,
+			@Param("searchType") int searchType, @Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findRmkcqk")
+	@Results({ @Result(column = "balance", property = "balance", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "average_price_in", property = "averagePrice", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "grain_type", property = "grainType", jdbcType = JdbcType.INTEGER) })
+	List<InventoryRecordBO> findRmkcqk(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("dateTime") String dateTime,
+			@Param("searchType") int searchType, @Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findRmAmountAndJe")
+	@Results({ @Result(column = "netWeightIn", property = "netWeightIn", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyIn", property = "moneyIn", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "netWeightOut", property = "netWeightOut", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyOut", property = "moneyOut", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "grain_type", property = "grainType", jdbcType = JdbcType.INTEGER) })
+	List<InventoryRecordBO> findRmAmountAndJe(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("dateTime") String dateTime,
+			@Param("searchType") int searchType, @Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findRrkqk")
+	@Results({ @Result(column = "dateTime", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "moneyIn", property = "moneyIn", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "netWeightIn", property = "netWeightIn", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findRrkqk(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findRckqk")
+	@Results({ @Result(column = "dateTime", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "netWeightOut", property = "netWeightOut", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyOut", property = "moneyOut", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findRckqk(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findRkcqk")
+	@Results({ @Result(column = "date", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "balance", property = "balance", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findRkcqk(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findRkcqkTime")
+	@Results({ @Result(column = "date", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "balance", property = "balance", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findRkcqkTime(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("datetime") String datetime, @Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findZrkqk")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "netWeightIn", property = "netWeightIn", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyIn", property = "moneyIn", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findZrkqk(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findZckqk")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "netWeightOut", property = "netWeightOut", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyOut", property = "moneyOut", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findZckqk(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findZkcqk")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "balance", property = "balance", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findZkcqk(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findZkcqkTime")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "balance", property = "balance", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findZkcqkTime(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("dateTime") String dateTime, @Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findYrkqk")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "moneyIn", property = "moneyIn", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "netWeightIn", property = "netWeightIn", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findYrkqk(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findYckqk")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "moneyOut", property = "moneyOut", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "netWeightOut", property = "netWeightOut", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findYckqk(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findYkcqk")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "balance", property = "balance", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findYkcqk(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "findYkcqkTime")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "balance", property = "balance", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> findYkcqkTime(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("type") int recordType, @Param("searchType") int searchType,
+			@Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "insertDeleteAsRecord")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "balance", property = "balance", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "price", property = "price", jdbcType = JdbcType.DOUBLE) })
+	void insertDeleteAsRecord(@Param("id") int id);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getSearchLists")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "grossInTotal", property = "grossInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "tareInTotal", property = "tareInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "netInTotal", property = "netInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyInTotal", property = "moneyInTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "grossOutTotal", property = "grossOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "tareOutTotal", property = "tareOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "netOutTotal", property = "netOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "moneyOutTotal", property = "moneyOutTotal", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "averageCost", property = "averageCost", jdbcType = JdbcType.DOUBLE) })
+	List<InventoryRecordBO> getSearchLists(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("recordType") int recordType,
+			@Param("searchType") int searchType, @Param("offset") int offset, @Param("limit") int limit);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getSearchCounts")
+	int getSearchCounts(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("grainType") int grainType, @Param("recordType") int recordType, @Param("searchType") int searchType);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getInventoryStorgeStat")
+	@Results({ @Result(column = "dateStr", property = "dateStr", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "year", property = "year", jdbcType = JdbcType.INTEGER),
+			@Result(column = "hasSettled", property = "hasSettled", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "notSettled", property = "notSettled", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "paidMoney", property = "paidMoney", jdbcType = JdbcType.DOUBLE),
+			@Result(column = "unpaidMoney", property = "unpaidMoney", jdbcType = JdbcType.DOUBLE) })
+	InventoryStorageBO getInventoryStorgeStat(@Param("depotIds") String depotIds, @Param("userId") int userId,
+			@Param("dateTime") String dateTime);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getUserClickCount")
+	@Results({ @Result(column = "userId", property = "userId", jdbcType = JdbcType.INTEGER),
+			@Result(column = "viewCount", property = "viewCount", jdbcType = JdbcType.INTEGER),
+			@Result(column = "attentionCount", property = "attentionCount", jdbcType = JdbcType.INTEGER),
+			@Result(column = "phoneCount", property = "phoneCount", jdbcType = JdbcType.INTEGER),
+			@Result(column = "tradeCount", property = "tradeCount", jdbcType = JdbcType.INTEGER) })
+	UserClickCountBO getUserClickCount(@Param("userId") int userId);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getUserAuth")
+	@Results({ @Result(column = "phone", property = "phone", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "ifHzk", property = "ifHzk", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "ifRz", property = "ifRz", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "ifLzb", property = "ifLzb", jdbcType = JdbcType.INTEGER) })
+	UserAuthBO getUserAuth(@Param("phone") String phone);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getUserHzk")
+	int getUserHzk(@Param("phone") String phone);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getUserRz")
+	int getUserRz(@Param("phone") String phone);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getUserLzb")
+	int getUserLzb(@Param("phone") String phone);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getUserLevel")
+	int getUserLevel(@Param("phone") String phone);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getUserComment")
+	int getUserComment(@Param("userId") int userId);
+
+	@SelectProvider(type = CommonSqlProvider.class, method = "getUserLevelList")
+	@Results({ @Result(column = "user_id", property = "userId", jdbcType = JdbcType.INTEGER),
+			@Result(column = "user_phone", property = "phone", jdbcType = JdbcType.VARCHAR),
+			@Result(column = "user_level", property = "userLevel", jdbcType = JdbcType.INTEGER) })
+	List<UserAuthBO> getUserLevelList(@Param("userId") int userId);
+
+}

@@ -1,0 +1,66 @@
+$(document).ready(function () {
+
+var locationNum = '',quality = '',grainType = '';
+getapplyData();
+
+function getapplyData() {
+    var searchParams = {};
+    searchParams.type = grainType;
+    searchParams.location = locationNum;
+    searchParams.quality = quality;
+    console.log(searchParams);
+    var res = Restful.get('bsgoodsinfo/findGoodsList',JSON.stringify(searchParams));
+    if (res) {
+        var data = res.dataList;
+        var msg = $('#supply-list').html();
+        var compiledTemplate = Template7.compile(msg);
+        var html = compiledTemplate({"supply": data});
+        $("#supplylist").html(html);
+        //$('.more-text').removeClass('hiden');
+    } else {
+        //$('.more').css('display', 'none');
+        $("#applylist").html(
+            '<div style="width: 100%">' +
+            '<div style="width: 100%;height: 5rem;background: url(../img/nodata.png) center no-repeat;background-size: 50% 5rem;margin-top: 3rem;">' +
+            '</div>' +
+            '<div style="text-align: center;margin-top: 1rem">' +
+            '<span style="color: #929292;font-size: 0.9rem;">暂无此类数据~</span>' +
+            '</div>' +
+            '</div>'
+        );
+    }
+}
+
+//打电话
+$(document).on('click','.phone',function () {
+    var phone = $(this).data('phone');
+    window.location.href = 'tel:'+phone;
+});
+
+$('.addressSelete').citys({
+    required:false,
+    nodata:'disabled',
+    onChange:function(data){
+        console.log(data);
+        locationText = data.province+data.city+data.area;
+        locationNum = data.code;
+    }
+});
+//筛选
+$('.search').on('click',function () {
+    $('.searchModel').show().animate({'left':0},300);
+    $('#grainType,#quality').val('0');
+    locationNum = '';
+});
+
+$('.cencel').on('click',function () {
+    $('.searchModel').animate({'left':'100%'},200);
+});
+$('.submit').on('click',function () {
+    $('.searchModel').animate({'left':'100%'},200);
+    quality = $('#quality').val();
+    grainType = $('#grainType').val();
+    getapplyData();
+});
+
+});

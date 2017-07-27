@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>记账统计</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="css/bindWxSure.css">
+</head>
+<body>
+    <div class="content">
+        <div class= "logo">
+            <img src="accountData/img/02.jpg">
+        </div>
+        <div class="msg">
+            <p>卖粮宝提示您：</p>
+            <p>正在进行绑定微信</p>
+            <p>点击下方确定按钮进行绑定</p>
+        </div>
+        <div class="sure">
+            <span id="sure">确定</span>
+        </div>
+    </div>
+    <script type="text/javascript" src="libs/zepto/zepto.js"></script>
+    <script type="text/javascript" src="js/common/rest.js?v=20170626"></script>
+    <!--<script type="text/javascript" src="http://zeptojs.com/zepto.min.js"></script>-->
+    <script>
+        $(document).on('click','#sure',function () {
+            if($(this).hasClass('disable')){
+                return;
+            }
+
+            var openId;
+
+            getOpenId();
+
+            var userId = getQueryString('userId');
+
+            var params = {};
+            params.userId = userId;
+            params.openId = openId;
+
+            var result = Restful.post('bsinventoryuser/binding',params);
+            if(result){
+                if(result.success){
+                    alert(success.description);
+                    $(this).addClass('disable');
+                }else {
+                    alert(success.description);
+                }
+            }else {
+                alert(success.description);
+            }
+
+            function getQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+                var r = window.location.search.substr(1).match(reg);  //获取url中"?"符后的字符串并正则匹配
+                var context = "";
+                if (r != null)
+                    context = r[2];
+                reg = null;
+                r = null;
+                return context == null || context == "" || context == "undefined" ? "" : context;
+            }
+            function　getOpenId () {
+                var code = getQueryString('code');
+                $.ajax({
+                    url:"accountBook/common/getWxUserByCode?code="+code,
+                    type:"get",
+                    async:false,
+                    dataType:"json",
+                    success:function (data) {
+                        console.log(data);
+                        openId = data.openid;
+                    },
+                    error:function (err) {
+                        console.log("获取openid请求出错！");
+                    }
+                });
+
+            }
+        })
+    </script>
+</body>
+</html>

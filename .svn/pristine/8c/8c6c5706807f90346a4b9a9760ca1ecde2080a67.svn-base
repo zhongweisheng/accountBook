@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>未完成出库单</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/common/bootstrapdate.min.css ">
+    <link rel="stylesheet" href="accountData/css/common/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="accountData/css/select2.min.css">
+    <link rel="stylesheet" href="accountData/css/noForm.css">
+    <script type="text/javascript" src="accountData/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/bootstrap.min.js"></script>
+    <script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+    <script type="text/javascript" src="accountData/js/common/jquery.include.min.js?v=20170626"></script>
+    <script type="text/javascript" src="accountData/js/common/common.min.js?v=20170626"></script>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml?v=20170626")</script>
+<div class="content conDiv clearfix">
+    <script>
+            $.include('accountData/shtml/left.shtml?v=20170626');
+    </script>
+    <div class="right">
+        <h2>未完成出库单</h2>
+        <div class="search clearfix">
+            <ul>
+                <li>
+                    <span>出库品种：</span>
+                    <select name="grainType" id="grainType">
+                        <option value="0">请选择</option>
+                        <option value="2">玉米</option>
+                        <option value="1">小麦</option>
+                        <option value="3">水稻</option>
+                    </select>
+                </li>
+                <li>
+                    <span>买粮人：</span>
+                    <label for="salePerson">
+                        <select name="salePerson" id="salePerson">
+
+                        </select>
+                    </label>
+                </li>
+                 <li>
+                    <span>买粮司机：</span>
+                    <label for="driver" style="width: 60%;">
+                    <select name="driver" id="driver">
+
+                    </select>
+                </label>
+                </li>
+                <li>
+                    <div class="time">
+                        <span>日期查询：</span>
+                        <input type="text" id="dateStart" placeholder="起始时间" data-date-format="yyyy-mm-dd" >
+                        <span>到</span>
+                        <input type="text"  id="dateEnd" placeholder="结束时间" data-date-format="yyyy-mm-dd" >
+                    </div>
+                </li>
+                <li>
+                    <span>出库粮库：</span>
+                    <select name="depot" id="depot" class="depot">
+                </select>
+                </li>
+            </ul>
+        </div>
+        <div class="list" id="list">
+        </div>
+        <script type="text/template7" id="inTable-list">
+            {{#each noOutForm}}
+            <div class="card" data-id="{{id}}">
+                <a href="javascript:"><div class="close" id="delete" data-id="{{id}}">x</div></a>
+                <ul data-id="{{id}}" class="jump">
+                    <li>车牌号码：{{licensePlate}}</li>
+                    <li>送&nbsp;&nbsp;粮&nbsp;&nbsp;人：{{staffName}}</li>
+                    <li>送粮司机：{{driverName}}</li>
+                    <li>入库粮库：{{depotName}}</li>
+                    <li>暂存时间：{{date}}</li>
+                </ul>
+            </div>
+            {{/each}}
+        </script>
+        <div class="page">
+            
+        </div>
+    </div>
+</div>
+<script>$.include("accountData/shtml/foot.shtml?v=20170626")</script>
+
+<script type="text/javascript" src="accountData/js/common/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/rest.min.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/common/page.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.zh-CN.js"></script>
+<script type="text/javascript" src="accountData/js/common/echarts.common.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/select2.min.js?v=20170626"></script>
+<script type="text/javascript" src="js/classie.min.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/noOutForm.js?v=20170626"></script>
+</body>
+</html>

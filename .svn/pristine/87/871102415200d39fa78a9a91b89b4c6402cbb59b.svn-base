@@ -1,0 +1,67 @@
+<div class="left">
+    <div class="leftContent">
+
+    </div>
+</div>
+<script>
+    /**
+     * Created by new on 2017/3/28.
+     */
+    var userId = DES3.decrypt(localStorage.getItem('userId'));
+    var userType = localStorage.getItem('userType');
+    if(!userId){
+        location.href='index.html';
+    }
+    if(userType == 1){
+        $.ajax({
+            type: 'get',
+            url: 'accountData/json/leftSide.json',
+            dataType: 'json',
+            async: false,
+            success: function (res) {
+                var html = '';
+                for (var i = 0, len = res.data.length; i < len; i++) {
+                    html += "<div class=\"parent\" onclick=\"window.location.href='"+res.data[i].parentHref+"'\">"+res.data[i].parent +"</div><div style=\"display:none;\" class=\"child\">";
+                    var datachild = res.data[i].children;
+                    for (var j = 0; j < datachild.length; j++) {
+                        html += "<i></i><p onclick=\"window.location.href='"+res.data[i].childHref[j]+"'\">" + datachild[j] + '</p>';
+                    }
+                    html += '</div>';
+                    $(".leftContent").empty();
+                    $(".leftContent").append(html);
+                }
+            }
+        });
+    }else{
+        $.ajax({
+            type: 'get',
+            url: 'accountData/json/newleftSide.json',
+            dataType: 'json',
+            async: false,
+            success: function (res) {
+                var html = '';
+                for (var i = 0, len = res.data.length; i < len; i++) {
+                    html += "<div class=\"parent\" onclick=\"window.location.href='"+res.data[i].parentHref+"'\">"+res.data[i].parent +"</div><div style=\"display:none;\" class=\"child\">";
+                    var datachild = res.data[i].children;
+                    for (var j = 0; j < datachild.length; j++) {
+                        html += "<i></i><p onclick=\"window.location.href='"+res.data[i].childHref[j]+"'\">" + datachild[j] + '</p>';
+                    }
+                    html += '</div>';
+                    $(".leftContent").empty();
+                    $(".leftContent").append(html);
+                }
+            }
+        });
+    }
+
+    $(".leftContent").on('click','.parent',function () {
+        var $dis = $(this).next('.child').css('display');
+        if($dis == 'none'){
+            $(this).siblings('.child').hide();
+            $(this).next(".child").show();
+        }
+    });
+
+
+
+</script>

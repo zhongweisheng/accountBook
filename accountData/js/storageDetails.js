@@ -1,0 +1,51 @@
+/**
+ * Created by new on 2017/3/28.
+ */
+//查询条件
+$(".leftContent > div:nth-child(6)> p:nth-child(6)").addClass("left_active");
+$(".leftContent > div:nth-child(5)").addClass("left_active");
+$(".child").eq(2).css('display', 'block');
+function getQueryString(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    var r = window.location.search.substr(1).match(reg);  //获取url中"?"符后的字符串并正则匹配
+    var context = "";
+    if (r != null)
+        context = r[2];
+    reg = null;
+    r = null;
+    return context == null || context == "" || context == "undefined" ? "" : context;
+}
+var userId = DES3.decrypt(localStorage.getItem('userId'));
+var ownerId = DES3.decrypt(localStorage.getItem('ownerId'));
+var userName = DES3.decrypt(localStorage.getItem('userName'));
+var id = getQueryString('id');
+var datas = Restful.get('bsinventorystorage/' + id);
+/*console.log(datas);*/
+if(datas){
+    var msg1 = $('#inTable-list1').html();
+    var compiledTemplate1 = Template7.compile(msg1);
+    var html1 = compiledTemplate1(datas);
+    $("#list1").html(html1);
+}else{
+    alert('获取数据失败，请稍后再试');
+}
+if(datas){
+    var msg2 = $('#inTable-list2').html();
+    var compiledTemplate2 = Template7.compile(msg2);
+    var html2 = compiledTemplate2(datas);
+    $("#list2").html(html2);
+}else{
+    alert('获取数据失败，请稍后再试');
+}
+var res = Restful.post('bsinventorystoragepay/list', {storageId: id});
+/*console.log(res);*/
+if (res.success) {
+    var data = res.dataList;
+    var msg = $('#inTable-list').html();
+    var compiledTemplate = Template7.compile(msg);
+    var html = compiledTemplate({"inTable": data});
+    $("#list").html(html);
+} else {
+    $("#list").html('');
+    $("#list").html('<tr><td colspan="7"><div style="width: 100%;height: 400px;line-height: 400px;font-size: 30px;text-align: center;margin:0 auto;color: #c1c1c1;text-shadow: #999999;">暂无数据</div>');
+}

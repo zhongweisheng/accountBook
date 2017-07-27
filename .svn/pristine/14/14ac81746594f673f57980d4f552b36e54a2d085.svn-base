@@ -1,0 +1,198 @@
+package lb.rest.user.db.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import lb.rest.user.db.entity.BsSequence;
+import lb.rest.user.db.entity.BsSequenceExample;
+import lb.rest.user.db.entity.BsSequenceExample.Criteria;
+import lb.rest.user.db.entity.BsSequenceKey;
+import lb.rest.user.db.mapper.BsSequenceMapper;
+
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import fc.wpf.rest.db.iface.StaticTableDaoSupport;
+
+@Repository
+public class BsSequenceDao implements StaticTableDaoSupport<BsSequence, BsSequenceExample, BsSequenceKey> {
+
+	@Resource
+	private BsSequenceMapper mapper;
+
+	/**
+	 * 得到某一项序列号的下一个可用值。
+	 *
+	 * 同步锁定，保证并发一致！
+	 * 
+	 * @param depotId
+	 *            TODO
+	 * @param seqName
+	 *            要得到的序列名
+	 *
+	 * @return 可用的序列号
+	 * @throws Exception
+	 */
+	public synchronized int nextValue(int depotId, int userId, int grainType, int recordType) throws Exception {
+		int keyId = userId;
+		// int keyCategory = grainType;
+		int keyType = recordType;
+		if (userId <= 0 || recordType <= 0) {
+			throw new Exception("获取下一个可用序列号：序列号名不能为空");
+		}
+
+		int nextVal = 1;
+		BsSequenceExample example = new BsSequenceExample();
+
+		example.createCriteria().andKeyIdEqualTo(keyId).andKeyTypeEqualTo(keyType).andDepotIdEqualTo(depotId);
+
+		List<lb.rest.user.db.entity.BsSequence> sequenceList = mapper.selectByExample(example);
+
+		if (sequenceList != null && sequenceList.size() > 0) {
+			lb.rest.user.db.entity.BsSequence firstItem = sequenceList.get(0);
+			nextVal = firstItem.getKeyValue();
+			firstItem.setKeyValue(nextVal + 1);
+			mapper.updateByPrimaryKey(firstItem);
+		} else {
+			lb.rest.user.db.entity.BsSequence record = new lb.rest.user.db.entity.BsSequence();
+			record.setDepotId(depotId);
+			record.setKeyId(keyId);
+			// record.setKeyCategory(keyCategory);
+			record.setKeyType(keyType);
+			record.setKeyValue(nextVal + 1);
+			mapper.insertSelective(record);
+		}
+		return nextVal;
+	}
+
+	@Override
+	public int countByExample(BsSequenceExample example) {
+		return mapper.countByExample(example);
+	}
+
+	@Override
+	public int deleteByExample(BsSequenceExample example) {
+		return mapper.deleteByExample(example);
+	}
+
+	@Override
+	public int deleteByPrimaryKey(BsSequenceKey key) {
+		return mapper.deleteByPrimaryKey(key);
+	}
+
+	@Override
+	public int insert(BsSequence record) {
+		return mapper.insert(record);
+	}
+
+	@Override
+	public int insertSelective(BsSequence record) {
+		return mapper.insertSelective(record);
+	}
+
+	@Override
+	@Transactional
+	public int batchInsert(List<BsSequence> records) {
+		for (BsSequence record : records) {
+			mapper.insert(record);
+		}
+		return records.size();
+	}
+
+	@Override
+	@Transactional
+	public int batchUpdate(List<BsSequence> records) {
+		for (BsSequence record : records) {
+			mapper.updateByPrimaryKeySelective(record);
+		}
+		return records.size();
+	}
+
+	@Override
+	@Transactional
+	public int batchDelete(List<BsSequence> records) {
+		for (BsSequence record : records) {
+			mapper.deleteByPrimaryKey(record);
+		}
+		return records.size();
+	}
+
+	@Override
+	public List<BsSequence> selectByExample(BsSequenceExample example) {
+		return mapper.selectByExample(example);
+	}
+
+	@Override
+	public BsSequence selectByPrimaryKey(BsSequenceKey key) {
+		return mapper.selectByPrimaryKey(key);
+	}
+
+	@Override
+	public List<BsSequence> findAll(List<BsSequence> records) {
+		if (records == null || records.size() <= 0) {
+			return mapper.selectByExample(new BsSequenceExample());
+		}
+		List<BsSequence> list = new ArrayList<>();
+		for (BsSequence record : records) {
+			BsSequence result = mapper.selectByPrimaryKey(record);
+			if (result != null) {
+				list.add(result);
+			}
+		}
+		return list;
+	}
+
+	@Override
+	public int updateByExampleSelective(BsSequence record, BsSequenceExample example) {
+		return mapper.updateByExampleSelective(record, example);
+	}
+
+	@Override
+	public int updateByExample(BsSequence record, BsSequenceExample example) {
+		return mapper.updateByExample(record, example);
+	}
+
+	@Override
+	public int updateByPrimaryKeySelective(BsSequence record) {
+		return mapper.updateByPrimaryKeySelective(record);
+	}
+
+	@Override
+	public int updateByPrimaryKey(BsSequence record) {
+		return mapper.updateByPrimaryKey(record);
+	}
+
+	@Override
+	public int sumByExample(BsSequenceExample example) {
+		return 0;
+	}
+
+	@Override
+	public void deleteAll() {
+		mapper.deleteByExample(new BsSequenceExample());
+	}
+
+	@Override
+	public BsSequenceExample getExample(BsSequence record) {
+		BsSequenceExample example = new BsSequenceExample();
+		if (record != null) {
+			Criteria criteria = example.createCriteria();
+			if (record.getId() != null) {
+				criteria.andIdEqualTo(record.getId());
+			}
+			if (record.getKeyCategory() != null) {
+				criteria.andKeyCategoryEqualTo(record.getKeyCategory());
+			}
+			if (record.getKeyType() != null) {
+				criteria.andKeyTypeEqualTo(record.getKeyType());
+			}
+			if (record.getKeyId() != null) {
+				criteria.andKeyIdEqualTo(record.getKeyId());
+			}
+
+		}
+		return example;
+	}
+}

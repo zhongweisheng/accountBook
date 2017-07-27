@@ -1,0 +1,199 @@
+package lb.rest.user.db.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import lb.rest.user.db.entity.BsAttention;
+import lb.rest.user.db.entity.BsAttentionExample;
+import lb.rest.user.db.entity.BsAttentionExample.Criteria;
+import lb.rest.user.db.entity.BsAttentionKey;
+import lb.rest.user.db.mapper.BsAttentionMapper;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import fc.wpf.rest.db.iface.StaticTableDaoSupport;
+
+@Repository
+public class BsAttentionDao implements StaticTableDaoSupport<BsAttention, BsAttentionExample, BsAttentionKey> {
+
+	@Resource
+	private BsAttentionMapper mapper;
+
+	// status 状态{1已读 2 未读 3 取消}
+	public BsAttention getAttention(int subUserId, int objUserId) {
+		BsAttentionExample example = new BsAttentionExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andSubjectUserIdEqualTo(subUserId).andObjectUserIdEqualTo(objUserId);
+		List<BsAttention> list = mapper.selectByExample(example);
+		BsAttention attention = null;
+		if (list != null && list.size() > 0) {
+			attention = list.get(0);
+		}
+		return attention;
+	}
+
+	public String getIds(int userId) {
+		String ids = "0,";
+		List<BsAttention> list = getObjectList(userId);
+		if (list != null && list.size() > 0) {
+			for (BsAttention item : list) {
+				ids += item.getId() + ",";
+			}
+		}
+		ids = StringUtils.removeEnd(ids, ",");
+		return ids;
+	}
+
+	public List<Integer> getIdList(int userId) {
+		List<Integer> idList = new ArrayList<Integer>();
+		idList.add(0);
+		List<BsAttention> list = getObjectList(userId);
+		if (list != null && list.size() > 0) {
+			for (BsAttention item : list) {
+				idList.add(item.getId());
+			}
+		}
+		return idList;
+	}
+
+	public List<BsAttention> getSubjectList(int userId) {
+		BsAttentionExample example = new BsAttentionExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andSubjectUserIdEqualTo(userId).andStatusNotEqualTo(3);
+		example.setOrderByClause(" attention_time desc ");
+		List<BsAttention> list = mapper.selectByExample(example);
+		return list;
+	}
+
+	public List<BsAttention> getObjectList(int userId) {
+		BsAttentionExample example = new BsAttentionExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andObjectUserIdEqualTo(userId).andStatusNotEqualTo(3);
+		example.setOrderByClause(" attention_time desc ");
+		List<BsAttention> list = mapper.selectByExample(example);
+		return list;
+	}
+
+	@Override
+	public int countByExample(BsAttentionExample example) {
+		return mapper.countByExample(example);
+	}
+
+	@Override
+	public int deleteByExample(BsAttentionExample example) {
+		return mapper.deleteByExample(example);
+	}
+
+	@Override
+	public int deleteByPrimaryKey(BsAttentionKey key) {
+		return mapper.deleteByPrimaryKey(key);
+	}
+
+	@Override
+	public int insert(BsAttention record) {
+		return mapper.insert(record);
+	}
+
+	@Override
+	public int insertSelective(BsAttention record) {
+		return mapper.insertSelective(record);
+	}
+
+	@Override
+	@Transactional
+	public int batchInsert(List<BsAttention> records) {
+		for (BsAttention record : records) {
+			mapper.insert(record);
+		}
+		return records.size();
+	}
+
+	@Override
+	@Transactional
+	public int batchUpdate(List<BsAttention> records) {
+		for (BsAttention record : records) {
+			mapper.updateByPrimaryKeySelective(record);
+		}
+		return records.size();
+	}
+
+	@Override
+	@Transactional
+	public int batchDelete(List<BsAttention> records) {
+		for (BsAttention record : records) {
+			mapper.deleteByPrimaryKey(record);
+		}
+		return records.size();
+	}
+
+	@Override
+	public List<BsAttention> selectByExample(BsAttentionExample example) {
+		return mapper.selectByExample(example);
+	}
+
+	@Override
+	public BsAttention selectByPrimaryKey(BsAttentionKey key) {
+		return mapper.selectByPrimaryKey(key);
+	}
+
+	@Override
+	public List<BsAttention> findAll(List<BsAttention> records) {
+		if (records == null || records.size() <= 0) {
+			return mapper.selectByExample(new BsAttentionExample());
+		}
+		List<BsAttention> list = new ArrayList<>();
+		for (BsAttention record : records) {
+			BsAttention result = mapper.selectByPrimaryKey(record);
+			if (result != null) {
+				list.add(result);
+			}
+		}
+		return list;
+	}
+
+	@Override
+	public int updateByExampleSelective(BsAttention record, BsAttentionExample example) {
+		return mapper.updateByExampleSelective(record, example);
+	}
+
+	@Override
+	public int updateByExample(BsAttention record, BsAttentionExample example) {
+		return mapper.updateByExample(record, example);
+	}
+
+	@Override
+	public int updateByPrimaryKeySelective(BsAttention record) {
+		return mapper.updateByPrimaryKeySelective(record);
+	}
+
+	@Override
+	public int updateByPrimaryKey(BsAttention record) {
+		return mapper.updateByPrimaryKey(record);
+	}
+
+	@Override
+	public int sumByExample(BsAttentionExample example) {
+		return 0;
+	}
+
+	@Override
+	public void deleteAll() {
+		mapper.deleteByExample(new BsAttentionExample());
+	}
+
+	@Override
+	public BsAttentionExample getExample(BsAttention record) {
+		BsAttentionExample example = new BsAttentionExample();
+		if (record != null) {
+			Criteria criteria = example.createCriteria();
+			if (record.getId() != null) {
+				criteria.andIdEqualTo(record.getId());
+			}
+		}
+		return example;
+	}
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>操作记录</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/grainDepot.css">
+    <link rel="stylesheet" href="accountData/css/common/bootstrapdate.min.css ">
+    <link rel="stylesheet" href="accountData/css/common/bootstrap-datetimepicker.min.css">
+    <script type="text/javascript" src="accountData/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/bootstrap.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/jquery.include.min.js?v=20170626"></script>
+    <script type="text/javascript" src="accountData/js/common/common.min.js?v=20170626"></script>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml?v=20170626")</script>
+<div class="content conDiv clearfix">
+    <script>
+            $.include('accountData/shtml/left.shtml?v=20170626');
+    </script>
+    <div class="right">
+        <h2>操作记录</h2>
+        <div class="search clearfix">
+            <ul>
+                <li>
+                    <span>员工姓名：</span>
+                    <select name="operatePerson" id="operatePerson">
+
+                    </select>
+                </li>
+                <li>
+                    <span>操作类型：</span>
+                    <select name="operateType" id="operateType" >
+                        <option value="0">全部</option>
+                        <option value="11">添加入库单</option>
+                        <option value="12">编辑入库单</option>
+                        <option value="13">删除入库单</option>
+                        <option value="21">添加出库单</option>
+                        <option value="22">编辑出库单</option>
+                        <option value="23">删除出库单</option>
+                    </select>
+                </li>
+                <li>
+                    <div class="time">
+                        <span>日期：</span>
+                        <input type="text" id="dateStart" placeholder="起始时间" data-date-format="yyyy-mm-dd" >
+                        <input type="text" id="dateEnd" placeholder="结束时间" data-date-format="yyyy-mm-dd" >
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="table">
+        <table>
+            <thead>
+                <tr>
+                    <th width="100">序号</th>
+                    <th>员工姓名</th>
+                    <th>操作日期</th>
+                    <th>操作类型</th>
+                    <th>订单编号</th>
+                </tr> 
+            </thead>
+            <tbody id="list">
+
+            </tbody>
+            <script type="text/template7" id="inTable-list">
+                {{#each inTable}}
+                <tr>
+                    <td>{{number}}</td>
+                    <td>{{operateUserName}}</td>
+                    <td>{{operateTime}}</td>
+                    <td>{{operateName}}</td>
+                    <td>{{targetId}}</td>
+                </tr>
+                {{/each}}
+                </script>
+        </table>
+        </div>
+        <div class="page">
+
+        </div>
+    </div>
+</div>
+<script>$.include("accountData/shtml/foot.shtml")</script>
+
+<script type="text/javascript" src="accountData/js/common/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/rest.min.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/common/page.min.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.zh-CN.js"></script>
+<script type="text/javascript" src="accountData/js/common/echarts.common.min.js"></script>
+<script type="text/javascript" src="accountData/js/opration.js?v=20170626"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人资料</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/accountSetting.css">
+    <link rel="stylesheet" href="accountData/css/common/bootstrapdate.min.css ">
+    <link rel="stylesheet" href="accountData/css/common/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="accountData/css/select2.min.css">
+    <script type="text/javascript" src="accountData/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/jquery.include.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/common.min.js"></script>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml?v=20170626")</script>
+<div class="content clearfix" style="height: 857px;">
+    <script>$.include("accountData/shtml/left.shtml?v=20170626")</script>
+    <div class="right">
+        <div class="title">账户设置</div>
+        <div class="rightContent">
+            <div class="form">
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">姓名:</span><input id="username" placeholder="请输入用户姓名" maxlength="18"><p class="reminder">请输入用户姓名</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">账户号码:</span><input readonly id="accountNum" placeholder=""></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">密码:</span><input id="password" placeholder="6-12位数字、英文、字母" maxlength="12" autocomplete="off"><p class="reminder">请输入密码</p></div>
+            </div>
+        </div>
+        <div class="rightFooter">
+            <div class="btn" id="submit">保存</div>
+        </div>
+    </div>
+</div>
+<script>$.include('accountData/shtml/foot.shtml')</script>
+<script type="text/javascript" src="accountData/js/common/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/select2.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/jquery.citys.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.zh-CN.js"></script>
+<script type="text/javascript" src="accountData/js/common/rest.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/select.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/accountSetting.min.js?v=20170626"></script>
+</body>
+</html>

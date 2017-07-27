@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>提交成功</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.include.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common.min.js"></script>
+    <style type="text/css">
+        .left{
+            width: 159px;
+            height: 100%;
+            margin-top: 100px;
+            float: left;
+        }
+        .right{
+            float: left;
+            margin-top: 50px;
+            width:calc(100% - 160px);
+            width:-moz-calc(100% - 160px);
+            width:-webkit-calc(100% - 160px);
+            border-left: 1px solid #000;
+        }
+        .parent {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child{
+            padding-left: 15%;
+        }
+        .child p {
+            display: inline-block;
+            width: 100%;
+            margin-left: -15px;
+            height: 40px;
+            line-height: 40px;
+            text-indent: 1rem;
+            font-size: 16px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child p:hover,.parent:hover{
+            cursor: pointer;
+            color: #f5a85d;
+            font-size: 18px;
+        }
+        .parent:hover{
+            font-size: 24px;
+        }
+        .child i {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            line-height: 8px;
+            background-color: #585858;
+            border: 1px solid #585858;
+            border-radius: 4px;
+        }
+        .left_active{
+            color: #f5a85d;
+        }
+
+        .rightContent{
+            width: 1000px;
+            margin-left: 39px;
+            height: 500px;
+        }
+        .middle{
+            width: 400px;
+            margin: 100px auto;
+        }
+        .middle li{
+            width: 100%;
+            height: 80px;
+            line-height: 80px;
+            font-size: 24px;
+            text-align: center;
+        }
+        .middle li > a{
+            display: inline-block;
+            width: 94%;
+            height: 50px;
+            line-height: 50px;
+            color: #fff;
+            background: #ec971f;
+            text-align: center;
+            transition: background 0.25s,box-shadow 0.25s,width 0.25s;
+        }
+        .middle li > a:hover{
+            width: 100%;
+            -webkit-box-shadow:0 0 5px 5px #ec971f;
+            -moz-box-shadow:0 0 5px 5px #ec971f;
+            box-shadow:0 0 5px 5px #ec971f;
+            background: #f6a85e;
+        }
+    </style>
+    
+</head>
+<body>
+    <script>$.include("accountData/shtml/head.shtml")</script>
+    <div class="content clearfix" style="height: 750px;">
+        <div class="left">
+            <div class="leftContent">
+
+            </div>
+        </div>
+        <div class="right">
+            <div class="rightContent">
+                <div class="middle">
+                    <ul>
+                        <li>入库单提交成功!</li>
+                        <li>
+                            <a id="print">打印库单</a>
+                        </li>
+                        <li>
+                            <a id="see">看入库单记录</a>
+                        </li>
+                        <li>
+                            <a id="next">继续录入</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>$.include("accountData/shtml/foot.shtml")</script>
+    <script type="text/javascript" src="accountData/js/md5.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common.min.js"></script>
+    <script type="text/javascript">
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);  //获取url中"?"符后的字符串并正则匹配
+            var context = "";
+            if (r != null)
+                context = r[2];
+            reg = null;
+            r = null;
+            return context == null || context == "" || context == "undefined" ? "" : context;
+        }
+        var id = getQueryString('id');
+        $("#print").on('click',function () {
+            window.open('dataPrint.html?id='+id);
+        });
+        $(document).on('click','#next',function () {
+            window.location.href = 'inForm.html?from='+getQueryString('from');
+        })
+        $(document).on('click','#see',function () {
+            window.location.href = 'inTable.html?from='+getQueryString('from');
+        })
+    </script>
+</body>
+</html>

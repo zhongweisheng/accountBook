@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>入库单记录</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name = "format-detection" content = "telephone=no">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/inTable.css">
+    <link rel="stylesheet" href="accountData/css/select2.min.css">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.include.min.js"></script>
+    <script type="text/javascript" src="libs/template7/1.1.4/template7.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common.min.js"></script>
+    <style type="text/css">
+        .left {
+            width: 159px;
+            margin-top: 100px;
+            float: left;
+        }
+
+        .parent {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            transition: color 0.5s, font-size 0.5s;
+        }
+
+        .child {
+            padding-left: 15%;
+        }
+
+        .child p {
+            display: inline-block;
+            width: 100%;
+            margin-left: -15px;
+            height: 40px;
+            line-height: 40px;
+            text-indent: 1rem;
+            font-size: 16px;
+            transition: color 0.5s, font-size 0.5s;
+        }
+
+        .child p:hover, .parent:hover {
+            cursor: pointer;
+            color: #f5a85d;
+            font-size: 18px;
+        }
+
+        .parent:hover {
+            font-size: 24px;
+        }
+
+        .child i {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            line-height: 8px;
+            background-color: #585858;
+            border: 1px solid #585858;
+            border-radius: 4px;
+        }
+
+        .left_active {
+            color: #f5a85d;
+        }
+    </style>
+    <script type="text/javascript">
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);  //获取url中"?"符后的字符串并正则匹配
+            var context = "";
+            if (r != null)
+                context = r[2];
+            reg = null;
+            r = null;
+            return context == null || context == "" || context == "undefined" ? "" : context;
+        }
+    </script>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml")</script>
+<div class="content clearfix" style="min-width:1400px;width:96%;height: 857px;margin-left: 1%;margin-right: 3%;">
+    <script>
+        var fromId = getQueryString('from');
+        if(fromId == 1 ||fromId == ''){
+            $.include('accountData/shtml/left.shtml');
+        }
+    </script>
+    <div class="right">
+        <div class="rightHead clearfix">
+            <script>
+                var fromId = getQueryString('from');
+                if(fromId == 2){
+                    $.include('accountData/shtml/topNav.shtml');
+                }
+            </script>
+            <ul>
+                <li>入&nbsp;库&nbsp;单&nbsp;记&nbsp;录</li>
+                <li class="clearfix" style="font-size: 14px;">
+                    <div class="lt" style="width: 30%;margin-left: 50px;">
+                        <span style="color: #000;">作物类型：</span>
+                        <select name="grainType" id="grainType" style="width: 60%;">
+                            <option value="2">玉米</option>
+                            <option value="1">小麦</option>
+                            <option value="3">水稻</option>
+                        </select>
+                    </div>
+                    <div class="lt" style="width: 30%;">
+                        <span style="color: #000;">送粮人：</span>
+                        <label for="salePerson">
+                            <select name="salePerson" id="salePerson" style="width: 60%;">
+
+                            </select>
+                        </label>
+                    </div>
+                    <div class="lt" style="width: 30%;margin-left: 50px;">
+                        <span style="color: #000;">粮库：</span>
+                           <select name="depot" id="depot" class="depot" style="width: 60%;">
+                        </select>
+                    </div>
+                </li>
+                <li class="clearfix">
+                    <div id="timeChange">
+                        <span><a class="watchActive" data-timeType="1">按明细</a></span>
+                        <span><a class="watch" data-timeType="2">按天看</a></span>
+                        <span><a class="watch" data-timeType="3">按周看</a></span>
+                        <span><a class="watch" data-timeType="4">按月看</a></span>
+                        <span><a class="watch" id="excelBtn">导出表格</a></span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="rightContent">
+            <table>
+                <thead>
+                <tr>
+                    <td class="tcenter">序号</td>
+                    <td class="tcenter">入库日期</td>
+                    <td class="tcenter">送粮人</td>
+                    <td class="tright">毛重(公斤)</td>
+                    <td class="tright">皮重(公斤)</td>
+                    <td class="tright">扣重(公斤)</td>
+                    <td class="tright">净重(公斤)</td>
+                    <td class="tright">单价(元/斤)</td>
+                    <td class="tright">金额(元)</td>
+                    <td class="tcenter">已付款</td>
+                    <td class="tright" style="padding-right: 20px;">未付款</td>
+                    <td class="tcenter">操作</td>
+                </tr>
+                </thead>
+                <tbody id="list">
+
+                </tbody>
+                <script type="text/template7" id="inTable-list">
+                    {{#each inTable}}
+                    <tr>
+                        <td class="tcenter">{{number}}</td>
+                        {{#js_compare "this.type === 1"}}
+                        <td class="tcenter">{{date}}</td>
+                        {{else}}
+                        <td class="tcenter">{{timeUnit}}</td>
+                        {{/js_compare}}
+                        <td class="tcenter staffName">{{staffName}}</td>
+                        <td class="tright">{{grossWeight}}</td>
+                        <td class="tright">{{tareWeight}}</td>
+                        <td class="tright">{{deduction}}</td>
+                        <td class="tright">{{netWeight}}</td>
+                        <td class="tright">{{unitPrice}}</td>
+                        <td class="tright money">{{money}}</td>
+                        <td class="tright" style="white-space: nowrap">
+                            <input class="paidMoney" type="number" value="{{paidMoney}}"  disabled style="width: 80px;">
+                            <span class="changepay" style="color:#31b0d5;cursor: pointer;white-space: nowrap">修改</span>
+                            <span class="pay" data-id="{{id}}" style="color:#31b0d5;cursor: pointer;display: none;white-space: nowrap">确定</span>
+                        </td>
+                        <td class="tright unpaidMoney" style="padding-right: 20px;">{{unpaidMoney}}</td>
+                        <td class="tcenter" style="position: relative;white-space: nowrap">
+                            <button data-id={{id}} class="edit" onclick="toEdit(this)">编辑</button>
+                            <button id="print" data-id="{{id}}">打印</button>
+                            <button id="accountRemark">详情</button>
+                            <button data-id={{id}} class="delete">删除</button>
+                            <div class="accountRemark" style="top: 40px;position: absolute;right:0;z-index: 5;background: #fff;display: none;width: 400px;border: 1px solid #f6a85e;">
+                                <ul>
+                                    <li style="text-align: left;text-indent: 20px;border-bottom: 1px dashed #f6a85e;">单号：{{recordNumber}}</li>
+                                    <li style="text-align: left;text-indent: 20px;border-bottom: 1px dashed #f6a85e;">车号：{{licensePlate}}</li>
+                                    <li style="text-align: left;text-indent: 20px;border-bottom: 1px dashed #f6a85e;">送粮人：{{staffName}}</li>
+                                    <li style="text-align: left;text-indent: 20px;border-bottom: 1px dashed #f6a85e;">粮质：{{quality}}</li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </table>
+        </div>
+        <div class="page" style="margin-left: 39px">
+
+        </div>
+    </div>
+</div>
+<script>$.include("accountData/shtml/foot.shtml")</script>
+<script type="text/javascript" src="accountData/js/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common.min.js"></script>
+<script type="text/javascript" src="accountData/js/select2.min.js"></script>
+<script type="text/javascript" src="js/classie.min.js"></script>
+<script type="text/javascript" src="accountData/js/rest.js"></script>
+<script type="text/javascript" src="accountData/js/page.min.js"></script>
+<script type="text/javascript" src="accountData/js/inTable.js"></script>
+</body>
+</html>

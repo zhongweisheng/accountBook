@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代储凭证</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name = "format-detection" content = "telephone=no">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/storageTable.css">
+    <link rel="stylesheet" href="accountData/css/select2.min.css">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.include.min.js"></script>
+    <script type="text/javascript" src="libs/template7/1.1.4/template7.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common.min.js"></script>
+    <style type="text/css">
+        .left {
+            width: 159px;
+            margin-top: 70px;
+            float: left;
+        }
+
+        .parent {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            transition: color 0.5s, font-size 0.5s;
+        }
+
+        .child {
+            padding-left: 15%;
+        }
+
+        .child p {
+            display: inline-block;
+            width: 100%;
+            margin-left: -15px;
+            height: 40px;
+            line-height: 40px;
+            text-indent: 1rem;
+            font-size: 16px;
+            transition: color 0.5s, font-size 0.5s;
+        }
+
+        .child p:hover, .parent:hover {
+            cursor: pointer;
+            color: #f5a85d;
+            font-size: 18px;
+        }
+
+        .parent:hover {
+            font-size: 24px;
+        }
+
+        .child i {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            line-height: 8px;
+            background-color: #585858;
+            border: 1px solid #585858;
+            border-radius: 4px;
+        }
+
+        .left_active {
+            color: #f5a85d;
+        }
+    </style>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml")</script>
+<div class="content clearfix" style="min-width:1400px;width:96%;height: 857px;margin-left: 1%;margin-right: 3%;">
+    <script>
+            $.include('accountData/shtml/left.shtml');
+    </script>
+    <div class="right">
+        <div class="rightHead clearfix">
+            <ul>
+                <li>代 储 凭 证</li>
+                <li class="clearfix" style="font-size: 14px;">
+                    <div class="lt" style="width: 20%;margin-left: 50px;font-size: 20px;">
+                        <span style="color: #000;">作物类型：小麦</span>
+                    </div>
+                    <div class="lt" style="width: 30%;">
+                        <span style="color: #000;">送粮人：</span>
+                        <label for="salePerson">
+                            <select name="salePerson" id="salePerson" style="width: 60%;">
+
+                            </select>
+                        </label>
+                    </div>
+                    <div class="lt" style="width: 30%;margin-left: 50px;">
+                        <span style="color: #000;">粮库：</span>
+                           <select name="depot" id="depot" class="depot" style="width: 60%;">
+                        </select>
+                    </div>
+                </li>
+                <li class="clearfix" style="text-align: right;">
+                    <a class="watch" onclick="excelBtn()" style="cursor: pointer;">导出表格</a>
+                </li>
+            </ul>
+        </div>
+        <div class="rightContent">
+            <table>
+                <thead>
+                <tr>
+                    <td class="tcenter">序号</td>
+                    <td class="tcenter">代储日期</td>
+                    <td class="tcenter">送粮人</td>
+                    <td class="tright">毛重(公斤)</td>
+                    <td class="tright">皮重(公斤)</td>
+                    <td class="tright">扣重(公斤)</td>
+                    <td class="tright">净重(公斤)</td>
+                    <td class="tright">已结算(公斤)</td>
+                    <td class="tright">未结算(公斤)</td>
+                    <td class="tright">已付款</td>
+                    <td class="tcenter">操作</td>
+                </tr>
+                </thead>
+                <tbody id="list">
+
+                </tbody>
+                <script type="text/template7" id="inTable-list">
+                    {{#each inTable}}
+                    <tr>
+                        <td class="tcenter">{{number}}</td>
+                        <td class="tcenter">{{date}}</td>
+                        <td class="tcenter staffName">{{staffName}}</td>
+                        <td class="tright">{{grossWeight}}</td>
+                        <td class="tright">{{tareWeight}}</td>
+                        <td class="tright">{{deduction}}</td>
+                        <td class="tright">{{netWeight}}</td>
+                        <td class="tright">{{hasSettled}}</td>
+                        <td class="tright">{{notSettled}}</td>
+                        <td class="tright">{{paidMoney}}</td>
+                        <td class="tcenter" style="position: relative;white-space: nowrap">
+                            <button data-id={{id}} class="balance">结算</button>
+                            <button data-id={{id}} class="edit" onclick="toEdit(this)">编辑</button>
+                            <button data-id={{id}} class="print">打印</button>
+                            <button data-id={{id}} class="details">详情</button>
+                            <button data-id={{id}} class="delete">删除</button>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </table>
+        </div>
+        <div class="page" style="margin-left: 39px">
+
+        </div>
+    </div>
+</div>
+<div class="balanceModel">
+    <div class="b-content b-write">
+        <div class="card">
+            <ul>
+                <li class="b-item tcenter">
+                    <h4>结 算</h4>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">送粮人:</span>
+                    <span class="inner-r b-staffName"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">送粮时间:</span>
+                    <span class="inner-r b-date"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">净重(公斤):</span>
+                    <span class="inner-r b-netWeight"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">已结算(公斤):</span>
+                    <span class="inner-r b-hasSettled"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">未结算(公斤):</span>
+                    <span class="inner-r b-notSettled"></span>
+                </li>
+            </ul>
+        </div>
+        <div class="card" style="margin: 0;padding-bottom: 8px;">
+            <ul>
+                <li class="b-item">
+                    <span class="inner-l tleft">今日结算数(公斤):</span>
+                    <span class="inner-r"><input type="number" id="settleCount"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">今日结算价(元/斤):</span>
+                    <span class="inner-r"><input type="number" id="settlePrice"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">应付款:</span>
+                    <span class="inner-r" id="shouldPay"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">实付款:</span>
+                    <span class="inner-r"><input type="number" id="actualPay"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner50"><button id="b-cencel">取消</button></span>
+                    <span class="inner50"><button id="b-confirm">确定</button></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="b-content b-yes">
+        <div class="card">
+            <ul>
+                <li class="b-item tcenter">
+                    <h4>付 款 信 息</h4>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">送粮人:</span>
+                    <span class="inner-r b-staffName"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">送粮时间:</span>
+                    <span class="inner-r b-date"></span>
+                </li>
+            </ul>
+        </div>
+        <div class="card" style="margin: 0;padding-bottom: 8px;">
+            <ul>
+                <li class="b-item">
+                    <span class="inner-l tleft">今日结算数(公斤):</span>
+                    <span class="inner-r settleCount"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">今日结算数(元/斤):</span>
+                    <span class="inner-r settlePrice"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">实付款:</span>
+                    <span class="inner-r actualPay"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner50"><button id="b-back">返回</button></span>
+                    <span class="inner50"><button id="b-submit">确定</button></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<script>$.include("accountData/shtml/foot.shtml")</script>
+<script type="text/javascript" src="accountData/js/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common.min.js"></script>
+<script type="text/javascript" src="accountData/js/select2.min.js"></script>
+<script type="text/javascript" src="js/classie.min.js"></script>
+<script type="text/javascript" src="accountData/js/rest.min.js"></script>
+<script type="text/javascript" src="accountData/js/page.min.js"></script>
+<script type="text/javascript" src="accountData/js/storageTable.js"></script>
+</body>
+</html>

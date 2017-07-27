@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>粮库信息</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/grainDepot.css">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.include.min.js"></script>
+    <script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+    <script type="text/javascript" src="accountData/js/common.min.js"></script>
+    <style type="text/css">
+        .left{
+            width: 159px;
+            margin-top: 90px;
+            float: left;
+        }
+        .parent {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child{
+            padding-left: 15%;
+        }
+        .child p {
+            display: inline-block;
+            width: 100%;
+            margin-left: -15px;
+            height: 40px;
+            line-height: 40px;
+            text-indent: 1rem;
+            font-size: 16px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child p:hover,.parent:hover{
+            cursor: pointer;
+            color: #f5a85d;
+            font-size: 18px;
+        }
+        .parent:hover{
+            font-size: 24px;
+        }
+        .child i {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            line-height: 8px;
+            background-color: #585858;
+            border: 1px solid #585858;
+            border-radius: 4px;
+        }
+        .left_active{
+            color: #f5a85d;
+        }
+        .right{
+            height: 700px;
+        }
+    </style>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml")</script>
+<div class="content clearfix"  style="height: 857px;">
+    <script>$.include("accountData/shtml/left.shtml")</script>
+    <div class="right">
+        <div class="rightHead clearfix">
+            <div class="head-container">
+                <div class="lt head-tab" onclick="window.location.href='companyMsg.html'">基本资料</div>
+                <div class="lt head-tab" onclick="window.location.href='staffAdmin.html'">员工管理</div>
+                <div class="lt head-tab head-tab-active">粮库信息</div>
+            </div>
+        </div>
+        <div class="add-container"><button class="add" id="add">添加</button></div>
+        <div class="rightContent">
+            <table style="table-layout: fixed;">
+                <thead>
+                <tr>
+                    <td style="width: 50px;">序号</td>
+                    <td style="width:180px;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;">库名称</td>
+                    <td style="width: 120px;">库容</td>
+                    <td style="width:200px;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;">库地址</td>
+                    <td style="width: 200px;">操作</td>
+                </tr>
+                </thead>
+                <tbody id="list">
+
+                </tbody>
+                <script type="text/template7" id="salePerson-list">
+                    {{#each salePerson}}
+                    <tr>
+                        <td style="width: 50px;">{{number}}</td>
+                        <td style="width: 180px;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;">{{depotName}}</td>
+                        <td style="width: 120px;">{{depotCapacity}}</td>
+                        <td style="width: 200px;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;">{{depotLocation}}</td>
+                        <td style="position: relative;width: 200px;">
+                            <button id="editbtn" data-id={{staffId}}>编辑</button>
+                            <button id="deletebtn" data-id={{staffId}}>删除</button>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </table>
+        </div>
+        <!--<div class="page" style="margin-left: 39px">
+
+        </div>-->
+    </div>
+</div>
+<script>$.include('accountData/shtml/foot.shtml')</script>
+<div id="addP" class="registerModel">
+    <div class="register-form">
+        <div class="content">
+            <div class="register-form-title">
+                <ul>
+                    <li class="list1"></li>
+                    <li class="list2"><span>粮库信息</span></li>
+                </ul>
+            </div>
+            <div class="form">
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>库名称:</span><input id="depotName" placeholder="请输入库名称" maxlength="10"><p class="reminder">请输入库名称</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>库容:</span><input id="depotCapacity" placeholder="请输入库容" maxlength="10"><p class="reminder">请输入库容</p></div>
+                <div class="clearfix" style="margin-bottom: 20px">
+                    <span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>库地址:</span>
+                    <div class="addressSelete">
+                        <div class="cityselect"><select id="province" name="province"></select></div>
+                        <div class="cityselect"><select style="margin-left: 10%" id="city" name="city"></select></div>
+                        <div class="cityselect"><select style="margin-left: 10%" id="area" name="area"></select></div>
+                    </div>
+                    <p class="reminder">请输入库地址</p>
+                </div>
+            </div>
+            <div class="register-btn">
+                <a id="cencel">取消</a>
+                <a id="submit" style="float: right">提交</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="edit" class="registerModel">
+    <div class="register-form">
+        <div class="content">
+            <div class="register-form-title">
+                <ul>
+                    <li class="list1"></li>
+                    <li class="list2"><span>粮库信息</span></li>
+                </ul>
+            </div>
+            <div class="form">
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>库名称:</span><input id="depotName-edit" placeholder="请输入库名称" maxlength="10"><p class="reminder">请输入库名称</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>库容:</span><input id="depotCapacity-edit" placeholder="请输入库容" maxlength="10"><p class="reminder">请输入库容</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>库地址:</span><input id="depotLocation-edit" placeholder="请输入库地址" maxlength="10"><p class="reminder">请输入库地址</p></div>
+            </div>
+            <div class="register-btn">
+                <a id="editCencel" >取消</a>
+                <a id="editSubmit" style="float: right">提交</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="accountData/js/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/rest.min.js"></script>
+<script type="text/javascript" src="accountData/js/jquery.citys.min.js"></script>
+<script type="text/javascript" src="accountData/js/page.min.js"></script>
+<script type="text/javascript" src="accountData/js/grainDepot.min.js"></script>
+</body>
+</html>

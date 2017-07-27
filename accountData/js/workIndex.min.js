@@ -1,0 +1,1 @@
+$(".leftContent > div:nth-child(1)").addClass("left_active");

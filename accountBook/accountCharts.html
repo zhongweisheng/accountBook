@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>记账统计</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/accountCharts.css">
+    <script type="text/javascript" src="accountData/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/jquery.include.js"></script>
+    <script type="text/javascript" src="accountData/js/common/common.min.js"></script>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml?v=20170626")</script>
+<div class="content conDiv clearfix">
+    <script>
+        $.include('accountData/shtml/left.shtml?v=20170626');
+        $('.left>div').children("ul").hide();
+    </script>
+    <div class="right" style="color: #111;">
+        <div class="r-header">
+            <div class="lt r-title">今日概况</div>
+            <div class="ri">
+                <span class="drop-title">请选择粮库</span>
+                <select name="depot" id="depot" class="depot drop">
+
+                </select>
+            </div>
+        </div>
+        <div id="list">
+
+        </div>
+        <div class="r-header" style="margin-top: 50px;">
+            <div class="lt r-title">过往分析</div>
+            <div class="ri">
+                <span class="drop-title">种类筛选:</span>
+                <select name="grainType" id="grainType" class="drop">
+                    <option value="2">玉米</option>
+                    <option value="1">小麦</option>
+                    <option value="3">水稻</option>
+                </select>
+            </div>
+            <div class="ri">
+                <span class="drop-title">单位筛选:</span>
+                <select name="searchType" id="searchType" class="drop">
+                    <option value="1">吨</option>
+                    <option value="2">金额</option>
+                </select>
+            </div>
+            <div class="ri">
+                <span class="drop-title">时间筛选:</span>
+                <select name="searchType" id="timeType" class="drop">
+                    <option value="1">按天看</option>
+                    <option value="2">按周看</option>
+                    <option value="3">按月看</option>
+                </select>
+            </div>
+        </div>
+        <div class="r-charts clearfix">
+            <div class="r-div">
+                <div id="c-inLine" style="width: 100%;height: 350px;"></div>
+            </div>
+            <div class="r-div">
+                <div id="c-inBar" style="width: 100%;height: 350px;"></div>
+            </div>
+            <div class="r-div">
+                <div id="c-outLine" style="width: 100%;height: 350px;"></div>
+            </div>
+            <div class="r-div">
+                <div id="c-outBar" style="width: 100%;height: 350px;"></div>
+            </div>
+            <div class="r-div">
+                <div id="c-hasBar" style="width: 100%;height: 350px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/template" id="table-list">
+    {{#each table}}
+    <div class="r-card">
+        <ul>
+            <li class="col-16 padding-10">
+                <p class="card-line">今日共买粮:</p>
+                <p class="card-line"><span class="orange">{{sumRkAmount}}</span>(吨)</p>
+            </li>
+            <li class="col-5">&nbsp;</li>
+            <li class="col-16 padding-10">
+                <p class="card-line">今日共支出:</p>
+                <p class="card-line"><span class="orange">{{sumRkMoney}}</span>(元)</p>
+            </li>
+            <li class="col-5">&nbsp;</li>
+            <li class="col-16 padding-10">
+                <p class="card-line">今日共卖粮:</p>
+                <p class="card-line"><span class="orange">{{sumCkAmount}}</span>(吨)</p>
+            </li>
+            <li class="col-5">&nbsp;</li>
+            <li class="col-16 padding-10">
+                <p class="card-line">今日共收入:</p>
+                <p class="card-line"><span class="orange">{{sumCkMoney}}</span>(元)</p>
+            </li>
+            <li class="col-5">&nbsp;</li>
+            <li class="col-16 padding-10">
+                <p class="card-line">库存:</p>
+                <p class="card-line"><span class="orange">{{sumBalance}}</span>(吨)</p>
+            </li>
+        </ul>
+    </div>
+    <div class="r-table">
+        <h4 class="tcenter table-title">品种买卖明细</h4>
+        <table cellpadding="0" cellspacing="0" class="item">
+            <tr class="bg-orange h40">
+                <td>品种</td>
+                <td>买粮(吨)</td>
+                <td>卖粮(吨)</td>
+                <td>库存(吨)</td>
+            </tr>
+            <tr class="h40">
+                <td>玉米</td>
+                <td>{{ymNetWeightIn}}</td>
+                <td>{{ymNetWeightOut}}</td>
+                <td>{{ymkc}}</td>
+            </tr>
+            <tr class="h40">
+                <td>小麦</td>
+                <td>{{xmNetWeightIn}}</td>
+                <td>{{xmNetWeightOut}}</td>
+                <td>{{xmkc}}</td>
+            </tr>
+            <tr class="h40">
+                <td>水稻</td>
+                <td>{{sdNetWeightIn}}</td>
+                <td>{{sdNetWeightOut}}</td>
+                <td>{{sdkc}}</td>
+            </tr>
+        </table>
+    </div>
+    {{/each}}
+</script>
+<script>$.include("accountData/shtml/foot.shtml")</script>
+
+<script type="text/javascript" src="accountData/js/common/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/rest.min.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/common/page.min.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="accountData/js/common/echarts.common.min.js"></script>
+<script type="text/javascript" src="accountData/js/accountCharts.js?v=20170626"></script>
+</body>
+</html>

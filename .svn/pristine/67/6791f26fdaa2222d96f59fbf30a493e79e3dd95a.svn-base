@@ -1,0 +1,769 @@
+/**
+ * Created by new on 2017/3/28.
+ */
+if (navigator.userAgent.indexOf('Firefox') >= 0) {
+    $('input[type=number]').on('DOMMouseScroll', function () {
+        return false;
+    });
+} else {
+    $('input[type=number]').on('mousewheel', function () {
+        return false;
+    });
+}
+
+var userId = DES3.decrypt(localStorage.getItem('userId'));
+var ownerId = DES3.decrypt(localStorage.getItem('ownerId'));
+var isNewPerson, driverstate, locationNum, locationText;
+
+//左边栏样式
+$(".leftContent > div:nth-child(4) > p:nth-child(6)").addClass("left_active");
+$(".leftContent > div:nth-child(3)").addClass("left_active");
+//跳转未完成入库单页面
+$(".noComplete").on('click', function () {
+    location.href = 'noStorageForm.html';
+});
+
+//清除扣重默认值
+$("#deduction").on('focus', function () {
+    if ($("#deduction").val() == 0 || $("#deduction").val() == '') {
+        $("#deduction").val('');
+    }
+});
+
+
+//得到粮库
+var test;
+var depotre = Restful.post('bsinventorydepot/getDepots', {userId: userId});
+test = depotre[0].id;
+//切换粮库
+$('.depot-slider').on('click', '.depot', function () {
+    $(this).removeClass('depot-active');
+    $(this).siblings().addClass('depot').removeClass('depot-active');
+    $(this).addClass('depot-active');
+    test = $(this).attr('depotre-id');
+});
+
+//显示粮库
+var depotNum = depotre.length;
+var mwidth = depotNum * 400;
+$('.depot-slider').width(mwidth + 'px');
+if (depotNum == 1) {
+    $('.num1').show().siblings().hide();
+    $('.num1').html('').append('<div depotre-id="' + depotre[0].id + '" style="width:50%;height:2rem;line-height:2rem;text-align:center;color:#fff;background-color:#f7941d;margin: 0 auto;">' + depotre[0].name + '</div>');
+} else if (depotNum == 2) {
+    $('.num2').show().siblings().hide();
+    $('.num2 .depot-slider').html('').append('<div class="depot-active" depotre-id="' + depotre[0].id + '">' + depotre[0].name + '</div><div class="depot" depotre-id="' + depotre[1].id + '">' + depotre[1].name + '</div>');
+} else {
+    $('.num3').show().siblings().hide();
+    var html = '';
+    for (var i = 0, len = depotre.length; i < len; i++) {
+        html += '<div class="depot" depotre-id="' + depotre[i].id + '">' + depotre[i].name + '</div>';
+    }
+    $(".depot-slider").html('').append(html);
+    $('.depot-slider div:first-child').addClass('depot-active');
+    $('.next').on('click', function () {
+        var sr = parseInt($('.depot-slider').css('left')) * '-1';
+        var nleft = sr + 800;
+        if (nleft >= mwidth) {
+            alert('已经是最后一个库');
+            $('.next').css('background', '#ddd');
+        } else {
+            sr = sr + 800;
+            $('.depot-slider').css('left', '-' + sr + 'px');
+            $('.pre').css('background', '#aaa');
+        }
+    });
+    $('.pre').on('click', function () {
+        var sl = parseInt($('.depot-slider').css('left')) * '-1';
+        if (sl == 0) {
+            alert('已经是第一个库');
+            $('.pre').css('background', '#ddd');
+        } else {
+            sl = sl - 800;
+            $('.depot-slider').css('left', '-' + sl + 'px');
+            $('.next').css('background', '#aaa');
+        }
+    });
+}
+
+//获取未完成代储录入数字
+function getNum(){
+    var num = Restful.post('bsInventoryStorageTemp/queryCount',{userId:userId,recordType:3});
+/*    alert(num.retcode);*/
+    if(num && num.success){
+        $(".finishNum").html(num.retcode);
+    }else{
+        $(".finishNum").html(0);
+        alert('获取未完成代储录入单数失败，稍后再试');
+    }
+}
+getNum();
+
+//获取单号，称重日期，时间
+var select2Array = [], driverArray = [], licensePlate = ['无'], phoneArray = [''], driverPhone = [''];
+var person = Restful.post('bsinventorystaff/list', {userId: ownerId, staffType: 1, pageSize: 1000});
+if (person) {
+    if (person.success) {
+        var personArr = person.dataList;
+        select2Array.push({id: 0, text: '请选择', phone: ''});
+        $.each(personArr, function (index, val) {
+            select2Array.push({id: val.staffId, text: val.trueName, phone: val.phone});
+            phoneArray.push(val.phone);
+        });
+    } else {
+        select2Array.push({id: 0, text: '无', phone: ''});
+    }
+}
+var driver = Restful.post('bsinventorystaff/list', {userId: ownerId, staffType: 3, pageSize: 1000});
+if (driver) {
+    if (driver.success) {
+        var driverArr = driver.dataList;
+        driverArray.push({id: 0, text: '请选择', phone: ''});
+        $.each(driverArr, function (index, val) {
+            driverArray.push({id: val.staffId, text: val.trueName, phone: val.phone});
+            licensePlate.push(val.licensePlate);
+            driverPhone.push(val.phone);
+        })
+    } else {
+        driverArray.push({id: 0, text: '无', phone: ''});
+    }
+}
+$('#salePerson').select2({
+    data: select2Array,
+    templateResult: formatState
+});
+$('#driver').select2({
+    data: driverArray,
+    templateResult: formatState
+});
+$('#driver').on('change', function () {
+    var idx = $('#driver').children('option:selected').index();
+});
+//select格式化
+function formatState(state) {
+    if (!state.id) {
+        return state.text;
+    }
+    var $state = '';
+    if (state.text != '请选择') {
+        $state = $(
+            '<span style="display: inline-block;height: 2rem;">姓名: ' + state.text + '</br><span>手机号:' + state.phone + '</span></span>'
+        );
+    } else {
+        $state = $(
+            '<span style="display: inline-block;">' + state.text + '</span>'
+        );
+    }
+    return $state;
+};
+
+
+//初始化日期
+$(function () {
+    for (var i = 0; i < 24; i++) {
+        var hourS = i;
+        if (hourS < 10) {
+            hourS = '0' + i;
+        }
+        $("#hour").append('<option value="' + hourS + '">' + hourS + '</option>');
+    }
+    for (var i = 0; i < 60; i++) {
+        var hourS = i;
+        if (hourS < 10) {
+            hourS = '0' + i;
+        }
+        $("#minute").append('<option value="' + hourS + '">' + hourS + '</option>');
+    }
+    //获取日期和时间
+    var dateNow = new Date();
+    var year = dateNow.getFullYear();
+    var month = dateNow.getMonth() + 1;
+    if (month < 10) {
+        month = '0' + month;
+    }
+    var day = dateNow.getDate();
+    if (day < 10) {
+        day = '0' + day;
+    }
+    var hour = dateNow.getHours();
+    if (hour < 10) {
+        hour = '0' + hour;
+    }
+    var minute = dateNow.getMinutes();
+    if (minute < 10) {
+        minute = '0' + minute;
+    }
+    nowDate = year + '-' + month + '-' + day;
+    $("#date").val(nowDate);
+    /*$("#hour").val(hour);
+     $("#minute").val(minute);*/
+});
+
+//计算净重
+function Calculation() {
+    var grossWeightIn = $("#grossWeightIn").val();
+    var tareWeightIn = $("#tareWeightIn").val();
+    var deduction = $("#deduction").val();
+    var netWeightIn = grossWeightIn - tareWeightIn - deduction;
+    netWeightIn = netWeightIn.toFixed(2);
+    $("#netWeightIn").val(netWeightIn);
+}
+$("#grossWeightIn").keyup(function () {
+    Calculation();
+});
+
+$("#tareWeightIn").keyup(function () {
+    Calculation();
+});
+
+$("#deduction").keyup(function () {
+    Calculation();
+});
+
+$('.addressSelete').citys({
+    required: false,
+    nodata: 'disabled',
+    onChange: function (data) {
+        console.log(data);
+        locationText = data.province + data.city + data.area;
+        locationNum = data.code;
+    }
+});
+
+
+//表单验证
+function checkForm() {
+    var weightReg = /^[1-9]\d*\.\d{0,2}|[1-9]\d*|0\.\d{0,2}|0$/;//00000000.00------11位
+    var qualityReg = /^[1-9]\d*\.\d{1}|[1-9]\d*|0\.\d{1}$/;//00.0---------------4位
+    var date = $("#date").val();
+    var grossWeightIn = $("#grossWeightIn").val();
+    var tareWeightIn = $("#tareWeightIn").val();
+    var netWeightIn = grossWeightIn - tareWeightIn;
+    if (netWeightIn < 0) {
+        alert('皮重不能大于毛重');
+        return false;
+    }
+    if ($("#addPerson").val() != '' && $("#phone").val() == '') {
+        alert("请填写送粮人手机号");
+        return false;
+    }
+    if ($("#phone").val() != '' && $("#addPerson").val() == '') {
+        alert("请填写送粮人姓名");
+        return false;
+    }
+
+    if ($("#addDriver").val() != '' && $("#driverPhone").val() == '') {
+        alert("请填写司机手机号");
+        return false;
+    }
+    if ($("#driverPhone").val() != '' && $("#addDriver").val() == '') {
+        alert("请填写司机姓名");
+        return false;
+    }
+
+    if ($("#grossWeightIn").val() == '' || $("#grossWeightIn").val() <= 0) {
+        $("#grossWeightIn").siblings('p').html('请填写毛重后提交');
+        return false;
+    } else {
+        $("#grossWeightIn").siblings('p').html('');
+    }
+    if ($("#tareWeightIn").val() == '' || $("#tareWeightIn").val() < 0) {
+        $("#tareWeightIn").siblings('p').html('请填写皮重后提交');
+        return false;
+    } else {
+        $("#tareWeightIn").siblings('p').html('');
+    }
+    if (!weightReg.test($("#grossWeightIn").val())) {
+        $("#grossWeightIn").siblings('p').html('毛重最多八位整数俩位小数');
+        return false;
+    } else {
+        $("#grossWeightIn").siblings('p').html('');
+    }
+    if (!weightReg.test($("#tareWeightIn").val())) {
+        $("#tareWeightIn").siblings('p').html('皮重最多八位整数俩位小数');
+        return false;
+    } else {
+        $("#tareWeightIn").siblings('p').html('');
+    }
+    if ($("#deduction").val() != null && $("#deduction").val() != '' && !weightReg.test($("#deduction").val())) {
+        $("#deduction").siblings('p').html('扣重最多八位整数俩位小数');
+        return false;
+    } else {
+        $("#deduction").siblings('p').html('');
+    }
+    if ($("#water").val() != '' && !qualityReg.test($("#water").val())) {
+        $("#water").siblings('p').html('水分最多俩位整数一位小数');
+        return false;
+    } else {
+        $("#water").siblings('p').html('');
+    }
+    if ($("#buwanshanli").val() != '' && !qualityReg.test($("#buwanshanli").val())) {
+        $("#buwanshanli").siblings('p').html('不完善粒最多俩位整数一位小数');
+        return false;
+    } else {
+        $("#buwanshanli").siblings('p').html('');
+    }
+    if ($("#impurity").val() != '' && !qualityReg.test($("#impurity").val())) {
+        $("#impurity").siblings('p').html('杂质最多俩位整数一位小数');
+        return false;
+    } else {
+        $("#impurity").siblings('p').html('');
+    }
+    return true;
+}
+
+//提交表单
+$("#submit").on('click', function () {
+    if ($("#submit").hasClass('disable')) {
+        alert('不可重复提交');
+        return;
+    }
+    $("#submit").addClass('disable');
+    var telTest = false;
+    if (!checkForm()) {
+        $("#submit").removeClass('disable');
+        return false;
+    }
+    var date = $("#date").val();
+    var params = {};
+    var location = locationNum;
+    var locationDesc = locationText;
+    params.recordType = 3;
+    params.userId = ownerId;
+    params.operateUserId = userId;
+    params.depotId = test;
+    params.recordNumber = $("#recordNumber").text().replace('No.', '');
+    params.date = date;
+    params.licensePlate = $("#licensePlate").val();
+    params.bulkDensity = $("#rongzhong").val();
+    params.imperfectGrains = $("#buwanshanli").val();
+    params.moistureContent = $("#water").val();
+    params.impurity = $("#impurity").val();
+    params.productQuality = $("#quality").val();
+    params.remark = $("#remark").val();
+    if (params.productQuality != null && params.productQuality != "" && params.productQuality * 1 > 0) {
+        if (params.bulkDensity == null || params.bulkDensity == "") {
+            alert("请填写容重！");
+            $("#submit").removeClass('disable');
+            return false;
+        }
+        if (params.productQuality * 1 == 1) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 < 790) {
+                alert("质量与容重不匹配，容重必须大于等于 790！");
+                $("#submit").removeClass('disable');
+                return false;
+            }
+        } else if (params.productQuality * 1 == 2) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 < 770 || params.bulkDensity * 1 > 790) {
+                alert("质量与容重不匹配，容重必须大于等于 770，小于790！");
+                $("#submit").removeClass('disable');
+                return false;
+            }
+        } else if (params.productQuality * 1 == 3) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 < 750 || params.bulkDensity * 1 > 770) {
+                alert("质量与容重不匹配，容重必须大于等于 750，小于770！");
+                $("#submit").removeClass('disable');
+                return false;
+            }
+        } else if (params.productQuality * 1 == 4) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 < 730 || params.bulkDensity * 1 > 750) {
+                alert("质量与容重不匹配，容重必须大于等于 730，小于750！");
+                $("#submit").removeClass('disable');
+                return false;
+            }
+        } else if (params.productQuality * 1 == 5) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 < 710 || params.bulkDensity * 1 > 730) {
+                alert("质量与容重不匹配，容重必须大于等于 710，小于730！");
+                $("#submit").removeClass('disable');
+                return false;
+            }
+        } else if (params.productQuality * 1 == 6) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 > 710) {
+                alert("质量与容重不匹配，容重必须小于 710！");
+                $("#submit").removeClass('disable');
+                return false;
+            }
+        }
+    }
+    params.grainType = 1;
+    params.grossWeightIn = $("#grossWeightIn").val();
+    params.netWeightIn = $("#netWeightIn").val();
+    params.tareWeightIn = $("#tareWeightIn").val();
+    params.deduction = $("#deduction").val();
+    params.varietyType = $("#varietyType").val();
+    params.packingType = $("#packingType").val();
+    params.productionNiafe = $("#productionNiafe").val();
+    params.smell = $("#smell").val();
+    if (location == undefined) {
+        location = "";
+    }
+    if (locationDesc == undefined) {
+        locationDesc = "";
+    }
+    params.location = location;
+    params.locationDesc = locationDesc;
+    if (driverstate) {
+        params.driverId = -100;
+        params.driverName = $('#addDriver').val();
+        params.driverPhone = $('#driverPhone').val();
+        if (params.driverPhone != null && params.driverPhone != '') {
+            var telParams = {};
+            telParams.userId = userId;
+            telParams.staffType = 3;
+            telParams.phone = $("#driverPhone").val();
+            telTest = Restful.post('bsinventorystaff/isExist', telParams);
+        }
+    } else {
+        var driverId = $('#driver').val();
+        if (driverId != 0) {
+            params.driverId = driverId;
+            params.driverName = $('#driver').find('option:selected').text();
+            var idx = $('#driver').children('option:selected').index();
+            params.driverPhone = driverPhone[idx];
+        } else {
+            params.driverId = '';
+            params.driverName = '';
+            params.driverPhone = '';
+        }
+    }
+    if (!telTest) {
+    } else {
+        alert('司机手机号已存在');
+        $("#submit").removeClass('disable');
+        return;
+    }
+    if (isNewPerson) {
+        params.staffId = -100;
+        params.staffName = $('#addPerson').val();
+        params.staffPhone = $('#phone').val();
+        if (params.staffPhone != null && params.staffPhone != '') {
+            var telParams = {};
+            telParams.userId = userId;
+            telParams.staffType = 1;
+            telParams.phone = $("#phone").val();
+            telTest = Restful.post('bsinventorystaff/isExist', telParams);
+        }
+    } else {
+        var staffId = $('#salePerson').val();
+        if (staffId != 0) {
+            params.staffId = staffId;
+            params.staffName = $('#salePerson').find('option:selected').text();
+            var idx = $('#salePerson').children('option:selected').index();
+            params.staffPhone = phoneArray[idx];
+        } else {
+            params.staffId = '';
+            params.staffName = '';
+            params.staffPhone = '';
+        }
+    }
+    if ((params.driverName == '' || params.driverName == null) && (params.staffName == '' || params.staffName == null)) {
+        alert('司机和送粮人至少填一项！');
+        $("#submit").removeClass('disable');
+        return false;
+    }
+    $("#submit").addClass('disable');
+    if (!telTest) {
+        var res = Restful.post('bsinventorystorage/insert', params);
+        if (res.success) {
+            alert('保存成功');
+            window.location.href = 'storageTable.html';
+
+        } else {
+            alert('提交失败，稍后再试');
+            $("#submit").removeClass('disable');
+        }
+    } else {
+        alert('送粮人手机号已存在');
+        $("#submit").removeClass('disable');
+
+    }
+});
+
+
+//表单验证
+function checkForms() {
+    var weightReg = /^[1-9]\d*\.\d{0,2}|[1-9]\d*|0\.\d{0,2}|0$/;//00000000.00------11位
+    var qualityReg = /^[1-9]\d*\.\d{1}|[1-9]\d*|0\.\d{1}$/;//00.0---------------4位
+    var date = $("#date").val();
+    if ($("#grossWeightIn").val() == '' && $("#tareWeightIn").val() == '') {
+        alert("毛重和皮重两项必填一项！");
+        return false;
+    }
+    if ($("#addPerson").val() != '' && $("#phone").val() == '') {
+        alert("请填写送粮人手机号");
+        return false;
+    }
+    if ($("#phone").val() != '' && $("#addPerson").val() == '') {
+        alert("请填写送粮人姓名");
+        return false;
+    }
+    if ($("#addDriver").val() != '' && $("#driverPhone").val() == '') {
+        alert("请填写司机手机号");
+        return false;
+    }
+    if ($("#driverPhone").val() != '' && $("#addDriver").val() == '') {
+        alert("请填写司机姓名");
+        return false;
+    }
+    if ($("#grossWeightIn").val() != null && $("#grossWeightIn").val() != '' && !weightReg.test($("#grossWeightIn").val())) {
+        $("#grossWeightIn").siblings('p').html('毛重最多八位整数俩位小数');
+        return false;
+    } else {
+        $("#grossWeightIn").siblings('p').html('');
+    }
+
+    if ($("#tareWeightIn").val() != null && $("#tareWeightIn").val() != '' && !weightReg.test($("#tareWeightIn").val())) {
+        $("#tareWeightIn").siblings('p').html('皮重最多八位整数俩位小数');
+        return false;
+    } else {
+        $("#tareWeightIn").siblings('p').html('');
+    }
+
+    if ($("#deduction").val() != null && $("#deduction").val() != '' && !weightReg.test($("#deduction").val())) {
+        $("#deduction").siblings('p').html('皮重最多八位整数俩位小数');
+        return false;
+    } else {
+        $("#deduction").siblings('p').html('');
+    }
+    if ($("#water").val() != '' && !qualityReg.test($("#water").val())) {
+        $("#water").siblings('p').html('水分最多俩位整数一位小数');
+        return false;
+    } else {
+        $("#water").siblings('p').html('');
+    }
+    if ($("#buwanshanli").val() != '' && !qualityReg.test($("#buwanshanli").val())) {
+        $("#buwanshanli").siblings('p').html('不完善粒最多俩位整数一位小数');
+        return false;
+    } else {
+        $("#buwanshanli").siblings('p').html('');
+    }
+    if ($("#impurity").val() != '' && !qualityReg.test($("#impurity").val())) {
+        $("#impurity").siblings('p').html('杂质最多俩位整数一位小数');
+        return false;
+    } else {
+        $("#impurity").siblings('p').html('');
+    }
+    return true;
+}
+
+
+//提交表单
+$("#temporary").on('click', function () {
+    if ($("#temporary").hasClass('disable')) {
+        alert('不可重复提交!');
+        return;
+    }
+    $("#temporary").addClass('disable');
+    var telTest = false;
+    if (!checkForms()) {
+        $("#temporary").removeClass('disable');
+        return false;
+    }
+    var date = $("#date").val();
+    /*var hour = $("#hour").find('option:selected').val();
+     var minute = $("#minute").find('option:selected').val();
+     var time = hour + ':' + minute;*/
+    var params = {};
+    var location = locationNum;
+    var locationDesc = locationText;
+    params.recordType = 3;
+    params.userId = ownerId;
+    params.operateUserId = userId;
+    params.depotId = test;
+    params.recordNumber = $("#recordNumber").text().replace('No.', '');
+    params.date = date;
+    params.licensePlate = $("#licensePlate").val();
+    params.bulkDensity = $("#rongzhong").val();
+    params.imperfectGrains = $("#buwanshanli").val();
+    params.moistureContent = $("#water").val();
+    params.impurity = $("#impurity").val();
+    params.productQuality = $("#quality").val();
+    params.remark = $("#remark").val();
+    if (params.productQuality != null && params.productQuality != "" && params.productQuality * 1 > 0) {
+        if (params.bulkDensity == null || params.bulkDensity == "") {
+            alert("请填写容重！");
+            $("#temporary").removeClass('disable');
+            return false;
+        }
+        if (params.productQuality * 1 == 1) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 < 790) {
+                alert("质量与容重不匹配，容重必须大于等于 790！");
+                $("#temporary").removeClass('disable');
+                return false;
+            }
+        } else if (params.productQuality * 1 == 2) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 < 770 || params.bulkDensity * 1 > 790) {
+                alert("质量与容重不匹配，容重必须大于等于 770，小于790！");
+                $("#temporary").removeClass('disable');
+                return false;
+            }
+        } else if (params.productQuality * 1 == 3) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 < 750 || params.bulkDensity * 1 > 770) {
+                alert("质量与容重不匹配，容重必须大于等于 750，小于770！");
+                $("#temporary").removeClass('disable');
+                return false;
+            }
+        } else if (params.productQuality * 1 == 4) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 < 730 || params.bulkDensity * 1 > 750) {
+                alert("质量与容重不匹配，容重必须大于等于 730，小于750！");
+                $("#temporary").removeClass('disable');
+                return false;
+            }
+        } else if (params.productQuality * 1 == 5) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 < 710 || params.bulkDensity * 1 > 730) {
+                alert("质量与容重不匹配，容重必须大于等于 710，小于730！");
+                $("#temporary").removeClass('disable');
+                return false;
+            }
+        } else if (params.productQuality * 1 == 6) {
+            if (params.bulkDensity != null && params.bulkDensity != "" && params.bulkDensity * 1 > 710) {
+                alert("质量与容重不匹配，容重必须小于 710！");
+                $("#temporary").removeClass('disable');
+                return false;
+            }
+        }
+    }
+    params.grainType = 1;
+    params.grossWeightIn = $("#grossWeightIn").val();
+    params.netWeightIn = $("#netWeightIn").val();
+    params.tareWeightIn = $("#tareWeightIn").val();
+    params.deduction = $("#deduction").val();
+    params.varietyType = $("#varietyType").val();
+    params.packingType = $("#packingType").val();
+    params.productionNiafe = $("#productionNiafe").val();
+    params.smell = $("#smell").val();
+    if (location == undefined) {
+        location = "";
+    }
+    if (locationDesc == undefined) {
+        locationDesc = "";
+    }
+    params.location = location;
+    params.locationDesc = locationDesc;
+    if (driverstate) {
+        params.driverId = -100;
+        params.driverName = $('#addDriver').val();
+        params.driverPhone = $('#driverPhone').val();
+
+        if (params.driverPhone != null && params.driverPhone != '') {
+            var telParams = {};
+            telParams.userId = userId;
+            telParams.staffType = 3;
+            telParams.phone = $("#driverPhone").val();
+            telTest = Restful.post('bsinventorystaff/isExist', telParams);
+        }
+    } else {
+        var driverId = $('#driver').val();
+        if (driverId != 0) {
+            params.driverId = driverId;
+            params.driverName = $('#driver').find('option:selected').text();
+            var idx = $('#driver').children('option:selected').index();
+            params.driverPhone = driverPhone[idx];
+        } else {
+            params.driverId = '';
+            params.driverName = '';
+            params.driverPhone = '';
+        }
+    }
+    if (!telTest) {
+    } else {
+        alert('司机手机号已存在！');
+        $("#temporary").removeClass('disable');
+        return false;
+    }
+
+
+    if (isNewPerson) {
+        params.staffId = -100;
+        params.staffName = $('#addPerson').val();
+        params.staffPhone = $('#phone').val();
+        if (params.staffPhone != null && params.staffPhone != '') {
+            var telParams = {};
+            telParams.userId = userId;
+            telParams.staffType = 1;
+            telParams.phone = $("#phone").val();
+            telTest = Restful.post('bsinventorystaff/isExist', telParams);
+        }
+    } else {
+        var staffId = $('#salePerson').val();
+        if (staffId != 0) {
+            params.staffId = staffId;
+            params.staffName = $('#salePerson').find('option:selected').text();
+            var idx = $('#salePerson').children('option:selected').index();
+            params.staffPhone = phoneArray[idx];
+        } else {
+            params.staffId = '';
+            params.staffName = '';
+            params.staffPhone = '';
+        }
+    }
+    if ((params.driverName == '' || params.driverName == null) && (params.staffName == '' || params.staffName == null)) {
+        alert('司机和送粮人至少填一项！');
+        $("#temporary").removeClass('disable');
+        return false;
+    }
+    console.log(params);
+    if (!telTest) {
+        var res = Restful.post('bsInventoryStorageTemp/insert', params);
+        if (res.success) {
+            alert('暂存成功');
+            window.location.href = 'noStorageForm.html';
+        } else {
+            alert('提交失败，稍后再试');
+            $("#temporary").removeClass('disable');
+        }
+    } else {
+        alert('送粮人手机号已存在');
+        $("#temporary").removeClass('disable');
+
+    }
+});
+$(document).on('click', '#change-add', function () {
+    isNewPerson = true;
+    $('#addPerson').val('');
+    $('#salePerson').parent('label').css('display', 'none');
+    $('#change-add').css('display', 'none');
+    $('#addPerson').css('display', 'inline-block');
+    $('#phone').css('display', 'inline-block');
+    $('#change-sel').css('display', 'inline-block');
+});
+$(document).on('click', '#change-sel', function () {
+    isNewPerson = false;
+    $('#salePerson').css('width', '60%').parent('label').css('display', '');
+    $('#change-add').css('display', 'inline-block');
+    $('#addPerson').css('display', 'none');
+    $('#phone').css('display', 'none');
+    $('#change-sel').css('display', 'none');
+});
+$(document).on('click', '#driver-add', function () {
+    driverstate = true;
+    $('#addDriver').val('');
+    $('#driver').parent('label').css('display', 'none');
+    $('#driver-add').css('display', 'none');
+    $('#addDriver').css('display', 'inline-block');
+    $('#driverPhone').css('display', 'inline-block');
+    $('#driver-sel').css('display', 'inline-block');
+});
+$(document).on('click', '#driver-sel', function () {
+    driverstate = false;
+    $('#driver').css('width', '60%').parent('label').css('display', '');
+    $('#driver-add').css('display', 'inline-block');
+    $('#addDriver').css('display', 'none');
+    $('#driverPhone').css('display', 'none');
+    $('#driver-sel').css('display', 'none');
+});
+$(document).on('blur', '.caption-article input:not([id="date"])', function () {
+    if ($(this).val()) {
+        $(this).nextAll('p').html('');
+    }
+});
+function numberCtrl(a, num) {
+    var val = $(a).val();
+    var ling = val.split('.');
+    if (ling.length > 1) {
+        if (ling[1].length > num) {
+            ling[1] = ling[1].substring(0, num);
+        }
+        $(a).val(ling[0] + '.' + ling[1]);
+    }
+}

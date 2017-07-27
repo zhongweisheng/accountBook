@@ -1,0 +1,42 @@
+package com.mlb.enums;
+
+/**
+ * 
+ */
+public enum OperateTypeEnum {
+
+	添加入库单(11, "添加入库单"), 编辑入库单(12, "编辑入库单"), 删除入库单(13, "删除入库单"), 添加出库单(21, "添加出库单"), 编辑出库单(22, "编辑出库单"), 删除出库单(23,
+			"删除出库单"), ;
+
+	private OperateTypeEnum(int code, String name) {
+		this.code = code;
+		this.name = name;
+	}
+
+	private int code;
+	private String name;
+
+	public int getCode() {
+		return code;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public static String getName(int code) {
+		String name = "";
+		for (OperateTypeEnum c : OperateTypeEnum.values()) {
+			if (c.getCode() == code) {
+				name = c.getName();
+				break;
+			}
+		}
+		return name;
+	}
+
+	public String toString() {
+		return this.getCode() + "-" + this.getName();
+	}
+
+}

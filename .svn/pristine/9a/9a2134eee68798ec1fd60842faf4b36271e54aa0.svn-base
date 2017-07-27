@@ -1,0 +1,462 @@
+body,button,dd,dt,dl,form,h1,h2,h3,h4,h5,h6,input,li,ol,p,select,table,td,textarea,ul{margin:0;padding:0;}
+html{font-size:20px;-ms-touch-action:none;}
+body,button,input,select,textarea{font-family:"苹方","圆体-简","方正兰亭细黑简体","微软雅黑",Verdana,Arial,Helvetica,sans-serif;line-height:1.5;}
+img{border:0;}
+html{overflow-x:auto;background-color: white;}
+ol,ul,li{list-style:none;}
+a{color:#333;text-decoration:none;outline:none;}
+img{vertical-align:middle;}
+*{-webkit-tap-highlight-color:rgba(0,0,0,0);}
+.clearfix:after{visibility:hidden;display:block;font-size:0;content:" ";clear:both;height:0;}
+.lt{
+    float: left;
+}
+.ri{
+    float: right;
+}
+.tleft{
+    text-align: left;
+}
+.tcenter{
+    text-align: center;
+}
+.tright{
+    text-align: right;
+}
+input{
+    text-align: center;
+}
+header{
+    width: 100%;
+    background-color: #f7941d;
+    min-width: 1200px;
+    font-family: "圆体-简";
+}
+.content{
+    width: 1200px;
+    margin: 0 auto;
+}
+.logo{
+    width: 100px;
+    height: 100px;
+    background: url("../img/logo.png") no-repeat center;
+    background-size: 100%;
+}
+.name{
+    color: #585858;
+    font-size: 50px;
+    line-height: 100px;
+    margin-left: 10px;
+}
+.head-nav{
+    color: white;
+    font-size: 20px;
+    line-height: 100px;
+}
+#nav li{
+    display: block;
+    float: left;
+    margin-left: 140px;
+    cursor:pointer;
+}
+footer{
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+    background-color: #717171;
+    text-align: center;
+    color: white;
+    font-size: 12px;
+    margin-top: 135px;
+}
+.userInfo{
+    float: right;
+    line-height: 100px;
+    margin-left: 20px;
+}
+.userInfo span{
+    display: block;
+    cursor: pointer;
+    float: right;
+    color: #fff;
+}
+
+/*分页样式*/
+.activP{
+    background-color: #367fa9!important;
+    color: #fff!important;
+}
+.pagingUl{
+    float: left;
+    padding:0;
+    margin:0;
+    list-style: none;
+}
+.pagingUl li{
+    float: left;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+}
+.pagingUl li a{
+    text-decoration: none;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    line-height: 35px;
+    padding: 0;
+    background: #fafafa;
+    color: #666;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.prv, .next {
+    width: 30px;
+    height: 30px;
+    float: left;
+    text-align: center;
+    line-height: 30px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+.first, .last {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+    text-align: center;
+    line-height: 30px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+.header-active{
+    color:#ef4136;
+}
+input{
+    font-size: 0.8rem;
+}
+input[type='number'] {
+    -moz-appearance:textfield;
+}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.head-text{
+    color: white;
+    font-size: 27px;
+    margin-left: 20px;
+    line-height: 100px;
+}
+.relation {
+    font-size: 18px;
+    line-height: 100px;
+    color: #fff;
+}
+select{
+    display: inline-block;
+    width: 100px;
+    background-color: white;
+}
+
+/* Search icon by IcoMoon, made with http://icomoon.io/app/ */
+@font-face {
+    font-family: 'icomoon';
+    src:url('../../fonts/icomoon/icomoon.eot');
+    src:url('../../fonts/icomoon/icomoon.eot?#iefix') format('embedded-opentype'),
+    url('../../fonts/icomoon/icomoon.woff') format('woff'),
+    url('../../fonts/icomoon/icomoon.ttf') format('truetype'),
+    url('../../fonts/icomoon/icomoon.svg#icomoon') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+.sb-search {
+    position: relative;
+    margin-top: 5px;
+    height: 30px;
+    width: 30px;
+    float: right;
+    overflow: hidden;
+    -webkit-transition: width 0.3s;
+    -moz-transition: width 0.3s;
+    transition: width 0.3s;
+    -webkit-backface-visibility: hidden;
+}
+
+.sb-search-input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: none;
+    outline: none;
+    background: rgba(221, 221, 221, 0.33);
+    height: 30px;
+    margin: 0;
+    z-index: 10;
+    font-family: inherit;
+    font-size: 20px;
+    color: #2c3e50;
+}
+
+.sb-search-input::-webkit-input-placeholder {
+    color: #efb480;
+}
+
+.sb-search-input:-moz-placeholder {
+    color: #efb480;
+}
+
+.sb-search-input::-moz-placeholder {
+    color: #efb480;
+}
+
+.sb-search-input:-ms-input-placeholder {
+    color: #efb480;
+}
+
+.sb-icon-search,
+.sb-search-submit  {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    cursor: pointer;
+}
+
+.sb-search-submit {
+    background: #fff; /* IE needs this */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)"; /* IE 8 */
+    filter: alpha(opacity=0); /* IE 5-7 */
+    opacity: 0;
+    color: transparent;
+    border: none;
+    outline: none;
+    z-index: -1;
+}
+
+.sb-icon-search {
+    color: #fff;
+    background: #e67e22;
+    width: 30px;
+    z-index: 90;
+    font-size: 22px;
+    font-family: 'icomoon';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    -webkit-font-smoothing: antialiased;
+}
+
+.sb-icon-search:before {
+    content: "\e000";
+}
+
+/* Open state */
+.sb-search.sb-search-open,
+.no-js .sb-search {
+    width: 50%;
+}
+
+.sb-search.sb-search-open .sb-icon-search,
+.no-js .sb-search .sb-icon-search {
+    background: #da6d0d;
+    color: #fff;
+    z-index: 11;
+}
+
+.sb-search.sb-search-open .sb-search-submit,
+.no-js .sb-search .sb-search-submit {
+    z-index: 90;
+}
+
+
+/* General Demo Style */
+@import url(https://fonts.googleapis.com/css?family=Lato:300,400,700);
+
+@font-face {
+    font-family: 'codropsicons';
+    src:url('../../fonts/codropsicons/codropsicons.eot');
+    src:url('../../fonts/codropsicons/codropsicons.eot?#iefix') format('embedded-opentype'),
+    url('../../fonts/codropsicons/codropsicons.woff') format('woff'),
+    url('../../fonts/codropsicons/codropsicons.ttf') format('truetype'),
+    url('../../fonts/codropsicons/codropsicons.svg#codropsicons') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+*, *:after, *:before { -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+
+/* General Demo Style */
+
+a {
+    text-decoration: none;
+}
+
+/* Header Style */
+.main,
+.container > header {
+    margin: 0 auto;
+    padding: 2em;
+}
+
+.container > header {
+    text-align: center;
+    background: rgba(0,0,0,0.01);
+}
+
+.container > header h1 {
+    font-size: 2.625em;
+    line-height: 1.3;
+    margin: 0;
+    font-weight: 300;
+}
+
+.container > header span {
+    display: block;
+    font-size: 60%;
+    color: #e67e22;
+    padding: 0 0 0.6em 0.1em;
+}
+
+/* Main Content */
+.main {
+    max-width: 69em;
+}
+
+.column {
+    float: left;
+    width: 50%;
+    padding: 0 2em;
+    min-height: 300px;
+    position: relative;
+}
+
+.column:nth-child(2) {
+    box-shadow: -1px 0 0 rgba(0,0,0,0.1);
+}
+
+.column p {
+    font-weight: 300;
+    font-size: 2em;
+    padding: 0;
+    margin: 0;
+    text-align: right;
+    line-height: 1.5;
+}
+
+.column a {
+    border: 3px solid #b4c7da;
+    padding: 0 15px;
+    display: inline-block;
+    margin: 20px 0;
+}
+
+.column a:hover {
+    border-color: #fff;
+}
+
+/* To Navigation Style */
+.codrops-top {
+    background: #566472;
+    background: rgba(255, 255, 255, 0.2);
+    text-transform: uppercase;
+    width: 100%;
+    font-size: 0.69em;
+    line-height: 2.2;
+}
+
+.codrops-top a {
+    padding: 0 1em;
+    letter-spacing: 0.1em;
+    color: #fff;
+    display: inline-block;
+}
+
+.codrops-top a:hover {
+    background: rgba(255,255,255,0.8);
+    color: #2c3e50;
+}
+
+.codrops-top span.right {
+    float: right;
+}
+
+.codrops-top span.right a {
+    float: left;
+    display: block;
+}
+
+.codrops-icon:before {
+    font-family: 'codropsicons';
+    margin: 0 4px;
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+}
+
+.codrops-icon-drop:before {
+    content: "\e001";
+}
+
+.codrops-icon-prev:before {
+    content: "\e004";
+}
+
+@media screen and (max-width: 46.0625em) {
+    .column {
+        width: 100%;
+        min-width: auto;
+        min-height: auto;
+        padding: 1em;
+    }
+
+    .column p {
+        text-align: left;
+        font-size: 1.5em;
+    }
+
+    .column:nth-child(2) {
+        box-shadow: 0 -1px 0 rgba(0,0,0,0.1);
+    }
+}
+
+@media screen and (max-width: 25em) {
+
+    .codrops-icon span {
+        display: none;
+    }
+
+}
+
+/*粮库*/
+.choseDepot{
+    float: left;
+    display: inline-block;
+
+}
+.depotN{
+    float: left;
+    margin-right: 10px;
+    display: inline-block;
+}
+#depot{
+    display: inline-block;
+    left: 10px;
+    right: 10px;
+}
+.rightHead li{
+    margin-bottom: 1rem;
+}

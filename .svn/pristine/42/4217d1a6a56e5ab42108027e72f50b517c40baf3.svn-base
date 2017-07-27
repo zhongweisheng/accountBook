@@ -1,0 +1,930 @@
+package lb.rest.trade.db.dao;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import lb.rest.trade.db.entity.BsRequireMatch;
+import lb.rest.trade.db.entity.BsRequireMatchExample;
+import lb.rest.trade.db.entity.BsUserRequire;
+import lb.rest.trade.db.entity.BsUserRequireExample;
+import lb.rest.trade.db.entity.BsUserRequireExample.Criteria;
+import lb.rest.trade.db.entity.BsUserRequireKey;
+import lb.rest.trade.db.entity.CommonAttrValue;
+import lb.rest.trade.db.entity.CommonAttrValueExample;
+import lb.rest.trade.db.mapper.BsUserRequireMapper;
+import lb.rest.trade.db.mapper.CommonAttrValueMapper;
+import lb.rest.user.db.dao.ImageDao;
+import lb.rest.user.db.dao.MlbuserDao;
+import lb.rest.user.db.entity.Image;
+import lb.rest.user.db.entity.ImageKey;
+import lb.rest.user.db.entity.Mlbuser;
+import lb.rest.user.db.entity.MlbuserKey;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+import org.springframework.stereotype.Repository;
+
+import fc.wpf.rest.utils.BeanFactory;
+import fc.wpf.rest.utils.DateStyle;
+import fc.wpf.rest.utils.DateUtil;
+
+@Slf4j
+@Repository
+public class BsUserRequireServiceDao {
+
+	private static BsUserRequireMapper bsUserRequireMapper = (BsUserRequireMapper) BeanFactory
+			.getBean("bsUserRequireMapper");
+
+	private static CommonAttrValueMapper commonAttrValueMapper = (CommonAttrValueMapper) BeanFactory
+			.getBean("commonAttrValueMapper");
+
+	@Resource
+	private MlbuserDao mlbuserDao;
+
+	@Resource
+	private BsRequireMatchDao bsRequireMatchDao;
+
+	private static ImageDao imageDao = (ImageDao) BeanFactory.getBean("imageDao");
+
+	public Map<String, Object> selectBsUserRequire(Map<String, Object> map, int userLocation) {
+
+		List<BsUserRequire> list = null;
+		List<Map<String, Object>> listMap = null;
+		Map<String, Object> maplist = new HashMap<String, Object>();
+		// String map1 = req.getParameter("map");
+		try {
+			BsUserRequireExample example = new BsUserRequireExample();
+			Criteria criteria = example.or();
+			criteria.andAuthStatusEqualTo(1);
+			criteria.andProcessStatusNotEqualTo(-10);
+			// 采购单类型(0,1港口收购，2加工厂订单，3接货订单，4饲料养殖厂，5贸易商粮库，6其他)
+			if (map.get("orderType") != null && !"".equals(map.get("orderType"))) {
+				int orderType = Integer.parseInt(map.get("orderType").toString());
+				if (orderType > 0) {
+					criteria.andCategoryEqualTo(orderType);
+				}
+			}
+			// 0全部，1小麦 或 2玉米
+			if (map.get("type") != null && !"".equals(map.get("type"))) {
+				int type = Integer.parseInt(map.get("type").toString());
+				if (type > 0) {
+					criteria.andBuyFoodTypeEqualTo(type);
+				}
+			}
+			Date time1 = DateUtil.addDays(new Date(), -10);
+			// 时间、0全部，1近3天，2近5天，3近7天
+			if (map.get("dateTime") != null && !"".equals(map.get("dateTime"))) {
+				int dateTime = Integer.parseInt(map.get("dateTime").toString());
+				if (dateTime > 0) {
+					if (dateTime == 1) {
+						time1 = DateUtil.addDays(new Date(), -3);
+					} else if (dateTime == 2) {
+						time1 = DateUtil.addDays(new Date(), -5);
+					} else if (dateTime == 3) {
+						time1 = DateUtil.addDays(new Date(), -7);
+					}
+				}
+			}
+			time1.setHours(0);
+			time1.setMinutes(0);
+			time1.setSeconds(0);
+			criteria.andModifyTimeGreaterThanOrEqualTo(time1);
+			// 0全部，1国标一等粮、2国标二等粮、3国标三等粮、4国标四等粮、5国标五等粮、6等外粮
+			if (map.get("quality") != null && !"".equals(map.get("quality"))) {
+				String qualityStr = StringUtils.trimToEmpty(map.get("quality").toString());
+				String[] qualityArr = qualityStr.split(",");
+				if (qualityArr != null) {
+					List<Integer> qualityList = new ArrayList<Integer>();
+					for (String item : qualityArr) {
+						int quality = NumberUtils.toInt(item);
+						if (quality > 0) {
+							qualityList.add(quality);
+						}
+					}
+					if (qualityList.size() > 0) {
+						criteria.andGrainLevelIn(qualityList);
+					}
+				}
+			}
+			// 地区
+			if (map.get("location") != null && !"".equals(map.get("location"))) {
+				String locationStr = (String) map.get("location");
+				locationStr = StringUtils.removeEndIgnoreCase(locationStr, "00");
+				locationStr = StringUtils.removeEndIgnoreCase(locationStr, "00");
+				int locationBegin = NumberUtils.toInt(locationStr);
+				int locationEnd = NumberUtils.toInt(locationStr);
+				if (locationStr.length() == 2) {
+					locationBegin = NumberUtils.toInt(locationStr + "0000");
+					locationEnd = NumberUtils.toInt(locationStr + "9999");
+				} else if (locationStr.length() == 4) {
+					locationBegin = NumberUtils.toInt(locationStr + "00");
+					locationEnd = NumberUtils.toInt(locationStr + "99");
+				}
+				criteria.andBuyLocationBetween(locationBegin, locationEnd);
+				// criteria.andLocationEqualTo(NumberUtils.toInt(map.get("location").toString()));
+			}
+
+			listMap = new ArrayList<Map<String, Object>>();
+
+			Map<String, Object> m = null;
+			example.setOrderByClause("modify_time desc");
+			if (map.get("page") != null && !"".equals(map.get("page")) && map.get("number") != null
+					&& !"".equals(map.get("number"))) {
+				int page = Integer.parseInt(map.get("page").toString());
+				int number = Integer.parseInt(map.get("number").toString());
+				page = page * number;
+				example.setOffset(page);
+				example.setLimit(number);
+			}
+
+			// example.setLimit(2);
+			list = bsUserRequireMapper.selectByExample(example);
+			if (list.size() > 0) {
+				for (BsUserRequire bsUserRequire : list) {
+					m = new HashMap<String, Object>();
+					m.put("id", bsUserRequire.getId() + "");
+					m.put("alreadyAC", 0);
+					if (bsUserRequire.getAuthStatus() != null && bsUserRequire.getAuthStatus() == 1) {
+						m.put("alreadyAC", 1);
+					}
+
+					// m.put("id", bsUserRequire.getId() + "");
+					// m.put("alreadyAC", "1");
+					m.put("type", "");
+					if (bsUserRequire.getBuyFoodType() == 1) {
+						m.put("type", "小麦");
+					} else if (bsUserRequire.getBuyFoodType() == 2) {
+						m.put("type", "玉米");
+					}
+					m.put("people", bsUserRequire.getBuyName());
+					m.put("price", 0);
+					if (bsUserRequire.getBuyFoodPrice() != null) {
+						m.put("price", bsUserRequire.getBuyFoodPrice());
+					}
+					m.put("number", 0);
+					if (bsUserRequire.getBuyFoodNum() != null) {
+						m.put("number", bsUserRequire.getBuyFoodNum());
+					}
+
+					if (bsUserRequire.getGrainLevel() != null && !"".equals(bsUserRequire.getGrainLevel())) {
+						if (bsUserRequire.getGrainLevel() == 0) {
+							m.put("quality", "无");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 1) {
+							m.put("quality", "国标一等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 2) {
+							m.put("quality", "国标二等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 3) {
+							m.put("quality", "国标三等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 4) {
+							m.put("quality", "国标四等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 5) {
+							m.put("quality", "国标五等粮");// 粮食国标
+						}
+					} else {
+						m.put("quality", "无");// 粮食国标
+					}
+					// 采购单类型(0,1港口收购，2加工厂订单，3接货订单，4饲料养殖厂，5贸易商粮库，6其他)
+					if (bsUserRequire.getCategory() != null && !"".equals(bsUserRequire.getCategory())) {
+						if (bsUserRequire.getCategory() == 0) {
+							m.put("orderType", "无");
+						} else if (bsUserRequire.getCategory() == 1) {
+							m.put("orderType", "港口收购");
+						} else if (bsUserRequire.getCategory() == 2) {
+							m.put("orderType", "加工厂订单");
+						} else if (bsUserRequire.getCategory() == 3) {
+							m.put("orderType", "接货订单");
+						} else if (bsUserRequire.getCategory() == 4) {
+							m.put("orderType", "饲料养殖厂");
+						} else if (bsUserRequire.getCategory() == 5) {
+							m.put("orderType", "贸易商粮库");
+						} else if (bsUserRequire.getCategory() == 6) {
+							m.put("orderType", "其他");
+						}
+					} else {
+						m.put("orderType", "无");
+					}
+					String time = DateUtil.format(bsUserRequire.getModifyTime(), DateStyle.YYYY_MM_DD);
+					m.put("time", time);
+					m.put("location", bsUserRequire.getBuyLocationDesc());
+					m.put("locations", bsUserRequire.getBuyLocationDescS());
+					int goodsLocation = bsUserRequire.getBuyLocationS() == null ? 0 : bsUserRequire.getBuyLocationS();
+					// double distance =
+					// RequireMatchUtil.baiduDistance(userLocation,
+					// goodsLocation);
+					double distance = 0;
+					m.put("distance", distance + "");
+					listMap.add(m);
+				}
+			}
+			maplist.put("dataList", listMap);
+		} catch (Exception e) {
+			log.warn("BsUserRequireCtrl get by key error..", e);
+		}
+
+		return maplist;
+	}
+
+	public Map<String, Object> getUserRequireListByMlbUserId(int mlbuserId) {
+		List<BsUserRequire> list = null;
+		List<Map<String, Object>> listMap = null;
+		Map<String, Object> maplist = new HashMap<String, Object>();
+		// String map1 = req.getParameter("map");
+		try {
+			BsUserRequireExample example = new BsUserRequireExample();
+			Criteria criteria = example.createCriteria();
+			criteria.andBuyIdEqualTo(mlbuserId);
+			criteria.andProcessStatusNotEqualTo(-10);
+			listMap = new ArrayList<Map<String, Object>>();
+			Map<String, Object> m = null;
+			example.setOrderByClause("modify_time desc");
+			list = bsUserRequireMapper.selectByExample(example);
+			if (list.size() > 0) {
+				for (BsUserRequire bsUserRequire : list) {
+					m = new HashMap<String, Object>();
+
+					m.put("id", bsUserRequire.getId() + "");
+					m.put("alreadyAC", 0);
+					if (bsUserRequire.getAuthStatus() != null && bsUserRequire.getAuthStatus() == 1) {
+						m.put("alreadyAC", 1);
+					}
+					// m.put("id", bsUserRequire.getId() + "");
+					// m.put("alreadyAC", "1");
+					m.put("type", "");
+					if (bsUserRequire.getBuyFoodType() == 1) {
+
+						m.put("type", "小麦");
+					} else if (bsUserRequire.getBuyFoodType() == 2) {
+						m.put("type", "玉米");
+					}
+					m.put("people", bsUserRequire.getBuyName());
+
+					m.put("price", 0);
+					if (bsUserRequire.getBuyFoodPrice() != null) {
+						m.put("price", bsUserRequire.getBuyFoodPrice());
+					}
+					m.put("number", 0);
+					if (bsUserRequire.getBuyFoodNum() != null) {
+						m.put("number", bsUserRequire.getBuyFoodNum());
+					}
+
+					if (bsUserRequire.getGrainLevel() != null && !"".equals(bsUserRequire.getGrainLevel())) {
+						if (bsUserRequire.getGrainLevel() == 0) {
+							m.put("quality", "无");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 1) {
+							m.put("quality", "国标一等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 2) {
+							m.put("quality", "国标二等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 3) {
+							m.put("quality", "国标三等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 4) {
+							m.put("quality", "国标四等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 5) {
+							m.put("quality", "国标五等粮");// 粮食国标
+						}
+					} else {
+						m.put("quality", "无");// 粮食国标
+					}
+					m.put("foodRequire", bsUserRequire.getBuyFoodRequire());
+					// 采购单类型(0,1港口收购，2加工厂订单，3接货订单，4饲料养殖厂，5贸易商粮库，6其他)
+					if (bsUserRequire.getCategory() != null && !"".equals(bsUserRequire.getCategory())) {
+						if (bsUserRequire.getCategory() == 0) {
+							m.put("orderType", "无");
+						} else if (bsUserRequire.getCategory() == 1) {
+							m.put("orderType", "港口收购");
+						} else if (bsUserRequire.getCategory() == 2) {
+							m.put("orderType", "加工厂订单");
+						} else if (bsUserRequire.getCategory() == 3) {
+							m.put("orderType", "接货订单");
+						} else if (bsUserRequire.getCategory() == 4) {
+							m.put("orderType", "饲料养殖厂");
+						} else if (bsUserRequire.getCategory() == 5) {
+							m.put("orderType", "贸易商粮库");
+						} else if (bsUserRequire.getCategory() == 6) {
+							m.put("orderType", "其他");
+						}
+					} else {
+						m.put("orderType", "无");
+					}
+					Date modifyTime = bsUserRequire.getModifyTime();
+					String time = "";
+					String effectiveTime = "";
+					Long l = 0l;
+					// 修改时间 为 空
+					if (modifyTime != null) {
+						time = DateUtil.format(modifyTime, DateStyle.YYYY_MM_DD);
+						effectiveTime = DateUtil.format(DateUtil.addDays(modifyTime, 3), DateStyle.YYYY_MM_DD);
+						l = DateUtil.getDaysDifference(modifyTime, new Date());
+					}
+					m.put("time", time);
+					m.put("effectiveTime", effectiveTime);
+					if (l > 3) {
+						m.put("butStatus", 1);
+					} else {
+						m.put("butStatus", 0);
+					}
+					m.put("location", bsUserRequire.getBuyLocationDesc());
+					m.put("locations", bsUserRequire.getBuyLocationDescS());
+					m.put("distance", "");
+					listMap.add(m);
+				}
+			}
+			maplist.put("dataList", listMap);
+		} catch (Exception e) {
+			log.warn("BsUserRequireCtrl get by key error..", e);
+		}
+
+		return maplist;
+	}
+
+	public void insert(BsUserRequire info, String imgeIds) {
+		try {
+			Mlbuser mlbuser = new Mlbuser();
+			MlbuserKey mlbuserKey = new MlbuserKey();
+			mlbuserKey.setUserid(info.getBuyId());
+			mlbuser = mlbuserDao.selectByPrimaryKey(mlbuserKey);
+			if (mlbuser != null) {
+				info.setBuyId(mlbuser.getUserid());
+				info.setBuyName(mlbuser.getTruename());
+				info.setBuyPhone(mlbuser.getPhone());
+			}
+			info.setCreateTime(new Date());
+			info.setModifyTime(new Date());
+			info.setProcessStatus(0);
+			// 交易员信息
+			if (mlbuser != null && mlbuser.getTraderuserid() > 0) {
+				info.setTraderId(mlbuser.getTraderuserid());
+				info.setTraderName(mlbuser.getTradername());
+				info.setTraderPhone("");
+				info.setProcessStatus(10);
+				// 发送消息
+			}
+			if (info.getCreateUserid() != null && info.getCreateUserid() > 0) {
+				mlbuser = new Mlbuser();
+				mlbuserKey = new MlbuserKey();
+				mlbuserKey.setUserid(info.getCreateUserid());
+				mlbuser = mlbuserDao.selectByPrimaryKey(mlbuserKey);
+				if (mlbuser != null) {
+					info.setCreateUsername(mlbuser.getTruename());
+				}
+			}
+			info.setFromType(1);
+			bsUserRequireMapper.insert(info);
+			// 更新图片对应关系
+			String[] iid = StringUtils.trimToEmpty(imgeIds).split(",", -1);
+			for (int i = 0; i < iid.length; i++) {
+				if (iid[i].length() > 0) {
+					ImageKey key2 = new ImageKey();
+					key2.setId(Integer.parseInt(iid[i]));
+					Image image = imageDao.selectByPrimaryKey(key2);
+					if (image != null) {
+						image.setForeignkey(info.getId().intValue());
+						imageDao.updateByPrimaryKey(image);
+						// image = ImageService.saveImageBO(image);
+					}
+				}
+			}
+			// 发送消息通知
+		} catch (Exception e) {
+			log.warn("BsUserRequireCtrl insert error..", e);
+			// e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 根据采购ID查询采购详细信息
+	 * 
+	 * @param bsUserRequireid
+	 *            采购ID
+	 * @return
+	 */
+	public Map<String, Object> getBsUserRequireById(String bsUserRequireid) {
+		BsUserRequire require = null;
+		Map<String, Object> m = new HashMap<String, Object>();
+		Map<String, Object> map = null;
+		List<Map<String, Object>> mapList = null;
+		try {
+			BsUserRequireKey key = new BsUserRequireKey();
+			key.setId(Long.parseLong(bsUserRequireid));
+			require = bsUserRequireMapper.selectByPrimaryKey(key);
+			if (require != null) {
+				mapList = new ArrayList<Map<String, Object>>();
+				map = new HashMap<String, Object>();
+				map.put("id", require.getId());
+				map.put("type", "");
+				if (require.getBuyFoodType() == 1) {
+					map.put("type", "小麦");
+				} else if (require.getBuyFoodType() == 2) {
+					map.put("type", "玉米");
+				}
+				if (require.getGrainLevel() != null && !"".equals(require.getGrainLevel())) {
+					if (require.getGrainLevel() == 0) {
+						map.put("quality", "无");// 粮食国标
+					} else if (require.getGrainLevel() == 1) {
+						map.put("quality", "国标一等粮");// 粮食国标
+					} else if (require.getGrainLevel() == 2) {
+						map.put("quality", "国标二等粮");// 粮食国标
+					} else if (require.getGrainLevel() == 3) {
+						map.put("quality", "国标三等粮");// 粮食国标
+					} else if (require.getGrainLevel() == 4) {
+						map.put("quality", "国标四等粮");// 粮食国标
+					} else if (require.getGrainLevel() == 5) {
+						map.put("quality", "国标五等粮");// 粮食国标
+					}
+				} else {
+					map.put("quality", "无");// 粮食国标
+				}
+				map.put("buyId", require.getBuyId());
+				map.put("buyuserNmae", require.getBuyName());
+
+				m.put("foodNumber", 0);
+				if (require.getBuyFoodNum() != null) {
+					map.put("foodNumber", require.getBuyFoodNum());// 采购量
+				}
+				m.put("referencePrice", 0);
+				if (require.getBuyFoodPrice() != null) {
+					map.put("referencePrice", require.getBuyFoodPrice());// 价格
+				}
+				map.put("location", require.getBuyLocationDesc());// 采购地址
+				map.put("getLocation", require.getBuyLocationDescS());// 收货地址
+				map.put("contentLoc", require.getBuyAddress());// 详细地);//
+
+				CommonAttrValueExample example = new CommonAttrValueExample();
+				int typeId = 6;
+				if ("1".equals(require.getBuyFoodType() + "")) {
+					// 小麦
+					typeId = 6;
+				} else if ("2".equals(require.getBuyFoodType() + "")) {
+					// 玉米
+					typeId = 7;
+				}
+				example.createCriteria().andBelongidEqualTo(require.getId().intValue()).andBelongtableEqualTo(201)
+						.andTypeidEqualTo(typeId);
+				List<CommonAttrValue> commlist = commonAttrValueMapper.selectByExample(example);
+
+				if (commlist != null && commlist.size() > 0) {
+					if (require.getBuyFoodType() != 1) {
+
+						for (CommonAttrValue c : commlist) {
+							if (c.getAttrid() == 7) {
+								map.put("water", c.getAttrvalue());// 水分
+							}
+							if (c.getAttrid() == 13) {
+								map.put("weight", c.getAttrvalue());// 容重
+							}
+							if (c.getAttrid() == 5) {
+								map.put("mildew", c.getAttrvalue());// 生霉粒
+							}
+							if (c.getAttrid() == 15) {
+								map.put("impurity", c.getAttrvalue());// 不完善粒
+							}
+							if (c.getAttrid() == 16) {
+								map.put("nocomplete", c.getAttrvalue());// 杂质
+							}
+							if (c.getAttrid() == 14) {
+								map.put("qualityMark", c.getAttrvalue());// 品质备注
+							}
+						}
+					} else {
+						for (CommonAttrValue c : commlist) {
+							if (c.getAttrid() == 6) {
+								map.put("water", c.getAttrvalue());// 水分
+							}
+							if (c.getAttrid() == 8) {
+								map.put("weight", c.getAttrvalue());// 容重
+							}
+							if (c.getAttrid() == 10) {
+								map.put("mildew", c.getAttrvalue());// 生霉粒
+							}
+							if (c.getAttrid() == 17) {
+								map.put("impurity", c.getAttrvalue());// 不完善粒
+							}
+							if (c.getAttrid() == 18) {
+								map.put("nocomplete", c.getAttrvalue());// 杂质
+							}
+							if (c.getAttrid() == 11) {
+								map.put("qualityMark", c.getAttrvalue());// 品质备注
+							}
+						}
+					}
+				} else {
+					map.put("water", "0");
+					map.put("weight", "0");
+					map.put("mildew", "0");
+					map.put("impurity", "0");
+					map.put("nocomplete", "0");
+					map.put("qualityMark", "无");
+				}
+
+				if (require.getHasLogistics() != null) {
+
+					if (require.getHasLogistics() > 0) {
+						if (require.getHasLogistics() == 1) {
+							map.put("bidInvoice", "是");// 是否索要发票
+						} else {
+							map.put("bidInvoice", "否");// 是否索要发票
+						}
+					} else {
+						map.put("bidInvoice", "无");// 是否索要发票
+					}
+				} else {
+					map.put("bidInvoice", "无");// 是否索要发票
+				}
+				map.put("mark", require.getRemark());// 备注
+
+				MlbuserKey mlbuser = new MlbuserKey();
+				mlbuser.setUserid(require.getBuyId());
+				map.put("purchaseCompany", require.getBuyName());// 采购商
+				Mlbuser user = mlbuserDao.selectByPrimaryKey(mlbuser);
+				if (user != null) {
+					map.put("companyLoc", user.getAddress());// 采购商地址
+					if (user.getAuthTime() != null) {
+						map.put("acTime", DateUtil.format(user.getAuthTime(), DateStyle.YYYY_MM_DD));// 认证时间
+					} else {
+						map.put("acTime", "");// 认证时间
+					}
+					map.put("phone", user.getPhone());
+					if (user.getShineuser() != null) {
+						if (user.getShineuser() == 1 || user.getShineuser() == 3) {
+							map.put("phone", "4006029967");
+						}
+					}
+					if (user.getAuthentication() == 1) {
+						map.put("acstatus", user.getAuthentication());
+					} else {
+						map.put("acstatus", 0);
+					}
+				}
+				if ((require.getCategory() != null)
+						&& (require.getCategory() == 2 || require.getCategory() == 4 || require.getCategory() == 5)) {
+					map.put("phone", "4006029967");
+				}
+				mapList.add(map);
+
+			}
+			m.put("dataList", mapList);
+		} catch (Exception e) {
+			log.warn("BsUserRequireCtrl get by id error..", e);
+		}
+		return m;
+	}
+
+	/**
+	 * 根据采购ID查询采购详细信息
+	 * 
+	 * @param bsUserRequireid
+	 *            采购ID
+	 * @return
+	 */
+	public Map<String, Object> getUserRequireById(String bsUserRequireid) {
+		BsUserRequire require = null;
+		Map<String, Object> m = new HashMap<String, Object>();
+		Map<String, Object> map = null;
+		List<Map<String, Object>> mapList = null;
+		try {
+			BsUserRequireKey key = new BsUserRequireKey();
+			key.setId(Long.parseLong(bsUserRequireid));
+			require = bsUserRequireMapper.selectByPrimaryKey(key);
+			if (require != null) {
+				mapList = new ArrayList<Map<String, Object>>();
+				map = new HashMap<String, Object>();
+				map.put("id", require.getId());
+				map.put("type", require.getBuyFoodType());
+				map.put("quality", require.getGrainLevel());// 粮食国标
+				map.put("buyId", require.getBuyId());
+				map.put("buyuserNmae", require.getBuyName());
+				map.put("serviceType", "否");
+				if (require.getServiceType() != null) {
+					if (require.getServiceType() == 35) {
+						map.put("serviceType", "是");
+					} else {
+						map.put("serviceType", "否");
+					}
+				}
+				m.put("foodNumber", 0);
+				if (require.getBuyFoodNum() != null) {
+					map.put("foodNumber", require.getBuyFoodNum());// 采购量
+				}
+				m.put("referencePrice", 0);
+				if (require.getBuyFoodPrice() != null) {
+					map.put("referencePrice", require.getBuyFoodPrice());// 价格
+				}
+				map.put("location", require.getBuyLocation());// 采购地址
+				map.put("getLocation", require.getBuyLocationDescS());// 收货地址
+				map.put("contentLoc", require.getBuyAddress());// 详细地);
+				map.put("locationS", require.getBuyLocationS());// 收货地
+				map.put("address", require.getAddress());// 详细地址
+				CommonAttrValueExample example = new CommonAttrValueExample();
+				int typeId = 6;
+				if ("1".equals(require.getBuyFoodType() + "")) {
+					// 小麦
+					typeId = 6;
+				} else if ("2".equals(require.getBuyFoodType() + "")) {
+					// 玉米
+					typeId = 7;
+				}
+				example.createCriteria().andBelongidEqualTo(require.getId().intValue()).andBelongtableEqualTo(201)
+						.andTypeidEqualTo(typeId);
+				List<CommonAttrValue> commlist = commonAttrValueMapper.selectByExample(example);
+
+				if (commlist != null && commlist.size() > 0) {
+					if (require.getBuyFoodType() != 1) {
+
+						for (CommonAttrValue c : commlist) {
+							if (c.getAttrid() == 7) {
+								map.put("water", c.getAttrvalue());// 水分
+							}
+							if (c.getAttrid() == 13) {
+								map.put("weight", c.getAttrvalue());// 容重
+							}
+							if (c.getAttrid() == 5) {
+								map.put("mildew", c.getAttrvalue());// 生霉粒
+							}
+							if (c.getAttrid() == 15) {
+								map.put("impurity", c.getAttrvalue());// 不完善粒
+							}
+							if (c.getAttrid() == 16) {
+								map.put("nocomplete", c.getAttrvalue());// 杂质
+							}
+							if (c.getAttrid() == 14) {
+								map.put("qualityMark", c.getAttrvalue());// 品质备注
+							}
+						}
+					} else {
+						for (CommonAttrValue c : commlist) {
+							if (c.getAttrid() == 6) {
+								map.put("water", c.getAttrvalue());// 水分
+							}
+							if (c.getAttrid() == 8) {
+								map.put("weight", c.getAttrvalue());// 容重
+							}
+							if (c.getAttrid() == 10) {
+								map.put("mildew", c.getAttrvalue());// 生霉粒
+							}
+							if (c.getAttrid() == 17) {
+								map.put("impurity", c.getAttrvalue());// 不完善粒
+							}
+							if (c.getAttrid() == 18) {
+								map.put("nocomplete", c.getAttrvalue());// 杂质
+							}
+							if (c.getAttrid() == 11) {
+								map.put("qualityMark", c.getAttrvalue());// 品质备注
+							}
+						}
+					}
+				} else {
+					map.put("water", 0);
+					map.put("weight", 0);
+					map.put("mildew", 0);
+					map.put("impurity", 0);
+					map.put("nocomplete", 0);
+					map.put("qualityMark", "");
+				}
+				map.put("bidInvoice", require.getHasLogistics());// 是否索要发票
+				map.put("remark", require.getRemark());// 备注
+				map.put("category", require.getCategory());
+				MlbuserKey mlbuser = new MlbuserKey();
+				mlbuser.setUserid(require.getBuyId());
+				Mlbuser user = mlbuserDao.selectByPrimaryKey(mlbuser);
+				map.put("purchaseCompany", require.getBuyName());// 采购商
+				map.put("companyLoc", user.getAddress());// 采购商地址
+				if (user.getAuthTime() != null) {
+					map.put("acTime", DateUtil.format(user.getAuthTime(), DateStyle.YYYY_MM_DD));// 认证时间
+				} else {
+					map.put("acTime", "");// 认证时间
+				}
+				map.put("phone", user.getPhone());
+
+				if (user.getAuthentication() == 1) {
+					map.put("acstatus", user.getAuthentication());
+				} else {
+					map.put("acstatus", 0);
+				}
+
+				mapList.add(map);
+			}
+			m.put("dataList", mapList);
+		} catch (Exception e) {
+			log.warn("BsUserRequireCtrl get by id error..", e);
+		}
+		return m;
+	}
+
+	/**
+	 * 查询此人发布的所有采购信息
+	 * 
+	 * @param mlbuserId
+	 * @return
+	 */
+	public List<Map<String, Object>> getRequireListByMlbUserId(int mlbuserId) {
+		List<BsUserRequire> list = null;
+		List<Map<String, Object>> listMap = null;
+		try {
+			BsUserRequireExample example = new BsUserRequireExample();
+			Criteria criteria = example.or();
+			criteria.andBuyIdEqualTo(mlbuserId);
+			criteria.andProcessStatusNotEqualTo(-10);
+			criteria.andAuthStatusEqualTo(1);
+			listMap = new ArrayList<Map<String, Object>>();
+			Map<String, Object> m = null;
+			example.setOrderByClause("modify_time desc");
+			list = bsUserRequireMapper.selectByExample(example);
+			if (list.size() > 0) {
+				for (BsUserRequire bsUserRequire : list) {
+					m = new HashMap<String, Object>();
+					m.put("id", bsUserRequire.getId() + "");
+					m.put("alreadyAC", 0);
+					if (bsUserRequire.getAuthStatus() != null && bsUserRequire.getAuthStatus() == 1) {
+						m.put("alreadyAC", 1);
+					}
+					m.put("type", "");
+					if (bsUserRequire.getBuyFoodType() == 1) {
+						m.put("type", "小麦");
+					} else if (bsUserRequire.getBuyFoodType() == 2) {
+						m.put("type", "玉米");
+					}
+					m.put("people", bsUserRequire.getBuyName());
+
+					m.put("referencePrice", 0);
+					if (bsUserRequire.getBuyFoodPrice() != null) {
+						m.put("referencePrice", bsUserRequire.getBuyFoodPrice());
+					}
+					m.put("number", 0);
+					if (bsUserRequire.getBuyFoodNum() != null) {
+						m.put("number", bsUserRequire.getBuyFoodNum());
+					}
+
+					if (bsUserRequire.getGrainLevel() != null && !"".equals(bsUserRequire.getGrainLevel())) {
+						if (bsUserRequire.getGrainLevel() == 0) {
+							m.put("quality", "无");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 1) {
+							m.put("quality", "国标一等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 2) {
+							m.put("quality", "国标二等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 3) {
+							m.put("quality", "国标三等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 4) {
+							m.put("quality", "国标四等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 5) {
+							m.put("quality", "国标五等粮");// 粮食国标
+						}
+					} else {
+						m.put("quality", "无");// 粮食国标
+					}
+					// 采购单类型(0,1港口收购，2加工厂订单，3接货订单，4饲料养殖厂，5贸易商粮库，6其他)
+					if (bsUserRequire.getCategory() != null && !"".equals(bsUserRequire.getCategory())) {
+						if (bsUserRequire.getCategory() == 0) {
+							m.put("orderType", "无");
+						} else if (bsUserRequire.getCategory() == 1) {
+							m.put("orderType", "港口收购");
+						} else if (bsUserRequire.getCategory() == 2) {
+							m.put("orderType", "加工厂订单");
+						} else if (bsUserRequire.getCategory() == 3) {
+							m.put("orderType", "接货订单");
+						} else if (bsUserRequire.getCategory() == 4) {
+							m.put("orderType", "饲料养殖厂");
+						} else if (bsUserRequire.getCategory() == 5) {
+							m.put("orderType", "贸易商粮库");
+						} else if (bsUserRequire.getCategory() == 6) {
+							m.put("orderType", "其他");
+						}
+					} else {
+						m.put("orderType", "无");
+					}
+					String time = DateUtil.format(bsUserRequire.getModifyTime(), DateStyle.YYYY_MM_DD);
+					m.put("time", time);
+					m.put("location", "");
+					if (bsUserRequire.getBuyLocationDesc() != null && !"".equals(bsUserRequire.getBuyLocationDesc())) {
+						m.put("location", bsUserRequire.getBuyLocationDesc());
+					}
+
+					m.put("distance", "");
+					listMap.add(m);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("BsUserRequireCtrl get by key error..", e);
+		}
+
+		return listMap;
+	}
+
+	/**
+	 * 查询配置
+	 * 
+	 * @param mlbuserId
+	 * @return
+	 */
+	public Map<String, Object> getRequireListByGoodsId(int goods) {
+		List<BsUserRequire> list = null;
+		List<Map<String, Object>> listMap = null;
+		Map<String, Object> maplist = new HashMap<String, Object>();
+		try {
+
+			BsRequireMatchExample matchExample = new BsRequireMatchExample();
+			matchExample.createCriteria().andRequireTypeEqualTo(2).andRequireIdEqualTo(goods);
+			List<BsRequireMatch> matchList = bsRequireMatchDao.selectByExample(matchExample);
+			List<Long> ids = null;
+			if (matchList != null && matchList.size() > 0) {
+				ids = new ArrayList<Long>();
+				for (BsRequireMatch bsRequireMatch : matchList) {
+					ids.add(bsRequireMatch.getMatchId().longValue());
+				}
+			}
+			if (ids == null) {
+				return null;
+			}
+			BsUserRequireExample example = new BsUserRequireExample();
+			Criteria criteria = example.createCriteria();
+			criteria.andIdIn(ids);
+			criteria.andProcessStatusNotEqualTo(-10);
+			listMap = new ArrayList<Map<String, Object>>();
+			Map<String, Object> m = null;
+			example.setOrderByClause("modify_time desc");
+			list = bsUserRequireMapper.selectByExample(example);
+
+			if (list.size() > 0) {
+				for (BsUserRequire bsUserRequire : list) {
+					m = new HashMap<String, Object>();
+					m.put("id", bsUserRequire.getId() + "");
+					m.put("alreadyAC", 0);
+					if (bsUserRequire.getAuthStatus() != null && bsUserRequire.getAuthStatus() == 1) {
+						m.put("alreadyAC", 1);
+					}
+					m.put("type", "");
+					if (bsUserRequire.getBuyFoodType() == 1) {
+						m.put("type", "小麦");
+					} else if (bsUserRequire.getBuyFoodType() == 2) {
+						m.put("type", "玉米");
+					}
+					m.put("people", bsUserRequire.getBuyName());
+
+					m.put("referencePrice", 0);
+					if (bsUserRequire.getBuyFoodPrice() != null) {
+						m.put("referencePrice", bsUserRequire.getBuyFoodPrice());
+					}
+					m.put("number", 0);
+					if (bsUserRequire.getBuyFoodNum() != null) {
+						m.put("number", bsUserRequire.getBuyFoodNum());
+					}
+					if (bsUserRequire.getGrainLevel() != null && !"".equals(bsUserRequire.getGrainLevel())) {
+						if (bsUserRequire.getGrainLevel() == 0) {
+							m.put("quality", "无");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 1) {
+							m.put("quality", "国标一等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 2) {
+							m.put("quality", "国标二等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 3) {
+							m.put("quality", "国标三等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 4) {
+							m.put("quality", "国标四等粮");// 粮食国标
+						} else if (bsUserRequire.getGrainLevel() == 5) {
+							m.put("quality", "国标五等粮");// 粮食国标
+						}
+					} else {
+						m.put("quality", "无");// 粮食国标
+					}
+					// 采购单类型(0,1港口收购，2加工厂订单，3接货订单，4饲料养殖厂，5贸易商粮库，6其他)
+					if (bsUserRequire.getCategory() != null && !"".equals(bsUserRequire.getCategory())) {
+						if (bsUserRequire.getCategory() == 0) {
+							m.put("orderType", "无");
+						} else if (bsUserRequire.getCategory() == 1) {
+							m.put("orderType", "港口收购");
+						} else if (bsUserRequire.getCategory() == 2) {
+							m.put("orderType", "加工厂订单");
+						} else if (bsUserRequire.getCategory() == 3) {
+							m.put("orderType", "接货订单");
+						} else if (bsUserRequire.getCategory() == 4) {
+							m.put("orderType", "饲料养殖厂");
+						} else if (bsUserRequire.getCategory() == 5) {
+							m.put("orderType", "贸易商粮库");
+						} else if (bsUserRequire.getCategory() == 6) {
+							m.put("orderType", "其他");
+						}
+					} else {
+						m.put("orderType", "无");
+					}
+					String time = DateUtil.format(bsUserRequire.getModifyTime(), DateStyle.YYYY_MM_DD);
+					m.put("time", time);
+					m.put("location", "");
+					if (bsUserRequire.getBuyLocationDesc() != null && !"".equals(bsUserRequire.getBuyLocationDesc())) {
+						m.put("location", bsUserRequire.getBuyLocationDesc());
+					}
+
+					m.put("distance", "");
+					listMap.add(m);
+				}
+			}
+			maplist.put("dataList", listMap);
+		} catch (Exception e) {
+			log.warn("BsUserRequireCtrl get by key error..", e);
+		}
+
+		return maplist;
+	}
+}

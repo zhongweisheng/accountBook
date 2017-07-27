@@ -1,0 +1,241 @@
+package lb.rest.user.db.dao;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import lb.rest.user.db.entity.BsInventoryUser;
+import lb.rest.user.db.entity.BsInventoryUserExample;
+import lb.rest.user.db.entity.BsInventoryUserExample.Criteria;
+import lb.rest.user.db.entity.BsInventoryUserKey;
+import lb.rest.user.db.entity.BsUserLevel;
+import lb.rest.user.db.entity.BsUserLevelExample;
+import lb.rest.user.db.mapper.BsInventoryUserMapper;
+import lb.rest.user.db.mapper.BsUserLevelMapper;
+
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.mlb.bo.UserAuthBO;
+import com.mlb.util.TDateTimeUnits;
+import com.mlb.util.ThreeDes;
+
+import fc.wpf.rest.db.iface.StaticTableDaoSupport;
+import fc.wpf.rest.utils.BeanFactory;
+
+@Repository
+public class BsInventoryUserDao implements
+		StaticTableDaoSupport<BsInventoryUser, BsInventoryUserExample, BsInventoryUserKey> {
+
+	@Resource
+	private BsInventoryUserMapper mapper;
+
+	@Resource
+	private BsUserLevelMapper bsUserLevelMapper;
+
+	@Resource
+	private CommonDao commonDao;
+	private static BsUnionUserDao bsUnionUserDao = (BsUnionUserDao) BeanFactory.getBean("bsUnionUserDao");
+
+	private static Date tokenDate = null;
+
+	// 更新 出入库记录中的送粮人或买两人或司机。
+	public int updateUserLevel() {
+
+		Date d = new Date();
+		// 半个小时 30 分钟 30 * 60 * 1000
+		if (tokenDate != null && (d.getTime() - tokenDate.getTime() < 30 * 60 * 1000)) {
+			return 0;
+		}
+
+		String createTime = TDateTimeUnits.getCurrentDate(-2, "yyyy-MM-dd HH:mm:ss");
+		BsInventoryUserExample example = new BsInventoryUserExample();
+
+		example.createCriteria().andRegTimeGreaterThan(TDateTimeUnits.parseDate(createTime));
+		int success = 0;
+		List<BsInventoryUser> list = mapper.selectByExample(example);
+		if (list != null && list.size() > 0) {
+			tokenDate = new Date();
+			for (BsInventoryUser user : list) {
+				String userName = user.getTrueName();
+				String phone = user.getLoginName();
+				phone = ThreeDes.decryptPhone("", phone);
+
+				BsUserLevelExample levelExample = new BsUserLevelExample();
+				levelExample.createCriteria().andUserPhoneEqualTo(phone);
+
+				List<BsUserLevel> levelList = bsUserLevelMapper.selectByExample(levelExample);
+				UserAuthBO userAuth = commonDao.getUserAuth(phone, 0);
+
+				int ifHzk = userAuth.getIfHzk();
+				int ifRz = userAuth.getIfRz();
+				int dataCount = 2;
+				if (ifHzk == 1) {
+					dataCount += 1;
+				}
+				if (ifRz == 1) {
+					dataCount += 1;
+				}
+
+				if (levelList != null && levelList.size() > 0) {
+					BsUserLevel levelItem = levelList.get(0);
+					int count = levelItem.getUserLevel();
+					if (count != dataCount) {
+						levelItem.setUserLevel(dataCount);
+						success = bsUserLevelMapper.updateByPrimaryKeySelective(levelItem);
+					}
+				} else {
+					BsUserLevel levelItem = new BsUserLevel();
+					levelItem.setUserId(user.getUserId());
+					levelItem.setUserPhone(phone);
+					levelItem.setUserLevel(dataCount);
+					levelItem.setUserName(userName);
+					success = bsUserLevelMapper.insertSelective(levelItem);
+				}
+
+			}
+		}
+		return success;
+	}
+
+	public boolean isExist(int userId, int staffType, String phone, int selfId) {
+		boolean isExist = false;
+		BsInventoryUserExample example = new BsInventoryUserExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUserIdEqualTo(userId);
+		criteria.andUserTypeEqualTo(staffType);
+		criteria.andPhoneEqualTo(phone);
+		// 不等于自己的ID
+		criteria.andUserIdNotEqualTo(selfId);
+		List<BsInventoryUser> list = mapper.selectByExample(example);
+		if (list != null && list.size() > 0) {
+			isExist = true;
+		}
+		return isExist;
+	}
+
+	@Override
+	public int countByExample(BsInventoryUserExample example) {
+		return mapper.countByExample(example);
+	}
+
+	@Override
+	public int deleteByExample(BsInventoryUserExample example) {
+		return mapper.deleteByExample(example);
+	}
+
+	@Override
+	public int deleteByPrimaryKey(BsInventoryUserKey key) {
+		return mapper.deleteByPrimaryKey(key);
+	}
+
+	@Override
+	public int insert(BsInventoryUser record) {
+		return mapper.insert(record);
+	}
+
+	@Override
+	public int insertSelective(BsInventoryUser record) {
+		bsUnionUserDao.saveByLzb(record);
+		return mapper.insertSelective(record);
+	}
+
+	@Override
+	@Transactional
+	public int batchInsert(List<BsInventoryUser> records) {
+		for (BsInventoryUser record : records) {
+			mapper.insert(record);
+		}
+		return records.size();
+	}
+
+	@Override
+	@Transactional
+	public int batchUpdate(List<BsInventoryUser> records) {
+		for (BsInventoryUser record : records) {
+			mapper.updateByPrimaryKeySelective(record);
+		}
+		return records.size();
+	}
+
+	@Override
+	@Transactional
+	public int batchDelete(List<BsInventoryUser> records) {
+		for (BsInventoryUser record : records) {
+			mapper.deleteByPrimaryKey(record);
+		}
+		return records.size();
+	}
+
+	@Override
+	public List<BsInventoryUser> selectByExample(BsInventoryUserExample example) {
+		return mapper.selectByExample(example);
+	}
+
+	@Override
+	public BsInventoryUser selectByPrimaryKey(BsInventoryUserKey key) {
+		return mapper.selectByPrimaryKey(key);
+	}
+
+	@Override
+	public List<BsInventoryUser> findAll(List<BsInventoryUser> records) {
+		if (records == null || records.size() <= 0) {
+			return mapper.selectByExample(new BsInventoryUserExample());
+		}
+		List<BsInventoryUser> list = new ArrayList<>();
+		for (BsInventoryUser record : records) {
+			BsInventoryUser result = mapper.selectByPrimaryKey(record);
+			if (result != null) {
+				list.add(result);
+			}
+		}
+		return list;
+	}
+
+	@Override
+	public int updateByExampleSelective(BsInventoryUser record, BsInventoryUserExample example) {
+		return mapper.updateByExampleSelective(record, example);
+	}
+
+	@Override
+	public int updateByExample(BsInventoryUser record, BsInventoryUserExample example) {
+		return mapper.updateByExample(record, example);
+	}
+
+	@Override
+	public int updateByPrimaryKeySelective(BsInventoryUser record) {
+		return mapper.updateByPrimaryKeySelective(record);
+	}
+
+	@Override
+	public int updateByPrimaryKey(BsInventoryUser record) {
+		return mapper.updateByPrimaryKey(record);
+	}
+
+	@Override
+	public int sumByExample(BsInventoryUserExample example) {
+		return 0;
+	}
+
+	@Override
+	public void deleteAll() {
+		mapper.deleteByExample(new BsInventoryUserExample());
+	}
+
+	@Override
+	public BsInventoryUserExample getExample(BsInventoryUser record) {
+		BsInventoryUserExample example = new BsInventoryUserExample();
+		if (record != null) {
+			Criteria criteria = example.createCriteria();
+			if (record.getUserId() != null) {
+				criteria.andUserIdEqualTo(record.getUserId());
+			}
+			if (record.getPhone() != null) {
+				criteria.andPhoneEqualTo(record.getPhone());
+			}
+		}
+		return example;
+	}
+}

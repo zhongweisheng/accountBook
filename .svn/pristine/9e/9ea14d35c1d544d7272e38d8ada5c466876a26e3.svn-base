@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>粮账本</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/workIndex.css">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.include.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common.min.js"></script>
+    <style type="text/css">
+        .left{
+            width: 159px;
+            margin-top: 100px;
+            float: left;
+        }
+        .parent {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child{
+            padding-left: 15%;
+        }
+        .child p {
+            display: inline-block;
+            width: 100%;
+            margin-left: -15px;
+            height: 40px;
+            line-height: 40px;
+            text-indent: 1rem;
+            font-size: 16px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child p:hover,.parent:hover{
+            cursor: pointer;
+            color: #f5a85d;
+            font-size: 18px;
+        }
+        .parent:hover{
+            font-size: 24px;
+        }
+        .child i {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            line-height: 8px;
+            background-color: #585858;
+            border: 1px solid #585858;
+            border-radius: 4px;
+        }
+        .left_active{
+            color: #f5a85d;
+        }
+        .right{
+            float: left;
+            width:calc(100% - 160px);
+            width:-moz-calc(100% - 160px);
+            width:-webkit-calc(100% - 160px);
+            height: 600px;
+            margin-top: 50px;
+            border-left: 1px solid #000;
+        }
+        .clickModal{
+            width: 160px;
+            height: 170px;
+            cursor: pointer;
+            position: absolute;
+            border: 1px solid transparent;
+            border-radius: 30%;
+            background: rgba(0,0,0,0) 50%;
+            transition: background 2s,width 2s,height 2s;
+        }
+        .clickModal:hover{
+            background: rgba(0,0,0,.1) 100%;
+        }
+        .goinForm{
+            top:5px;
+            left: 40px;
+        }
+        .goinTable{
+            top: 5px;
+            left: 370px;
+        }
+        .gooutForm{
+            bottom: 20px;
+            left: 40px;
+        }
+        .gooutTable{
+            bottom: 20px;
+            left: 370px;
+        }
+        .goaccountSta{
+            top: 170px;
+            right: 50px;
+        }
+    </style>
+</head>
+<body>
+    <script>$.include("accountData/shtml/head.shtml")</script>
+    <div class="content clearfix" style="height: 736px;">
+        <script>
+                $.include('accountData/shtml/left.shtml');
+        </script>
+        <div class="right">
+            <div class="pic" style="width: 90%;height: 90%;margin: 0 auto;margin-top:30px;background:url('accountData/img/workIndex.png') no-repeat center;position: relative;">
+                <div class="goinForm clickModal"></div>
+                <div class="goinTable clickModal"></div>
+                <div class="gooutForm clickModal"></div>
+                <div class="gooutTable clickModal"></div>
+                <div class="goaccountSta clickModal"></div>
+            </div>
+        </div>
+    </div>
+    <script>$.include("accountData/shtml/foot.shtml")</script>
+
+    <script type="text/javascript" src="accountData/js/md5.min.js"></script>
+    <script type="text/javascript" src="accountData/js/rest.min.js"></script>
+    <script type="text/javascript" src="accountData/js/workIndex.min.js"></script>
+    <script type="text/javascript">
+        $(".goinForm").click(function () {
+            location.href = 'inForm.html?from=1';
+        });
+        $(".goinTable").click(function () {
+            location.href = 'inTable.html?from=1';
+        });
+        $(".gooutForm").click(function () {
+            location.href = 'outForm.html?from=1';
+        });
+        $(".gooutTable").click(function () {
+            location.href = 'outTable.html?from=1';
+        });
+        $(".goaccountSta").click(function () {
+            location.href = 'accountCharts.html?from=1';
+        });
+    </script>
+</body>
+</html>

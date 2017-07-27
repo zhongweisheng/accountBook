@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代储凭证</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name = "format-detection" content = "telephone=no">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/storageTable.css">
+    <link rel="stylesheet" href="accountData/css/select2.min.css">
+    <link rel="stylesheet" href="accountData/css/common/bootstrapdate.min.css ">
+    <link rel="stylesheet" href="accountData/css/common/bootstrap-datetimepicker.min.css">
+    <script type="text/javascript" src="accountData/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/jquery.include.min.js?v=20170626"></script>
+    <script type="text/javascript" src="libs/template7/1.1.4/template7.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/common.min.js?v=20170626"></script>
+</head>
+
+<body>
+<script>$.include("accountData/shtml/head.shtml?v=20170626")</script>
+<div class="content clearfix">
+    <script>
+            $.include('accountData/shtml/left.shtml?v=20170626');
+    </script>
+    <div class="right">
+    	<p style="font-size: 22px; font-weight: bold; margin-top: 124px;">代储凭证<p>
+        <div class="rightHead clearfix">
+            <ul>
+        
+                <li class="clearfix" style="font-size: 14px;">
+                                 <div class="lt" style="width: 33%;">
+                        <span style="color: #000; font-size: 16px;">出库品种：</span>
+                      <input type="text" value="小麦" disabled style="border: 0;background: 0;">
+
+                    </div>
+                    <div class="lt" style="width: 33%;">
+                        <span style="color: #000;  font-size: 16px;">送粮人：</span>
+                        <label for="salePerson">
+                            <select name="salePerson" id="salePerson" style="width: 60%;">
+
+                            </select>
+                        </label>
+                    </div>
+                    <div class="lt" style="width: 33%;">
+                        <span style="color: #000;  font-size: 16px;">粮库：</span>
+                           <select name="depot" id="depot" class="depot" style="width: 60%;">
+                        </select>
+                    </div>
+                    <div class="lt" style="margin-top: 20px;">
+                        <span style="color: #000;font-size: 16px;">日期查询：</span>
+                        <input type="text" id="dateStart" placeholder="起始时间" data-date-format="yyyy-mm-dd" style="height: 28px;">
+                        <span>到</span>
+                        <input type="text"  id="dateEnd" placeholder="结束时间" data-date-format="yyyy-mm-dd" style="height: 28px;">
+                        <button onclick="clearDate()" style="background: #f5a85d;color: #fff;outline: none;border: none;height: 28px;line-height: 28px;width: 100px;text-align: center;">清空日期</button>
+                    </div>
+                </li>
+                               <li class="clearfix">
+                    <div id="timeChange">
+						<span style="padding-top: 10px; font-size: 18px;">记录查看</span>
+                        <span><a class="watchActive" data-timeType="1" >按明细查看</a></span>
+                        <span><a class="watch" data-timeType="2" >按天查看</a></span>
+                        <span><a class="watch" data-timeType="3" >按周查看</a></span>
+                        <span><a class="watch" data-timeType="4" >按月查看</a></span>
+                        <span><a class="watch" id="excelBtn"  style="margin-right: 0;" type="2">下载报表</a></span>
+                    </div>
+                </li>
+
+              <!--  <li class="clearfix" style="text-align: right;">
+                    <a class="watch" onclick="excelBtn()" style="cursor: pointer;">导出表格</a>
+                </li>-->
+            </ul>
+        </div>
+        <div class="rightContent">
+            <table  style="border: 1px solid #eee;">
+                <thead>
+                <tr>
+                    <td class="tcenter">序号</td>
+                    <td class="tcenter">代储日期</td>
+                    <td class="tcenter">送粮人</td>
+                    <td class="tright">毛重(公斤)</td>
+                    <td class="tright">皮重(公斤)</td>
+                    <td class="tright">扣重(公斤)</td>
+                    <td class="tright">净重(公斤)</td>
+                    <td class="tright">已结算(公斤)</td>
+                    <td class="tright" style="padding-right: 20px;">未结算(公斤)</td>
+                    <td class="tright">已付款</td>
+                    <td class="tcenter" id="re">操作</td>
+                </tr>
+                </thead>
+                <tbody id="list" style="border: 1px solid #eee;">
+
+                </tbody>
+                <script type="text/template7" id="inTable-list">
+                    {{#each inTable}}
+                    <tr style="border: 1px solid #eee;">
+                        <td class="tcenter" style="border: 1px solid #eee;">{{number}}</td>
+                        {{#js_compare "this.type === 1"}}
+                        <td class="tcenter">{{date}}</td>
+                        {{else}}
+                        <td class="tcenter" style="border: 1px solid #eee;">{{timeUnit}}</td>
+                        {{/js_compare}}
+                        <td class="tcenter staffName" style="border: 1px solid #eee;">{{staffName}}</td>
+                        <td class="tcenter grossWeight" style="border: 1px solid #eee;">{{grossWeight}}</td>
+                        <td class="tright tareWeight"  style="border: 1px solid #eee;">{{tareWeight}}</td>
+                        <td class="tright deduction"  style="border: 1px solid #eee;">{{deduction}}</td>
+                        <td class="tright"  style="border: 1px solid #eee;">{{netWeight}}</td>
+                        <td class="tright hasSettled" style="border: 1px solid #eee;">{{hasSettled}}</td>
+                        <td class="tright notSettled" style="border: 1px solid #eee;">{{notSettled}}</td>
+                        <td class="tright" style="border: 1px solid #eee;">{{paidMoney}}</td>
+                        <td class="tcenter" style="position: relative;white-space: nowrap">
+                            <span data-id={{id}} class="balance" style="color: cornflowerblue;cursor: pointer;">结算</span>&nbsp;
+                            <span id="a" class="more" style="color: #000;cursor: pointer;">更多</span>
+                                <div class="aBtn isShow">
+                                    <button data-id={{id}} class="edit" onclick="toEdit(this)">编辑</button>
+
+                                    <button data-id={{id}} class="print">打印</button>
+                                    <button data-id={{id}} class="details">详情</button>
+                                    <button data-id={{id}} class="delete">删除</button>
+                                    <div class="accountRemark" style="top: 50px;position: absolute;right:0;z-index: 5;background: #fff;display: none;width: 400px;border: 1px solid #f6a85e;">
+                                        <ul>
+                                            <li style="text-align: left;text-indent: 20px;border-bottom: 1px dashed #f6a85e;">单号：{{recordNumber}}</li>
+                                            <li style="text-align: left;text-indent: 20px;border-bottom: 1px dashed #f6a85e;">车号：{{licensePlate}}</li>
+                                            <li style="text-align: left;text-indent: 20px;border-bottom: 1px dashed #f6a85e;">送粮人：{{staffName}}</li>
+                                            <li style="text-align: left;text-indent: 20px;border-bottom: 1px dashed #f6a85e;">粮质：{{quality}}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </table>
+        </div>
+        <div class="page" style="margin-left: 39px;">
+				
+        </div>
+    </div>
+</div>
+<div class="balanceModel"  style="font-size:16px ;">
+    <div class="b-content b-write">
+        <div class="card">
+            <ul style="padding-left: 12px;">
+                <li class="b-item tcenter">
+                    <h4>结 算</h4>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">送粮人:</span>
+                    <span class="inner-r b-staffName"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">送粮时间:</span>
+                    <span class="inner-r b-date"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">净重(公斤):</span>
+                    <span class="inner-r b-netWeight"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">已结算(公斤):</span>
+                    <span class="inner-r b-hasSettled"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">未结算(公斤):</span>
+                    <span class="inner-r b-notSettled"></span>
+                </li>
+            </ul>
+        </div>
+        <div class="card" style="margin: 0;padding-bottom: 8px;">
+            <ul style="padding-left: 12px;">
+                <li class="b-item">
+                    <span class="inner-l tleft">今日结算数(公斤):</span>
+                    <span class="inner-r"><input type="number" id="settleCount"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">今日结算价(元/斤):</span>
+                    <span class="inner-r"><input type="number" id="settlePrice"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">应付款:</span>
+                    <span class="inner-r" id="shouldPay"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">实付款:</span>
+                    <span class="inner-r"><input type="number" id="actualPay"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner50"><button id="b-cencel">取消</button></span>
+                    <span class="inner50"><button id="b-confirm">确定</button></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="b-content b-yes">
+        <div class="card">
+            <ul>
+                <li class="b-item tcenter">
+                    <h4>付 款 信 息</h4>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">送粮人:</span>
+                    <span class="inner-r b-staffName"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">送粮时间:</span>
+                    <span class="inner-r b-date"></span>
+                </li>
+            </ul>
+        </div>
+        <div class="card" style="margin: 0;padding-bottom: 8px;">
+            <ul>
+                <li class="b-item">
+                    <span class="inner-l tleft">今日结算数(公斤):</span>
+                    <span class="inner-r settleCount"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">今日结算数(元/斤):</span>
+                    <span class="inner-r settlePrice"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner-l tleft">实付款:</span>
+                    <span class="inner-r actualPay"></span>
+                </li>
+                <li class="b-item">
+                    <span class="inner50"><button id="b-back">返回</button></span>
+                    <span class="inner50"><button id="b-submit">确定</button></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<script>$.include("accountData/shtml/foot.shtml?v=20170626")</script>
+<script type="text/javascript" src="accountData/js/common/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/common.min.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/common/select2.min.js?v=20170626"></script>
+<script type="text/javascript" src="js/classie.min.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/common/rest.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="accountData/js/common/page.js?v=20170626" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="accountData/js/storageTable.js?v=20170626"></script>
+<script type="text/javascript">
+
+$(document).on('click','#a',function(){
+  	$(this).next().removeClass("aBtn");
+    $(this).addClass("T").prev().addClass('T');
+  	$(this).parents('tr').siblings().find('#a').removeClass("T");
+    $(this).parents('tr').siblings().find('.balance').removeClass("T");
+	$(this).parents('tr').siblings().find('.isShow').addClass("aBtn");
+});
+
+$("body").click(function () {
+    $(".isShow").addClass("aBtn");
+    $(".balance").removeClass("T");
+    $(".more").removeClass("T");
+
+
+})
+
+</script>
+</body>
+</html>

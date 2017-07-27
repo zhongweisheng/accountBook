@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>供应下游</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/downstream.css">
+</head>
+<body>
+<div class="wapper">
+    <div class="tab">
+        <div class="tab_active lf">求购</div>
+        <div class="rt" onclick="window.location.href='applyed.html'" style="background-color: #fff;">供应</div>
+    </div>
+    <div class="downstream">
+        <div class="top">
+            <div class="nav_ul">
+                <ul class="nav">
+                    <li class="nav_active lf">100公里以内</li>
+                    <li class="lf">200公里以内</li>
+                    <li class="rt">200公里以外</li>
+                </ul>
+            </div>
+            <div class="top_search">
+                <ul>
+                    <li>卖粮宝帮忙</li>
+                    <li data-phone="4006029967" class="phone">联系客服</li>
+                    <!--<li>筛选</li>-->
+                </ul>
+            </div>
+        </div>
+        <div class="navcontent">
+            <script type="text/template" id="down-list">
+                {{#each down}}
+                <div class="infor">
+                    <div class="title">
+                        <span class="frist">
+                            <i class="name">{{companyName}}</i>
+                        </span>
+                        <span class="rt">{{trueName}}</span>
+                    </div>
+                    <ul>
+                        <li>
+                            <span>{{foodName}}</span>
+                            <span>{{quality}}</span>
+                            <span class="orange">{{foodPrice}}</span>
+                        </li>
+                    </ul>
+                    <div class="distance">
+                        <span class="time">更新：{{updateTime}}</span>
+                        <span class="long">距离：{{distance}}公里</span>
+                    </div>
+                </div>
+                {{/each}}
+            </script>
+            <div class="content" id="downlist">
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src='js/md5.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="js/common/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/common/jquery.citys.js"></script>
+<script type="text/javascript" src="js/common/rest.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="js/downstream.js"></script>
+</body>
+</html>

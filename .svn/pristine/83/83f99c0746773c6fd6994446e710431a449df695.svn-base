@@ -1,0 +1,39 @@
+<div class="left">
+    <div class="leftContent">
+
+    </div>
+</div>
+<script>
+    /**
+     * Created by new on 2017/3/28.
+     */
+    var userId = DES3.decrypt(localStorage.getItem('userId'));
+    if(!userId){
+        location.href='index.html';
+    }
+    $.ajax({
+        type: 'get',
+        url: 'accountData/json/leftSide.json',
+        dataType: 'json',
+        async: false,
+        success: function (res) {
+            var html = '';
+            for (var i = 0, len = res.data.length; i < len; i++) {
+                html += "<div class=\"parent\" onclick=\"window.location.href='"+res.data[i].parentHref+"?from=1'\">"+res.data[i].parent +"</div><div class=\"child\">";
+                var datachild = res.data[i].children;
+                for (var j = 0; j < datachild.length; j++) {
+                    html += "<i></i><p onclick=\"window.location.href='"+res.data[i].childHref[j]+"?from=1'\">" + datachild[j] + '</p>';
+                }
+                html += '</div>';
+                $(".leftContent").empty();
+                $(".leftContent").append(html);
+            }
+        }
+    });
+    /*$(".leftContent").on('click','.parent',function () {
+        $(this).next(".child").toggle();
+    });*/
+
+
+
+</script>

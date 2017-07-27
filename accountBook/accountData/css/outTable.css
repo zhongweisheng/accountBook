@@ -1,0 +1,192 @@
+.rightHead {
+    margin-top: 20px;
+}
+
+.rightHead > ul > li > span {
+    color: red;
+}
+
+.rightHead > ul > li:nth-child(1) {
+    font-size: 24px;
+    color: #000;
+}
+.balanceModel{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top:0;
+    left:100%;
+    background: rgba(0,0,0,.5);
+}
+.b-content{
+    width: 500px;
+    background-color: #f4f5f9;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+.b-yes{
+    left: 150%;
+}
+.card{
+    width: 100%;
+    background-color: #fff;
+    margin-bottom: 10px;
+}
+.b-item{
+    height: 40px;
+    line-height: 40px;
+    width: 100%;
+    border-top:1px solid #eee;
+}
+.inner-l{
+ 
+    display: inline-block;
+    width: 50%;
+}
+.inner-r{
+    display: inline-block;
+    width: 48%;
+}
+.inner50{
+    display: inline-block;
+    text-align: center;
+    width: 48%;
+}
+#b-cencel,#b-back{
+    border: 0;
+    outline: 0;
+    width: 150px;
+    height: 30px;
+    background: #aaa;
+    color: #fff;
+}
+#b-confirm,#b-submit{
+    border: 0;
+    outline: 0;
+    width: 150px;
+    height: 30px;
+    background: #f6a85e;
+    color: #fff;
+}
+#excelBtn {
+    cursor: pointer;
+    display: inline-block;
+    width: 120px;
+    height: 34px;
+    line-height: 34px;
+	float: right;
+    text-align: center;
+    background-color:  #e69423;;
+    color: white;
+    font-size: 16px;
+    border: none;
+    outline: none;
+}
+#grainType ,#depot ,#salePerson{
+    width: 100px;
+    height: 28px;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered{
+	 float: left; font-size: 14px;
+}
+.rightHead > ul > li:nth-child(3) {
+    width: 100%;
+}
+
+
+.rightHead > ul > li:nth-child(3) span {
+    text-align: center;
+    float: left;
+    width: 20%;
+    height: 34px;
+    line-height: 34px;
+    color: #fff;
+}
+.rightHead > ul > li span > a{
+	font-size: 16px;
+	margin: 0 40px;
+    display: inline-block;
+    width: 100px;
+    height: 34px;
+    line-height: 34px;
+    text-align: center;
+}
+#timeChange{
+	margin-top: 50px;
+		 width: 97%;
+}
+.watchActive{
+   	    border-bottom: 1px solid #e69423;
+    color:#e69423;
+    font-size: 16px;
+}
+.rightContent {
+     width: 97%;
+    height: 470px;
+    margin-top: 30px;
+  
+}
+
+.rightContent table {
+    font-size: 14px;
+    width: 100%;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    color: #000;
+    border-collapse: collapse;
+}
+
+.rightContent thead {
+    width: 100%;
+    height: 40px;
+    background-color: #717171;
+}
+.rightContent thead > tr > td {
+   color: black;
+    height: 40px;
+    background-color: #eee;
+}
+
+.rightContent tbody > tr:nth-child(even) {
+    background-color: white;
+}
+
+.rightContent tbody > tr > td {
+    height: 40px;
+
+}
+.rightContent tbody > tr > td:last-child > div>button{
+    cursor: pointer;
+    width: 50px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    background-color: #f6a85e;
+    border: 0;
+    outline: 0;
+    color: #fff;
+    margin-left: 7px;
+}
+.aBtn{
+	display: none;
+	
+	
+}
+.T{
+	display: none;
+}
+.b-item input{
+    height: 28px;
+    line-height: 28px;
+}
+.b-item button{
+    height: 28px;
+    line-height: 28px;
+}

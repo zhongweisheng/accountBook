@@ -1,0 +1,499 @@
+package lb.rest.user.web.action;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+
+import lb.rest.user.db.dao.BsInventoryTemporaryDao;
+import lb.rest.user.db.dao.BsSequenceDao;
+import lb.rest.user.db.entity.BsInventoryStaff;
+import lb.rest.user.db.entity.BsInventoryTemporary;
+import lb.rest.user.db.entity.BsInventoryTemporaryExample;
+import lb.rest.user.db.entity.BsInventoryTemporaryKey;
+import lb.rest.user.db.mapper.BsInventoryStaffMapper;
+import lb.rest.user.db.mapper.BsInventoryTemporaryMapper;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.mlb.enums.RecordTypeEnum;
+import com.mlb.enums.StaffTypeEnum;
+import com.mlb.util.GetParamsUtils;
+import com.mlb.util.SequenceUtil;
+import com.mlb.util.SessionUtils;
+
+import fc.wpf.rest.db.service.DataService;
+import fc.wpf.rest.utils.BeanFactory;
+import fc.wpf.rest.utils.DBBean;
+import fc.wpf.rest.utils.DateStyle;
+import fc.wpf.rest.utils.DateUtil;
+import fc.wpf.rest.web.action.BasicCtrl;
+import fc.wpf.rest.web.bean.DbCondi;
+import fc.wpf.rest.web.bean.ReturnInfo;
+import fc.wpf.rest.web.bean.SqlMaker;
+import fc.wpf.rest.web.bind.FieldUtils;
+
+@Slf4j
+@Controller
+@RequestMapping("/bsInventoryTemporary")
+public class BsInventoryTemporaryCtrl extends BasicCtrl {
+
+	private static BsInventoryTemporaryMapper bsInventoryTemporaryMapper = 
+			(BsInventoryTemporaryMapper)BeanFactory.getBean("bsInventoryTemporaryMapper");
+	
+	private static DataService mysqlDataService = 
+			(DataService)BeanFactory.getBean("mysqlDataService");
+	
+	private static BsInventoryStaffMapper bsInventoryStaffMapper = (BsInventoryStaffMapper) BeanFactory
+			.getBean("bsInventoryStaffMapper");
+	
+	private BsSequenceDao bsSequenceDao = (BsSequenceDao)BeanFactory.getBean("bsSequenceDao");
+	
+	private static BsInventoryTemporaryDao bsInventoryTemporaryDao = (BsInventoryTemporaryDao) BeanFactory
+			.getBean("bsInventoryTemporaryDao");
+	
+	@RequestMapping(value = "insert", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo insert(BsInventoryTemporary info, HttpServletRequest req) {
+		try {
+			int id = SequenceUtil.getInstance().nextValue("bs_inventory_record");
+			info.setId(id);
+			info.setCreateTime(new Date());
+			info.setRecordNumber(bsSequenceDao.nextValue(info.getUserId(),info.getGrainType(),info.getRecordType())+"");
+			info.setIfPayment(0);
+			String dateTime = info.getDate()+" "+"00:00:00";
+			info.setRecordTime(DateUtil.getDate(DateStyle.YYYY_MM_DD_HH_MM_SS.getValue(), dateTime));
+			if(info.getRecordType() == 1){
+				info.setShifuk(info.getMoneyIn());
+			}else{
+				info.setShifuk(info.getMoneyOut());
+			}
+			int flag = bsInventoryTemporaryMapper.insert(info);
+			// 插入成功
+			if (flag > 0) {
+				int staffId = NumberUtils.toInt(req.getParameter("staffId"));
+				
+				int driverId = NumberUtils.toInt(req.getParameter("driverId"));
+				// 新建司机
+				if(driverId == -100){
+					String driverName = StringUtils.trimToEmpty(info.getDriverName());
+					String driverPhone = StringUtils.trimToEmpty(req.getParameter("driverPhone"));
+					if(driverName != null && !"".equals(driverName) && driverPhone != null && !"".equals(driverPhone) ){
+						
+						int staffType = StaffTypeEnum.司机.getCode();
+						BsInventoryStaff record = new BsInventoryStaff();
+						int userId = info.getUserId();
+						record.setUserId(userId);
+						record.setStaffType(staffType);
+						record.setTrueName(driverName);
+						record.setPhone(driverPhone);
+						record.setIdCard("");
+						record.setCardNumber("");
+						record.setCreateTime(new Date());
+						// 新建送粮人或买粮人
+						int staffIdNew = SequenceUtil.getInstance().nextValue("bs_inventory_staff");
+						record.setId(staffIdNew);
+						bsInventoryStaffMapper.insertSelective(record);
+						
+						BsInventoryTemporary searchNewRecord = new BsInventoryTemporary();
+						searchNewRecord.setId(id);
+						searchNewRecord.setDriverId(staffIdNew);
+						bsInventoryTemporaryMapper.updateByPrimaryKeySelective(searchNewRecord);
+					}
+				}
+				// 新建 送粮人或买粮人
+				if (staffId == -100) {
+					String staffName = StringUtils.trimToEmpty(info.getStaffName());
+					String staffPhone = StringUtils.trimToEmpty(req.getParameter("staffPhone"));
+					if(staffName != null && !"".equals(staffName) && staffPhone != null && !"".equals(staffPhone) ){
+						
+						int recordType = info.getRecordType();
+						// 入库单 为 送粮人；出库单为买粮人
+						int staffType = recordType == RecordTypeEnum.入库.getCode() ? StaffTypeEnum.送粮人.getCode()
+								: StaffTypeEnum.买粮人.getCode();
+						
+						BsInventoryStaff record = new BsInventoryStaff();
+						int userId = info.getUserId();
+						record.setUserId(userId);
+						record.setStaffType(staffType);
+						record.setTrueName(staffName);
+						record.setPhone(staffPhone);
+						record.setIdCard("");
+						record.setCardNumber("");
+						record.setCreateTime(new Date());
+						// 新建送粮人或买粮人
+						int staffIdNew = SequenceUtil.getInstance().nextValue("bs_inventory_staff");
+						record.setId(staffIdNew);
+						bsInventoryStaffMapper.insertSelective(record);
+						staffId = staffIdNew;
+						// 新增送粮人或买粮人时，需要更新staffId , -100 更新为插入的staffIdNew
+						BsInventoryTemporary searchNewRecord = new BsInventoryTemporary();
+						searchNewRecord.setId(id);
+						searchNewRecord.setStaffId(staffIdNew);
+						bsInventoryTemporaryMapper.updateByPrimaryKeySelective(searchNewRecord);
+					}
+				}
+				
+				return new ReturnInfo("提交成功", id, info.getRecordNumber(), true);
+			} else {
+				return new ReturnInfo("提交失败", 0, 0, false);
+			}
+
+		} catch (Exception e) {
+			log.warn("保存出入库 error..", e);
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * 修改更新
+	 * 
+	 * @param @param info
+	 * @param @param req
+	 * @param @return
+	 * @return ReturnInfo
+	 * @throws
+	 * @date 2017年3月28日下午1:36:21
+	 */
+	@RequestMapping(value = "update", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo update(BsInventoryTemporary info, HttpServletRequest req) {
+		try {
+			if(info.getRecordType() == 1){
+				info.setShifuk(info.getMoneyIn());
+			}else{
+				info.setShifuk(info.getMoneyOut());
+			}
+			int flag = bsInventoryTemporaryMapper.updateByPrimaryKey(info);
+			// 更新成功
+			if (flag > 0) {
+				int staffId = NumberUtils.toInt(req.getParameter("staffId"));
+				int id = info.getId();
+				
+				int driverId = NumberUtils.toInt(req.getParameter("driverId"));
+				// 新建司机
+				if(driverId == -100){
+					String driverName = StringUtils.trimToEmpty(info.getDriverName());
+					String driverPhone = StringUtils.trimToEmpty(req.getParameter("driverPhone"));
+					if(driverName != null && !"".equals(driverName) && driverPhone != null && !"".equals(driverPhone) ){
+						
+						int staffType = StaffTypeEnum.司机.getCode();
+						BsInventoryStaff record = new BsInventoryStaff();
+						int userId = info.getUserId();
+						record.setUserId(userId);
+						record.setStaffType(staffType);
+						record.setTrueName(driverName);
+						record.setPhone(driverPhone);
+						record.setIdCard("");
+						record.setCardNumber("");
+						record.setCreateTime(new Date());
+						// 新建送粮人或买粮人
+						int staffIdNew = SequenceUtil.getInstance().nextValue("bs_inventory_staff");
+						record.setId(staffIdNew);
+						bsInventoryStaffMapper.insertSelective(record);
+						
+						BsInventoryTemporary searchNewRecord = new BsInventoryTemporary();
+						searchNewRecord.setId(id);
+						searchNewRecord.setDriverId(staffIdNew);
+						bsInventoryTemporaryMapper.updateByPrimaryKeySelective(searchNewRecord);
+					}
+				}
+				
+				// 新建 送粮人或买粮人
+				if (staffId == -100) {
+					String staffName = StringUtils.trimToEmpty(info.getStaffName());
+					String staffPhone = StringUtils.trimToEmpty(req.getParameter("staffPhone"));
+					if(staffName != null && !"".equals(staffName) && staffPhone != null && !"".equals(staffPhone) ){
+						int recordType = info.getRecordType();
+						// 入库单 为 送粮人；出库单为买粮人
+						int staffType = recordType == RecordTypeEnum.入库.getCode() ? StaffTypeEnum.送粮人.getCode()
+								: StaffTypeEnum.买粮人.getCode();
+						
+						BsInventoryStaff record = new BsInventoryStaff();
+						int userId = info.getUserId();
+						record.setUserId(userId);
+						record.setStaffType(staffType);
+						record.setTrueName(staffName);
+						record.setPhone(staffPhone);
+						record.setIdCard("");
+						record.setCardNumber("");
+						record.setCreateTime(new Date());
+						// 新建送粮人或买粮人
+						int staffIdNew = SequenceUtil.getInstance().nextValue("bs_inventory_staff");
+						record.setId(staffIdNew);
+						bsInventoryStaffMapper.insertSelective(record);
+						staffId = staffIdNew;
+						// 新增送粮人或买粮人时，需要更新staffId , -100 更新为插入的staffIdNew
+						BsInventoryTemporary searchNewRecord = new BsInventoryTemporary();
+						searchNewRecord.setId(id);
+						searchNewRecord.setStaffId(staffIdNew);
+						bsInventoryTemporaryMapper.updateByPrimaryKeySelective(searchNewRecord);
+					}
+				}
+				return ReturnInfo.Success;
+			}
+
+		} catch (Exception e) {
+			log.warn("更新出入库记录 error..", e);
+		}
+		return ReturnInfo.Faild;
+	}
+	
+	
+	@RequestMapping(value = "/search", method = RequestMethod.POST)
+	@ResponseBody
+	public Object searchWxList(HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		int grainType = NumberUtils.toInt(req.getParameter("grainType"));
+		int searchType = NumberUtils.toInt(req.getParameter("searchType"));
+		int recordType = NumberUtils.toInt(req.getParameter("recordType"), 1);
+		int staffId = NumberUtils.toInt(req.getParameter("staffId"), 0);
+		String staffName = StringUtils.trimToEmpty(req.getParameter("staffName"));
+		int wxList = NumberUtils.toInt(req.getParameter("wxList"), 1);
+		int currentPage = NumberUtils.toInt(req.getParameter("currentPage"), 1);
+		int pageSize = NumberUtils.toInt(req.getParameter("pageSize"), 10);
+		int isPay = NumberUtils.toInt(req.getParameter("isPay"), 0);
+		String recordNumber =StringUtils.trimToEmpty(req.getParameter("recordNumber"));
+		String licensePlate = StringUtils.trimToEmpty(req.getParameter("licensePlate"));
+		int driverId = NumberUtils.toInt(req.getParameter("driverId"));
+		String strTime = StringUtils.trimToEmpty(req.getParameter("strTime"));
+		String endTime = StringUtils.trimToEmpty(req.getParameter("endTime"));
+		// Map<String, Object> map = GetParamsUtils.getParamMap(req);
+		return bsInventoryTemporaryDao.searchList(false, userId, grainType, recordType, searchType, staffId, staffName,
+				isPay,  recordNumber, licensePlate, driverId, strTime, endTime,currentPage, pageSize).toJsonObj();
+	}
+	
+	/**
+	 * ajax根据ID主键查询
+	 * 请求 url: 'http://ip/app/BsInventoryTemporary/(_id值)' 
+	 * dataType: 'json' 
+	 * type: 'get'
+	 */
+	@RequestMapping(value="/{key}",method = RequestMethod.GET)
+	@ResponseBody
+	public Object get(@PathVariable String key,HttpServletRequest req) {
+		List<BsInventoryTemporary> list = null;
+		BsInventoryTemporary obj = null;
+		try {
+			BsInventoryTemporary akey = new BsInventoryTemporary();
+				
+				Field keyField=FieldUtils.allDeclaredField(BsInventoryTemporaryKey.class).get(0);
+
+				if(keyField.getType().isInstance(1)){
+					FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+				}else if(keyField.getType().isInstance(1L)){
+					FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+				}else{
+					FieldUtils.setObjectValue(akey, keyField, key);
+				}
+				
+			
+			if(true && akey.getId() == null ){
+				list = new ArrayList<BsInventoryTemporary>();
+			}else{
+				BsInventoryTemporaryExample example = new BsInventoryTemporaryExample();
+				example.createCriteria().andIdEqualTo(akey.getId());
+				list = bsInventoryTemporaryMapper.selectByExample(example);
+				
+				if (list != null && list.size() > 0) {
+					obj = list.get(0);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryTemporaryCtrl get by key error..",e);
+		}
+		return  obj;
+	}
+	
+	/**
+	 * ajax根据主键删除 
+	 * url:'http://ip/app/BsInventoryTemporary/(_id值)' 
+	 * type: 'DELETE' 
+	 * dataType: 'json' 
+	 */
+	@RequestMapping(value="/{key}",method=RequestMethod.DELETE)
+	@ResponseBody
+	public ReturnInfo delete(@PathVariable String key,HttpServletRequest req) {
+		try {
+			BsInventoryTemporary akey = new BsInventoryTemporary();
+				
+				Field keyField=FieldUtils.allDeclaredField(BsInventoryTemporaryKey.class).get(0);
+
+				if(keyField.getType().isInstance(1)){
+					FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+				}else if(keyField.getType().isInstance(1L)){
+					FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+				}else{
+					FieldUtils.setObjectValue(akey, keyField, key);
+				}
+				
+			if(true && akey.getId() != null ){
+				bsInventoryTemporaryMapper.deleteByPrimaryKey(akey);
+				return ReturnInfo.Success;
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryTemporaryCtrl delete by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+	
+	
+	/**
+	 * 查询个数
+	 * @param @param req
+	 * @param @return   
+	 * @return ReturnInfo  
+	 * @throws
+	 * @date 2017年5月3日下午5:03:01
+	 */
+	@RequestMapping(value = "/queryCount", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo queryCount(HttpServletRequest req) {
+		Map<String, Object> maps = GetParamsUtils.getParamMap(req);
+		String userId = maps.get("userId").toString();
+		String recordType = maps.get("recordType").toString();
+		BsInventoryTemporaryExample akey = new BsInventoryTemporaryExample();
+		akey.createCriteria().andUserIdEqualTo(Integer.parseInt(userId)).andRecordTypeEqualTo(Integer.parseInt(recordType));
+		List<BsInventoryTemporary>  list = bsInventoryTemporaryMapper.selectByExample(akey);
+		return new ReturnInfo("成功", list.size(), 0, true);
+	}
+	/**
+	 * 删除
+	 * 
+	 * @param @param req
+	 * @param @return
+	 * @return ReturnInfo
+	 * @throws
+	 * @date 2017年4月2日下午4:22:14
+	 */
+	@RequestMapping(value = "/deleteInventoryTemporary", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo deleteRecordOrdre(HttpServletRequest req) {
+		Map<String, Object> maps = GetParamsUtils.getParamMap(req);
+		String recordId = maps.get("temporaryId").toString();
+		BsInventoryTemporary akey = new BsInventoryTemporary();
+		akey.setId(Integer.parseInt(recordId));
+		bsInventoryTemporaryMapper.deleteByPrimaryKey(akey);
+		return new ReturnInfo("删除成功", 0, 0, true);
+	}
+	/**
+	 * 更新是否已付款
+	 * @param @param req
+	 * @param @return   
+	 * @return ReturnInfo  
+	 * @throws
+	 * @date 2017年5月3日下午5:03:19
+	 */
+	@RequestMapping(value = "/updateIfPayment", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo updateIfPayment(HttpServletRequest req){
+		try {
+			BsInventoryTemporary record = new BsInventoryTemporary();
+			int id = NumberUtils.toInt(req.getParameter("id"));
+			int ifPayment = NumberUtils.toInt(req.getParameter("IfPayment"));
+			if(id > 0){
+				record.setId(id);
+				record.setIfPayment(ifPayment);
+				bsInventoryTemporaryMapper.updateByPrimaryKeySelective(record);
+			}else{
+				return  new ReturnInfo("提交失败", 0, 0, false);
+			}
+			return new ReturnInfo("提交成功", 0, 0, true);
+			
+		} catch (Exception e) {
+			log.warn("BsInventoryTemporary update by key error..");
+		}
+		return  new ReturnInfo("提交失败", 0, 0, false);
+	}
+	/**
+	 * 更新实付款
+	 * @param @param req
+	 * @param @return   
+	 * @return ReturnInfo  
+	 * @throws
+	 * @author 常鹏飞
+	 * @date 2017年5月3日下午5:03:33
+	 */
+	@RequestMapping(value = "/updateShifuk", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo updateShifuk(HttpServletRequest req){
+		try {
+			BsInventoryTemporary record = new BsInventoryTemporary();
+			int id = NumberUtils.toInt(req.getParameter("id"));
+			double shifuk = NumberUtils.toDouble(req.getParameter("shifuk"));
+			if(id > 0){
+				record.setId(id);
+				record.setShifuk(shifuk);
+				bsInventoryTemporaryMapper.updateByPrimaryKeySelective(record);
+			}else{
+				return  new ReturnInfo("提交失败", 0, 0, false);
+			}
+			return new ReturnInfo("提交成功", 0, 0, true);
+			
+		} catch (Exception e) {
+			log.warn("BsInventoryTemporary update by key error..");
+		}
+		return  new ReturnInfo("提交失败", 0, 0, false);
+	}
+	/**
+	 * ajax根据主键单条修改 
+	 * url:'http://ip/app/BsInventoryTemporary/(_id值)' 
+	 * data:'{"key1":"value1","key2":"value2",...}' 
+	 * type:'PUT'
+	 */
+	@RequestMapping(value="/{key}",method=RequestMethod.PUT)
+	@ResponseBody
+	public ReturnInfo update(@PathVariable String key,@Valid @RequestBody BsInventoryTemporary info,HttpServletRequest req) {
+		try {
+			if(info!=null){
+				BsInventoryTemporary akey = new BsInventoryTemporary();
+				
+				Field keyField=FieldUtils.allDeclaredField(BsInventoryTemporaryKey.class).get(0);
+
+				if(keyField.getType().isInstance(1)){
+					FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+				}else if(keyField.getType().isInstance(1L)){
+					FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+				}else{
+					FieldUtils.setObjectValue(akey, keyField, key);
+				}
+				BsInventoryTemporaryExample example = new BsInventoryTemporaryExample();
+				example.createCriteria().andIdEqualTo(akey.getId());
+				bsInventoryTemporaryMapper.updateByExampleSelective(info, example);
+			}
+			return ReturnInfo.Success;
+		} catch (Exception e) {
+			log.warn("BsInventoryTemporary update by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+	
+	private void setTableName(DbCondi dc){
+		String tName = DBBean.getTableName2Class(BsInventoryTemporary.class);
+		if(dc.getOther() == null){
+			Map<String,Object> o = new HashMap<String,Object>();
+			o.put(SqlMaker.TABLE_NAME, tName);
+			dc.setOther(o);
+		}else{
+			dc.getOther().put(SqlMaker.TABLE_NAME, tName);
+		}
+	}
+	
+	@SuppressWarnings("serial")
+	public static class BsInventoryTemporarys extends ArrayList<BsInventoryTemporary> {  
+	    public BsInventoryTemporarys() { super(); }  
+	}
+}

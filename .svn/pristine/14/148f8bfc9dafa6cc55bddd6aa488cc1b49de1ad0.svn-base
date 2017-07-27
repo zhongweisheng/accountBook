@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>出库记录</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/outStorage.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <style type="text/css">
+        .sCon {
+            text-align: center;
+            width: 100%;
+            height: 2rem;
+            margin-bottom: 0.5rem;
+            line-height: 2rem;
+        }
+    </style>
+</head>
+<body>
+<div class="top">
+    <h2></h2>
+    <ul class="select">
+
+    </ul>
+</div>
+<div class="sCon">
+    <label for="driver" style="width: 60%;font-size: 0.5rem;">
+        <select name="driver" id="driver" style="width: 60%;">
+
+        </select>
+    </label>
+    <span id="search" style="display:inline-block;font-size: 16px;color: #fff;width: 3rem;height:1.3rem;line-height: 1.4rem;vertical-align:middle;background: #f6a85e;margin-top: 5px;">搜索</span>
+</div>
+<div class="tab" id="grainChange">
+    <div class="tab_left tab_active lf" data-grainType="2">玉米</div>
+    <div class="tab_right rt" data-grainType="3">水稻</div>
+    <div class="tab_right rt" data-grainType="1">小麦</div>
+</div>
+<div class="nav" id="timeChange">
+    <ul>
+        <li class="nav_active" data-timeType="1">按明细</li>
+        <li data-timeType="2">按日</li>
+        <li data-timeType="3">按周</li>
+        <li data-timeType="4">按月</li>
+    </ul>
+</div>
+<div class="content" id="list">
+
+</div>
+<div class="more">
+    <div class="more-text hiden" onclick="loadMore()">轻触加载更多...</div>
+    <div class="spinner hiden">
+        <div class="rect1"></div>
+        <div class="rect2"></div>
+        <div class="rect3"></div>
+        <div class="rect4"></div>
+        <div class="rect5"></div>
+    </div>
+</div>
+<script type="text/template7" id="outStorage-list">
+    {{#each outStorage}}
+    <div class="card clearfix">
+        {{#js_compare "this.type === 1"}}
+        <div class="list clearfix" data-id="{{id}}" onclick="toEdit(this)" style="border-bottom: solid 1px #e6e6e6">
+            <ul >
+                <li style="width: 50%;">买粮人：<span>{{staffName}}</span></li>
+                <li style="width: 50%;text-align: right;">日期：<span>{{date}}</span></li>
+            </ul>
+            <ul >
+                <li style="width: 50%">净重：<span>{{netWeight}}</span>(公斤)</li>
+                <li class="money" style="width: 50%;text-align: right;">金额：<span>{{money}}</span>(元)</li>
+            </ul>
+        </div>
+        <div class="list clearfix">
+            <ul>
+                <li style="width: 100%">
+                    <span>已收款：</span>
+                    <input class="paidMoney" type="number" value="{{paidMoney}}"  disabled style="width: 35%;">
+                    <span class="changepay" style="color:#31b0d5;cursor: pointer;">修改</span>
+                    <span class="pay" data-id="{{id}}" style="color:#31b0d5;cursor: pointer;display: none;">确定</span>
+                </li>
+                <li style="width: 100%">
+                    <span>未收款：</span>
+                    <span class="unpaidMoney">{{unpaidMoney}}</span>
+                </li>
+            </ul>
+        </div>
+        {{else}}
+        <div class="list clearfix">
+            <ul>
+                <li style="width: 100%;">日期：<span>{{timeUnit}}</span></li>
+            </ul>
+            <ul>
+                <li style="width: 50%">买粮人：<span class="tdName">全部</span></li>
+                <li style="width: 50%;text-align: right;">净重：<span>{{netWeight}}</span>(公斤)</li>
+            </ul>
+            <ul>
+                <li style="width: 50%">金额：<span>{{money}}</span>(元)</li>
+                <li style="width: 50%;text-align: right;">未收款：<span>{{unpaidMoney}}</span>(元)</li>
+            </ul>
+        </div>
+        {{/js_compare}}
+    </div>
+    {{/each}}
+</script>
+
+
+<script type="text/javascript" src='js/md5.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="js/common/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/select2.min.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="js/classie.min.js"></script>
+<script type="text/javascript" src='js/sha1.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="js/common/rest.min.js"></script>
+<script type="text/javascript" src="js/outStorage.min.js"></script>
+</body>
+</html>

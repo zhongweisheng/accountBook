@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title></title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <link rel="shortcut icon" href="favicon.ico">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link rel="stylesheet" href="libs/sui/0.6.2/css/sm.css">
+    <link rel="stylesheet" href="libs/sui/0.6.2/css/sm-extend.css">
+    <link rel="stylesheet" href="css/apply.css">
+</head>
+<style>
+    .footer{
+        width: 100%;
+        height: 40px;
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        z-index: 10000;
+        text-align: center;
+        line-height: 40px;
+        font-size: 15px;
+    }
+    .left{
+        flex: 1;
+        color: white;
+        background: #169bd5;
+    }
+    .right{
+        flex: 1;
+
+        background: #e89b2c;
+        color: white;
+    }
+</style>
+<body>
+<div class="page" id="index_page">
+    <div class="bar bar-nav" style="background:#e89b2c">
+        <a href="javascript:history.go(-1)" class="icon icon-left pull-left" style="color: #fff"></a>
+        <h1 class="title" style="color: white">发布采购</h1>
+    </div>
+    <div class="content" style="background: #fff;">
+        <div class="list-block fromtop">
+            <ul>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-name"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">作物类型:</div>
+                            <div class="item-input">
+                                <div class="selectwith">
+                                    <select id="cropsType">
+                                        <option value="2">玉米</option>
+                                        <option value="1">小麦</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+<!--                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-name"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">是否委托:</div>
+                            <div class="item-input">
+                                <div class="selectwith">
+                                    <select id="serviceType">
+                                        <option value="34">否</option>
+                                        <option value="35">是</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>-->
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-email"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">数量(吨):</div>
+                            <div class="item-input">
+                                <input type="number" oninput="if(value.length>8)value=value.slice(0,8)" id="ton" placeholder="">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-password"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">价格(元/吨)</div>
+                            <div class="item-input">
+                                <input type="number" oninput="if(value.length>4)value=value.slice(0,4)" id="price" placeholder="输入范围：900~2800" class="">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="list-block fromtop">
+            <ul>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-name"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label bidfontsize">收货地址:</div>
+                            <div class="item-input">
+                                <div class="addressSelete">
+                                    <div class="cityselect"><select style="font-size: 0.7rem;padding: 0" id="province" name="province"></select></div>
+                                    <div class="cityselect"><select style="font-size: 0.7rem;padding: 0" id="city" name="city"></select></div>
+                                    <div class="cityselect"><select style="font-size: 0.7rem;padding: 0" id="area" name="area"></select></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-email"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">详细地址:</div>
+                            <div class="item-input">
+                                <input type="text" maxlength="30" id="address" placeholder="">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-password"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">质量选择:</div>
+                            <div class="item-input">
+                                <div class="selectwith">
+                                    <select id="quality">
+                                        <option value="1">国标一等粮</option>
+                                        <option value="2">国标二等粮</option>
+                                        <option value="3">国标三等粮</option>
+                                        <option value="4">国标四等粮</option>
+                                        <option value="5">国标五等粮</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-name"></i></div>
+                            <div class="item-title label" style="    margin-left: 14px;">水分(%):</div>
+                            <div class="item-input">
+                                <input type="number" oninput="if(value.length>4)value=value.slice(0,4)" id="water" placeholder="">
+                            </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-email"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">容重(g/l):</div>
+                            <div class="item-input">
+                                <input type="number" oninput="if(value.length>3)value=value.slice(0,3)" id="weight" placeholder="输入范围：≥720">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-password"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">生霉粒(%):</div>
+                            <div class="item-input">
+                                <input type="number" oninput="if(value.length>4)value=value.slice(0,4)" id="mildew" placeholder="" class="">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-name"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">不完善粒(%):</div>
+                            <div class="item-input">
+                                <input type="number" oninput="if(value.length>4)value=value.slice(0,4)" id="noperfect" placeholder="">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+               <!-- <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-email"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">杂质(%):</div>
+                            <div class="item-input">
+                                <input type="number" oninput="if(value.length>4)value=value.slice(0,4)" id="impurity" placeholder="">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-password"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">品质备注:</div>
+                            <div class="item-input">
+                                <input type="text" maxlength="30" id="qremarks" placeholder="" class="">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-name"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">备注:</div>
+                            <div class="item-input">
+                                <input type="text" maxlength="30" id="remarks" placeholder="">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-media"><i class="icon icon-form-password"></i></div>
+                        <div class="item-inner">
+                            <div class="item-title label">是否索要发票:</div>
+                            <div class="item-input">
+                                <div class="selectwith">
+                                    <select id="logistics">
+                                        <option value="1">是</option>
+                                        <option value="2">否</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>-->
+            </ul>
+            <div class="footer">
+                <div class="left" > 取消</div>
+                <div class="right" id="submit" >确定</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- libs js -->
+<script type='text/javascript' src='libs/zepto/zepto.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='libs/sui/0.6.2/js/sm.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='libs/sui/0.6.2/js/sm-extend.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='libs/template7/1.1.4/template7.min.js' charset='utf-8'></script>
+<!-- common js -->
+<script type='text/javascript' src='js/common/restnomd5.js' charset='utf-8'></script>
+<script type='text/javascript' src='js/common/jquery-1.11.1.min.js' charset='utf-8'></script>
+<script type='text/javascript' src='js/common/jquery.citys.js' charset='utf-8'></script>
+<!-- page js -->
+<script type='text/javascript' src='js/purchase.js?v=20170626' charset='utf-8'></script>
+</body>
+</html>

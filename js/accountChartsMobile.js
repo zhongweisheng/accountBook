@@ -1,0 +1,417 @@
+/**
+ * Created by new on 2017/4/5.
+ */
+var userId = DES3.decrypt(localStorage.getItem('ud'));
+var ownerId = DES3.decrypt(localStorage.getItem('ownerId'));
+var userType = localStorage.getItem('userType');
+
+//读取粮库
+var depotRes = Restful.post('bsinventorydepot/getDepots',{userId:userId});
+if(depotRes && depotRes.length != 0){
+    var html = '<li data-depot="0">'+"全部库"+'</li>';
+    for(var i=0,len=depotRes.length;i<len;i++){
+        html += '<li data-depot="'+depotRes[i].id+'">'+depotRes[i].name+'</li>';
+    }
+    $(".select").html('').append(html);
+    $(".top h2").html($(".select li").eq(0).text()+' <img src="accountData/img/select.png"/>');
+    $(".select li").eq(0).addClass('depotChange');
+}else{
+    $(".select").html('').append('<li data-depot="0">默认库</li>');
+    $(".top h2").html($(".select li").eq(0).text()+' <img src="accountData/img/select.png"/>');
+    $(".select li").eq(0).addClass('depotChange');
+}
+$(".top").click(function() {
+
+    $(".balanceModel").fadeToggle();
+});
+$(".select").on('click','li',function () {
+    var depotSel = $(this).text();
+    $(this).addClass('depotChange').siblings().removeClass('depotChange');
+    $(".top h2").html(depotSel+' <img src="accountData/img/select.png"/>');
+    userType == 1?getData():alert('员工暂无权限，请查看其它模块');
+});
+
+
+var isZhou = false;
+var grainType = 2;
+var searchType = 1;
+var timeType = 1;
+var ymval, xmval, sdval;
+var xData,outData,hasData,xDataz,outDataz,hasDataz;
+var yinPriceData, yinPriceMax, yinPriceMin, yinPriceInt;
+var yinAmountData, yinAmountMax, yinAmountMin, yinAmountInt;
+var hasAmountData, hasAmountMax, hasAmountMin, hasAmountInt;
+var outPriceData, outPriceMax, outPriceMin, outPriceInt;
+var outAmoountData, outAmoountMax, outAmoountMin, outAmoountInt;
+var inAmountName = '收粮量(吨)';
+var hasAmountName = '库存(吨)';
+var outAmountName = '售粮量(吨)';
+var colors = ['#5793f3', '#d14a61', '#675bba'];
+var colorsLine = [ '#d14a61', '#675bba'];
+
+userType == 1?getData():alert('员工暂无权限，请查看其它模块');
+
+function getData() {
+    var params = {};
+    params.userId = ownerId;
+    params.operateUserId = userId;
+    params.depotId = $(".depotChange").attr('data-depot');
+    params.searchType = timeType;
+    params.grainType = grainType;
+    params.type = searchType;
+    var res = Restful.post('bsinventoryrecord/findRecordDao', params);
+    if (res) {
+        var data = res.dataList;
+        var msg = $('#table-list').html();
+        var compiledTemplate = Template7.compile(msg);
+        var html = compiledTemplate({"table1": data});
+        $("#list").html(html);
+        var chartData = res.dataList[0];
+        ymval = chartData.ymPercentage;
+        xmval = chartData.xmPercentage;
+        sdval = chartData.sdPercentage;
+        xData = chartData.xData;
+        hasData = chartData.hasData;
+        outData = chartData.outData;
+        xDataz = chartData.xDataz;
+        hasDataz = chartData.hasDataz;
+        outDataz = chartData.outDataz;
+        yinPriceData = chartData.yinPriceData;
+        yinAmountData = chartData.yinAmountData;
+        hasAmountData = chartData.hasAmountData;
+        outPriceData = chartData.outPriceData;
+        outAmoountData = chartData.outAmoountData;
+        var inLine = echarts.init(document.getElementById('c-inLine'));
+        var inBar = echarts.init(document.getElementById('c-inBar'));
+        var hasChart = echarts.init(document.getElementById('c-hasBar'));
+        var outLine = echarts.init(document.getElementById('c-outLine'));
+        var outBar = echarts.init(document.getElementById('c-outBar'));
+        //入库
+        inLineoption = {
+            grid:{
+                x:60,
+                y2:80
+            },
+            color: colorsLine,
+            tooltip: {
+                trigger: 'axis',
+                formatter: function (params) {
+                    var res;
+                    if(isZhou){
+                        res = '<p>'+params[0].axisValue+'</br>'+xDataz[params[0].dataIndex]+'</br>'+params[0].seriesName+':'+params[0].data+'</p>';
+                    }else{
+                        res ='<p>'+params[0].axisValue+'</br>'+params[0].seriesName+':'+params[0].data+'</p>';
+                    }
+                    return res;
+                }
+            },
+            legend: {
+                data: ['收粮价(元/斤)']
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: xData,
+                    axisLabel: {
+                        rotate: 45,
+                    },
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '收粮价(元/斤)',
+                    boundaryGap: ['10%', '10%'],
+                    splitLine: {
+                        "show": false
+                    },
+                    axisLabel: {
+                        formatter: '{value}'
+                    }
+                },
+            ],
+            series: [
+                {
+                    name: '收粮价(元/斤)',
+                    type: 'line',
+                    data: yinPriceData
+                }
+            ]
+        };
+        inBaroption = {
+            color: colors,
+            grid:{
+                x:60,
+                y2:80
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function (params) {
+                    var res;
+                    if(isZhou){
+                        res = '<p>'+params[0].axisValue+'</br>'+xDataz[params[0].dataIndex]+'</br>'+params[0].seriesName+':'+params[0].data+'</p>';
+                    }else{
+                        res ='<p>'+params[0].axisValue+'</br>'+params[0].seriesName+':'+params[0].data+'</p>';
+                    }
+                    return res;
+                }
+            },
+            legend: {
+                data: [inAmountName]
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: xData,
+                    axisLabel: {
+                        rotate: 45,
+                    },
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: inAmountName,
+                    boundaryGap: ['10%', '10%'],
+                    splitLine: {
+                        "show": false
+                    },
+                    axisLabel: {
+                        formatter: '{value}'
+                    }
+                }
+
+            ],
+            series: [
+                {
+                    name: inAmountName,
+                    type: 'bar',
+                    barMaxWidth: 50,
+                    data: yinAmountData
+                }
+            ]
+        };
+        //库存
+        hasOption = {
+            color: colors,
+            grid:{
+                x:60,
+                y2:80
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function (params) {
+                    var res;
+                    if(isZhou){
+                        res = '<p>'+params[0].axisValue+'</br>'+hasDataz[params[0].dataIndex]+'</br>'+params[0].seriesName+':'+params[0].data+'</p>';
+                    }else{
+                        res ='<p>'+params[0].axisValue+'</br>'+params[0].seriesName+':'+params[0].data+'</p>';
+                    }
+                    return res;
+                }
+            },
+            legend: {
+                data: [hasAmountName]
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: hasData,
+                    axisLabel: {
+                        rotate: 45,
+                    },
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: hasAmountName,
+                    boundaryGap: ['10%', '10%'],
+                    splitLine: {
+                        "show": false
+                    },
+                    axisLabel: {
+                        formatter: '{value}'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: hasAmountName,
+                    type: 'bar',
+                    barMaxWidth: 50,
+                    data: hasAmountData
+                },
+            ]
+        };
+        //出库
+        outLineoption = {
+            color: colorsLine,
+            grid:{
+                x:60,
+                y2:80
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function (params) {
+                    var res;
+                    if(isZhou){
+                        res = '<p>'+params[0].axisValue+'</br>'+outDataz[params[0].dataIndex]+'</br>'+params[0].seriesName+':'+params[0].data+'</p>';
+                    }else{
+                        res ='<p>'+params[0].axisValue+'</br>'+params[0].seriesName+':'+params[0].data+'</p>';
+                    }
+                    return res;
+                }
+            },
+            legend: {
+                data: ['售粮价(元/斤)']
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: outData,
+                    axisLabel: {
+                        rotate: 45,
+                    },
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '售粮价(元/斤)',
+                    boundaryGap: ['10%', '10%'],
+                    splitLine: {
+                        "show": false
+                    },
+                    axisLabel: {
+                        formatter: '{value}'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: '售粮价(元/斤)',
+                    type: 'line',
+                    data: outPriceData
+                }
+            ]
+        };
+        outBaroption = {
+            color: colors,
+            grid:{
+                x:60,
+                y2:80
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function (params) {
+                    var res;
+                    if(isZhou){
+                        res = '<p>'+params[0].axisValue+'</br>'+outDataz[params[0].dataIndex]+'</br>'+params[0].seriesName+':'+params[0].data+'</p>';
+                    }else{
+                        res ='<p>'+params[0].axisValue+'</br>'+params[0].seriesName+':'+params[0].data+'</p>';
+                    }
+                    return res;
+                }
+            },
+            legend: {
+                data: [outAmountName]
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: outData,
+                    axisLabel: {
+                        rotate: 45,
+                    },
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: outAmountName,
+                    boundaryGap: ['10%', '10%'],
+                    splitLine: {
+                        "show": false
+                    },
+                    axisLabel: {
+                        formatter: '{value}'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: outAmountName,
+                    type: 'bar',
+                    barMaxWidth: 50,
+                    data: outAmoountData
+                },
+            ]
+        };
+        if(!yinPriceData && !yinAmountData){
+            $("#c-inBar").html('<div style="width: 100%;height: 100px;line-height: 100px;font-size: 20px;text-align: center;margin:0 auto;color: #c1c1c1;text-shadow: #999999;">暂无入库数据</div>');
+        }else{
+            inLine.setOption(inLineoption);
+            inBar.setOption(inBaroption);
+        }
+        if(!hasAmountData){
+            $("#c-hasBar").html('<div style="width: 100%;height: 100px;line-height: 100px;font-size: 20px;text-align: center;margin:0 auto;color: #c1c1c1;text-shadow: #999999;">暂无库存数据</div>');
+        }else{
+            hasChart.setOption(hasOption);
+        }
+        if(!outPriceData && !outAmoountData){
+            $("#c-outBar").html('<div style="width: 100%;height: 100px;line-height: 100px;font-size: 20px;text-align: center;margin:0 auto;color: #c1c1c1;text-shadow: #999999;">暂无出库数据</div>');
+        }else{
+            outLine.setOption(outLineoption);
+            outBar.setOption(outBaroption);
+        }
+    } else {
+        $("#list").html('');
+        $("#list").html('<tr><td colspan="4"><div style="width: 100%;height: 100px;line-height: 100px;font-size: 20px;text-align: center;margin:0 auto;color: #c1c1c1;text-shadow: #999999;">暂无数据</div>');
+    }
+}
+$("#timeType").on('change', function () {
+    timeType = $("#timeType").val();
+    if(timeType ==2){
+        isZhou = true;
+    }else{
+        isZhou = false;
+    }
+    userType == 1?getData():alert('员工暂无权限，请查看其它模块');
+    $(this).addClass('tab-btn-active').removeClass('tab-btn');
+    $(this).parent().siblings().find('.date').removeClass('tab-btn-active').addClass('tab-btn');
+});
+
+$("#grainType").on('change', function () {
+    grainType = $("#grainType").val();
+    userType == 1?getData():alert('员工暂无权限，请查看其它模块');
+});
+$("#searchType").on('change', function () {
+    searchType = $("#searchType").val();
+    if (searchType != 1) {
+        inAmountName = '收粮金额(元)';
+        hasAmountName = '库存金额(元)';
+        outAmountName = '售粮金额(元)';
+    } else {
+        inAmountName = '收粮量(吨)';
+        hasAmountName = '库存(吨)';
+        outAmountName = '售粮量(吨)';
+    }
+    userType == 1?getData():alert('员工暂无权限，请查看其它模块');
+});
+

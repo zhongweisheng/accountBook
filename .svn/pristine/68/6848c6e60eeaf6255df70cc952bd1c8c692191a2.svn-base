@@ -1,0 +1,1056 @@
+package lb.rest.user.db.mapper;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+
+import com.mlb.bo.DistanceBO;
+
+public class CommonSqlProvider {
+
+	public String selectMlbUserList(Map<String, Object> params) {
+		int industry = (int) params.get("industry");
+		int foodType = (int) params.get("foodType");
+		String location = (String) params.get("location");
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT ");
+		query.append("  mu.*, ");
+		query.append("  aa.lng, ");
+		query.append("  aa.Lat, ");
+		query.append("  aa.Name ");
+		query.append("FROM mlbuser mu,mlbuser_addition ma,  ");
+		query.append("  attr_area aa ,");
+		query.append("  bs_temp_trade tt ");
+		query.append("WHERE mu.location = aa.ID ");
+		query.append(" and  mu.userId = ma.user_id ");
+		query.append(" and  mu.userId = tt.buy_id ");
+
+		if (foodType > 0) {
+			query.append(" AND tt.buy_food_type = " + foodType);
+		}
+		if (StringUtils.isNotEmpty(location)) {
+			query.append(" AND mu.location LIKE '" + location + "%' ");
+		}
+		query.append("  AND ma.industry =  " + industry);
+		// industry =2 ， 深加工厂
+		return query.toString();
+	}
+
+	public String getSearchCount(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int recordType = (int) params.get("recordType");
+		int searchType = (int) params.get("searchType");
+		int staffId = (int) params.get("staffId");
+		String groupType = " DATE(`record_time`) ";
+		if (searchType == 2) {
+			groupType = " DATE(`record_time`) ";
+		} else if (searchType == 3) {
+			groupType = " WEEK(`record_time`,1) ";
+		} else if (searchType == 4) {
+			groupType = " MONTH(`record_time`) ";
+		}
+		String groupTypeAll = " CONCAT( YEAR(record_time)," + groupType + " ) ";
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select count(1) from (");
+		query.append("SELECT");
+		query.append(" count(1) ");
+		query.append("FROM `bs_inventory_record` t ");
+		query.append("WHERE t.user_id = " + userId + " ");
+		if (recordType > 0) {
+			query.append("    AND t.record_type = " + recordType + " ");
+		}
+		if (staffId > 0) {
+			query.append("    AND t.staff_Id = " + staffId + " ");
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND t.depot_Id in ( " + depotIds + ") ");
+		}
+		query.append("    AND t.grain_type = " + grainType + " ");
+		query.append("GROUP BY " + groupTypeAll + " ");
+		query.append(" ) m ");
+		return query.toString();
+	}
+
+	public String getSearchList(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int recordType = (int) params.get("recordType");
+		int searchType = (int) params.get("searchType");
+		int staffId = (int) params.get("staffId");
+		int offset = (int) params.get("offset");
+		int limit = (int) params.get("limit");
+		String groupType = " DATE(`record_time`) ";
+		if (searchType == 2) {
+			groupType = " DATE(`record_time`) ";
+		} else if (searchType == 3) {
+			groupType = " WEEK(`record_time`,1) ";
+		} else if (searchType == 4) {
+			groupType = " MONTH(`record_time`) ";
+		}
+		String groupTypeAll = " CONCAT( YEAR(record_time)," + groupType + " ) ";
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT");
+		query.append("  YEAR(`record_time`)    year, ");
+		query.append("  " + groupType + "    dateStr, ");
+		query.append("  SUM(`gross_weight_in`)    grossInTotal, ");
+		query.append("  SUM(`tare_weight_in`)    tareInTotal, ");
+		query.append("  SUM(`net_weight_in`)    netInTotal, ");
+		query.append("  SUM(`money_in`)    moneyInTotal, ");
+		query.append("  SUM(`gross_weight_out`)    grossOutTotal, ");
+		query.append("  SUM(`tare_weight_out`)    tareOutTotal, ");
+		query.append("  SUM(`net_weight_out`)    netOutTotal, ");
+		query.append("  SUM(`money_out`)    moneyOutTotal, ");
+		query.append("  SUM(IF(t.if_clear=1 ,0, t.unpaid_money)) unpaidMoney, ");
+		query.append("  SUM(t.deduction) deduction, ");
+		query.append("  SUM(`money_in`)/SUM(`net_weight_in`)/2  averageCost, ");
+		query.append("  SUM(`money_out`)/SUM(`net_weight_out`)/2  averagePrice ");
+		query.append("FROM `bs_inventory_record` t ");
+		query.append("WHERE t.user_id = " + userId + " ");
+		if (recordType > 0) {
+			query.append("    AND t.record_type = " + recordType + " ");
+		}
+		if (staffId > 0) {
+			query.append("    AND t.staff_Id = " + staffId + " ");
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND t.depot_Id in ( " + depotIds + ") ");
+		}
+
+		query.append("    AND t.grain_type = " + grainType + " ");
+		query.append("GROUP BY " + groupTypeAll + " ");
+		query.append("ORDER BY " + groupTypeAll + " DESC ");
+		query.append("LIMIT " + offset + ", " + limit + " ");
+		return query.toString();
+	}
+
+	public String getSearchStatCount(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int recordType = (int) params.get("recordType");
+		int searchType = (int) params.get("searchType");
+		String groupType = " DATE(`record_time`) ";
+		if (searchType == 2) {
+			groupType = " DATE(`record_time`) ";
+		} else if (searchType == 3) {
+			groupType = " WEEK(`record_time`,1) ";
+		} else if (searchType == 4) {
+			groupType = " MONTH(`record_time`) ";
+		}
+		String groupTypeAll = " CONCAT( YEAR(record_time)," + groupType + " ) ";
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select count(1) from (");
+		query.append("SELECT");
+		query.append(" count(1) ");
+		query.append("FROM (SELECT ");
+		query.append("        MAX(id )                maxId, ");
+		query.append("        YEAR(`record_time`)    YEAR, ");
+		query.append("        " + groupType + "     dateStr, ");
+		query.append("        SUM(profit)             profit ");
+		query.append("      FROM bs_inventory_record t ");
+		query.append("      WHERE t.user_id = " + userId + " ");
+		if (recordType > 0) {
+			query.append("          AND t.record_type = " + recordType + " ");
+		}
+		query.append("          AND t.grain_type = " + grainType + " ");
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND t.depot_Id in ( " + depotIds + ") ");
+		}
+		query.append("      GROUP BY " + groupTypeAll + " ");
+		query.append("       ) t ");
+		query.append("  JOIN bs_inventory_record dt ");
+		query.append("    ON t.maxId = dt.id ");
+		// query.append("LIMIT 0, 1000; ");
+		query.append(" ) m ");
+		return query.toString();
+	}
+
+	public String getSearchStat(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int recordType = (int) params.get("recordType");
+		int searchType = (int) params.get("searchType");
+		int offset = (int) params.get("offset");
+		int limit = (int) params.get("limit");
+		String groupType = " DATE(`record_time`) ";
+
+		if (searchType == 2) {
+			groupType = " DATE(`record_time`) ";
+		} else if (searchType == 3) {
+			groupType = " WEEK(`record_time`,1) ";
+		} else if (searchType == 4) {
+			groupType = " MONTH(`record_time`) ";
+		}
+
+		String groupTypeAll = " CONCAT( YEAR(record_time)," + groupType + " ) ";
+
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT ");
+		query.append("  t.year , ");
+		query.append("  t.dateStr, ");
+		query.append("  t.profit, ");
+		query.append("  dt.balance, ");
+		query.append("  dt.inventory_money inventoryMoney, ");
+		query.append("  dt.average_price_in/2 averageCost, ");
+		query.append("  dt.total_profit totalProfit ");
+		query.append("FROM (SELECT ");
+		query.append("        MAX(id )                maxId, ");
+		query.append("        YEAR(`record_time`)    YEAR, ");
+		query.append("        " + groupType + "     dateStr, ");
+		query.append("        SUM(profit)             profit ");
+		query.append("      FROM bs_inventory_record t ");
+		query.append("      WHERE t.user_id = " + userId + " ");
+		if (recordType > 0) {
+			query.append("          AND t.record_type = " + recordType + " ");
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND t.depot_Id in ( " + depotIds + ") ");
+		}
+		query.append("          AND t.grain_type = " + grainType + " ");
+		query.append("      GROUP BY " + groupTypeAll + " ");
+		query.append("      ORDER BY " + groupTypeAll + " DESC) t ");
+		query.append("  JOIN bs_inventory_record dt ");
+		query.append("    ON t.maxId = dt.id ");
+		// query.append("LIMIT 0, 1000; ");
+		query.append("LIMIT " + offset + ", " + limit + " ");
+		return query.toString();
+	}
+
+	public String getAreaLocation(Map<String, Object> param) {
+
+		int location = (int) param.get("location");
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT 	`ID`,  ");
+		query.append("	`Name`,  ");
+		query.append("	`ParentId`,  ");
+		query.append("	`ShortName`,  ");
+		query.append("	`LevelType`,  ");
+		query.append("	`CityCode`,  ");
+		query.append("	`ZipCode`,  ");
+		query.append("	`MergerName`,  ");
+		query.append("	`lng`,  ");
+		query.append("	`Lat`,  ");
+		query.append("	`Pinyin`,  ");
+		query.append("	`bd_lng`,  ");
+		query.append("	`bd_lat` ");
+		query.append("	  ");
+		query.append("	FROM  ");
+		query.append("	`attr_area`  ");
+
+		return query.append(" where  ID =" + location).toString();
+	}
+
+	public String selectPriceList(Map<String, Object> param) {
+		StringBuffer query = new StringBuffer(100);
+		query.append("select CONCAT(t.province_name,t.city_name)    locationDes,"
+				+ "DATE_FORMAT(t.update_time, '%Y-%m-%d')    dateStr ,"
+				+ "CONCAT (MAX(t.Price) ,'-',MIN(t.Price1) )    price " + "from bs_reference_price t  where 1=1 ");
+		// "where province = #{province,jdbcType=INTEGER} and city = #{city,jdbcType=INTEGER} and type= #{type,jdbcType=INTEGER} and food_type= #{foodType,jdbcType=INTEGER}"
+		int province = NumberUtils.toInt(param.get("province").toString());
+		int city = NumberUtils.toInt(param.get("city").toString());
+		int type = NumberUtils.toInt(param.get("type").toString());
+		int foodType = NumberUtils.toInt(param.get("foodType").toString());
+
+		if (province > 0) {
+			query.append(" and province=" + province);
+		}
+		if (city > 0) {
+			query.append(" and city=" + city);
+		}
+		if (type > 0) {
+			query.append(" and type=" + type);
+		}
+		if (foodType > 0) {
+			query.append(" and food_type=" + foodType);
+		}
+
+		query.append("  group by locationDes,dateStr ");
+
+		return query.toString();
+	}
+
+	public String getDistanceMapByDest(Map<String, Object> param) {
+		int location = (int) param.get("location");
+		String sql = "select * from offerprice_distance where 1=1 ";
+		sql += " and dest_location=" + location;
+		return sql;
+	}
+
+	public String getDistance(Map<String, Object> param) {
+		int origLocation = (int) param.get("origLocation");
+		int destLocation = (int) param.get("destLocation");
+		String sql = "select * from offerprice_distance where orig_location=" + origLocation;
+		sql += " and dest_location=" + destLocation;
+		return sql;
+	}
+
+	@SuppressWarnings("unchecked")
+	public String insertList(Map<String, Object> param) {
+		List<DistanceBO> list = (List<DistanceBO>) param.get("list");
+		StringBuffer insertSB = new StringBuffer(100);
+		insertSB.append("insert into offerprice_distance ( orig_location, " + "dest_location, distance)");
+		if (list != null && list.size() > 0) {
+			for (int i = 0; i < list.size(); i++) {
+				if (i == 0) {
+					insertSB.append("values ( #{list[0].origLocation,jdbcType=INTEGER}, ");
+					insertSB.append("#{list[0].destLocation,jdbcType=INTEGER}, #{list[0].distance,jdbcType=DOUBLE})");
+				} else {
+					insertSB.append(", ( #{list[" + i + "].origLocation,jdbcType=INTEGER}, ");
+					insertSB.append("#{list[" + i + "].destLocation,jdbcType=INTEGER}, #{list[" + i
+							+ "].distance,jdbcType=DOUBLE})");
+				}
+			}
+		}
+		return insertSB.toString();
+
+	}
+
+	/**
+	 * 根据品种分组取每种品类的最新一条,页面百分比
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:44:11
+	 */
+	public String findRmAmountAndJe(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		String datetime = params.get("dateTime").toString();
+		StringBuffer query = new StringBuffer(100);
+		query.append(" SELECT SUM(net_weight_in) AS netWeightIn,SUM(money_in) AS moneyIn,SUM(net_weight_out) AS netWeightOut,SUM(money_out) AS moneyOut,grain_type ");
+		query.append(" FROM bs_inventory_record ");
+		query.append(" where 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		if (datetime != null && !"".equals(datetime)) {
+			query.append(" AND DATE = '" + datetime + "' ");
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" GROUP BY grain_type;");
+
+		return query.toString();
+	}
+
+	/**
+	 * 根据品种分组取每种品类的最新一条,页面百分比
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:44:11
+	 */
+	public String findRmkcqk(Map<String, Object> param) {
+		String depotIds = (String) param.get("depotIds");
+		int userId = (int) param.get("userId");
+		StringBuffer query = new StringBuffer(100);
+		String datetime = param.get("dateTime").toString();
+		query.append(" SELECT balance,grain_type,average_price_in/2  average_price_in ");
+		query.append(" FROM (SELECT * ");
+		query.append(" FROM bs_inventory_record ");
+		query.append(" where 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+
+		if (datetime != null && !"".equals(datetime)) {
+			query.append(" AND record_time <= '" + datetime + " 00:00:00' ");
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" ORDER BY record_time DESC,int_column1 DESC   ) t ");
+		query.append(" GROUP BY grain_type;");
+
+		return query.toString();
+	}
+
+	/**
+	 * 日入库情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findRrkqk(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" SELECT ");
+		query.append(" 	DATE AS dateTime, ");
+		query.append(" 	SUM(money_in)  as moneyIn, ");
+		query.append(" 	SUM(net_weight_in) AS netWeightIn, ");
+		query.append(" 	SUM(money_in) / SUM(net_weight_in) / 2 AS price ");
+		query.append(" FROM bs_inventory_record  WHERE 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		query.append(" 	AND record_type  =  1 ");
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" GROUP BY DATE   ");
+		query.append(" ORDER BY DATE DESC  ");
+		query.append(" LIMIT 0," + limit + "");
+		return query.toString();
+	}
+
+	/**
+	 * 日出库情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findRckqk(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT  ");
+		query.append("	DATE AS dateTime, ");
+		query.append(" 	SUM(money_out)  as moneyOut, ");
+		query.append("	SUM(net_weight_out) AS netWeightOut,  ");
+		query.append("	SUM(money_out) /SUM(net_weight_out) / 2 AS price  ");
+		query.append("FROM bs_inventory_record WHERE 1=1  ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		query.append("	AND record_type  =  2                         ");
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" GROUP BY DATE ");
+		query.append(" ORDER BY DATE DESC");
+		query.append(" LIMIT 0," + limit + "");
+
+		return query.toString();
+	}
+
+	/**
+	 * 日库存情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findRkcqkTime(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		String datetime = (String) params.get("datetime");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" SELECT * ");
+		query.append(" FROM (SELECT ");
+		query.append(" date, ");
+		query.append(" balance, ");
+		query.append(" balance * average_price_in AS price");
+		query.append(" FROM bs_inventory_record  WHERE 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(datetime)) {
+			query.append(" and  record_time <= '" + datetime + "'");
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" ORDER BY record_time DESC,int_column1 DESC");
+		query.append(" ) t ");
+		query.append(" GROUP BY DATE ");
+		query.append(" ORDER BY DATE DESC");
+		query.append(" LIMIT 0," + limit + "");
+		return query.toString();
+	}
+
+	/**
+	 * 日库存情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findRkcqk(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" SELECT * ");
+		query.append(" FROM (SELECT ");
+		query.append(" date, ");
+		query.append(" balance, ");
+		query.append(" balance * average_price_in AS price");
+		query.append(" FROM bs_inventory_record  WHERE 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" ORDER BY int_column1 DESC");
+		query.append(" ) t ");
+		query.append(" GROUP BY DATE ");
+		query.append(" ORDER BY DATE DESC");
+		query.append(" LIMIT 0," + limit + "");
+		return query.toString();
+	}
+
+	/**
+	 * 周的入库情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findZrkqk(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select * from ( ");
+		query.append(" SELECT ");
+		query.append(" YEAR (`record_time`) YEAR, ");
+		query.append(" WEEK (`record_time`,1) dateStr, ");
+		query.append(" SUM(money_in) AS moneyIn, ");
+		query.append(" SUM(net_weight_in) AS netWeightIn, ");
+		query.append(" SUM(money_in) / SUM(net_weight_in)/2 AS price  ");
+		query.append(" FROM bs_inventory_record   WHERE 1=1  ");
+
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		query.append("	AND record_type = 1 ");
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" GROUP BY CONCAT(YEAR (record_time),WEEK (`record_time`,1))   ");
+		query.append(" ORDER BY CONCAT(YEAR (record_time),WEEK (`record_time`,1)) DESC ");
+		query.append(" LIMIT 0," + limit + "");
+		query.append(" )info2 order by YEAR DESC,dateStr desc ");
+		return query.toString();
+	}
+
+	/**
+	 * 周的出库情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findZckqk(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select * from ( ");
+
+		query.append(" SELECT ");
+		query.append(" YEAR (`record_time`) YEAR, ");
+		query.append(" WEEK (`record_time`, 1) dateStr, ");
+		query.append("  SUM(money_out) AS moneyOut, ");
+		query.append("  SUM(net_weight_out) AS netWeightOut,  ");
+		query.append("  SUM(money_out) / SUM(net_weight_out)/2 AS price ");
+		query.append(" FROM bs_inventory_record WHERE 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		query.append("    AND record_type = 2 ");
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" GROUP BY CONCAT(YEAR(record_time), WEEK(`record_time`, 1))    ");
+		query.append(" ORDER BY CONCAT(YEAR(record_time), WEEK(`record_time`, 1)) DESC  ");
+		query.append(" LIMIT 0," + limit + "");
+		query.append(" )info2 order by YEAR DESC,dateStr desc ");
+		return query.toString();
+	}
+
+	/**
+	 * 周库存情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findZkcqk(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select * from ( ");
+		query.append(" SELECT ");
+		query.append(" YEAR (`record_time`) YEAR, ");
+		query.append(" WEEK (`record_time`, 1) dateStr,  ");
+		query.append(" balance, ");
+		query.append(" balance * average_price_in AS price ");
+		query.append(" FROM ( SELECT * ");
+		query.append(" FROM bs_inventory_record WHERE 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" ORDER BY record_time DESC ,int_column1 desc ) info ");
+		query.append(" GROUP BY CONCAT(YEAR (record_time),WEEK (`record_time`,1))  ");
+		query.append(" ORDER BY CONCAT(YEAR (record_time),WEEK (`record_time`,1)) DESC ");
+		query.append(" LIMIT 0," + limit + "");
+		query.append(" )info2 order by YEAR DESC,dateStr desc ");
+		return query.toString();
+	}
+
+	/**
+	 * 周库存情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findZkcqkTime(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select * from ( ");
+		query.append(" SELECT ");
+		query.append(" YEAR (`record_time`) YEAR, ");
+		query.append(" WEEK (`record_time`, 1) dateStr,  ");
+		query.append(" balance, ");
+		query.append(" balance * average_price_in AS price ");
+		query.append(" FROM ( SELECT * ");
+		query.append(" FROM bs_inventory_record WHERE 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" ORDER BY record_time DESC ,int_column1 desc ) info ");
+		query.append(" GROUP BY CONCAT(YEAR (record_time),WEEK (`record_time`,1)) ");
+		query.append(" ORDER BY CONCAT(YEAR (record_time),WEEK (`record_time`,1)) ");
+		query.append(" LIMIT 0," + limit + "");
+		query.append(" )info2 order by YEAR ASC,dateStr ASC ");
+		return query.toString();
+	}
+
+	/**
+	 * 月的入库情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findYrkqk(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select * from ( ");
+		query.append(" SELECT  ");
+		query.append(" YEAR (`record_time`) YEAR,   ");
+		query.append(" MONTH (`record_time`) dateStr,   ");
+		query.append(" SUM(money_in) AS moneyIn,  ");
+		query.append(" SUM(net_weight_in) AS netWeightIn,  ");
+		query.append(" SUM(money_in) / SUM(net_weight_in)/2 AS price  ");
+		query.append(" FROM bs_inventory_record WHERE 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		query.append("	AND record_type = 1 ");
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" GROUP BY CONCAT(YEAR (record_time),MONTH (`record_time`))  ");
+		query.append(" ORDER BY CONCAT(YEAR (record_time),MONTH (`record_time`)) DESC ");
+		query.append(" LIMIT 0," + limit + "");
+		query.append(" )info2 order by YEAR DESC,dateStr desc ");
+		return query.toString();
+	}
+
+	/**
+	 * 月的出库情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findYckqk(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select * from ( ");
+		query.append(" SELECT  ");
+		query.append(" YEAR (`record_time`) YEAR,  ");
+		query.append(" MONTH (`record_time`) dateStr,  ");
+		query.append(" SUM(money_out) AS moneyOut,  ");
+		query.append(" SUM(net_weight_out) AS netWeightOut,  ");
+		query.append(" SUM(money_out) / SUM(net_weight_out)/2 AS price  ");
+		query.append(" FROM bs_inventory_record WHERE 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		query.append("	AND record_type = 2 ");
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" GROUP BY CONCAT(YEAR (record_time),MONTH (`record_time`))  ");
+		query.append(" ORDER BY CONCAT(YEAR (record_time),MONTH (`record_time`)) DESC ");
+		query.append(" LIMIT 0," + limit + "");
+		query.append(" )info2 order by YEAR DESC,dateStr desc ");
+		return query.toString();
+	}
+
+	/**
+	 * 月的库存情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findYkcqk(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select * from ( ");
+		query.append(" SELECT     ");
+		query.append(" YEAR (`record_time`) YEAR,   ");
+		query.append(" MONTH (`record_time`) dateStr,  ");
+		query.append(" balance, ");
+		query.append(" balance * average_price_in AS price");
+		query.append(" FROM ( SELECT * ");
+
+		query.append(" FROM bs_inventory_record WHERE 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" ORDER BY record_time DESC ,int_column1 desc ) info ");
+		query.append(" GROUP BY CONCAT(YEAR (record_time),MONTH (`record_time`))  ");
+		query.append(" ORDER BY CONCAT(YEAR (record_time),MONTH (`record_time`)) DESC ");
+		query.append(" LIMIT 0," + limit + "");
+		query.append(" )info2 order by YEAR DESC,dateStr desc ");
+		return query.toString();
+	}
+
+	/**
+	 * 月的库存情况
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年4月5日下午6:47:31
+	 */
+	public String findYkcqkTime(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int limit = (int) params.get("limit");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select * from ( ");
+		query.append(" SELECT     ");
+		query.append(" YEAR (`record_time`) YEAR,   ");
+		query.append(" MONTH (`record_time`) dateStr,  ");
+		query.append(" balance, ");
+		query.append(" balance * average_price_in AS price");
+		query.append(" FROM ( SELECT * ");
+
+		query.append(" FROM bs_inventory_record WHERE 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		if (grainType > 0) {
+			query.append(" and  grain_type = " + grainType);
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" ORDER BY record_time DESC ,int_column1 desc ) info ");
+		query.append(" GROUP BY CONCAT(YEAR (record_time),MONTH (`record_time`))  ");
+		query.append(" ORDER BY CONCAT(YEAR (record_time),MONTH (`record_time`))  ");
+		query.append(" LIMIT 0," + limit + "");
+		query.append(" )info2 order by YEAR ASC,dateStr ASC ");
+		return query.toString();
+	}
+
+	/**
+	 * 插入删除备份表
+	 * 
+	 * @param @param param
+	 * @param @return
+	 * @return String
+	 * @throws
+	 * @date 2017年5月3日下午12:03:05
+	 */
+	public String insertDeleteAsRecord(Map<String, Object> param) {
+		int id = (int) param.get("id");
+		StringBuffer query = new StringBuffer(100);
+		query.append(" INSERT INTO bs_inventory_delete ");
+		query.append(" select * from bs_inventory_record      ");
+		query.append(" where id = " + id + "  ");
+		return query.toString();
+
+	}
+
+	public String getSearchLists(Map<String, Object> params) {
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int recordType = (int) params.get("recordType");
+		int searchType = (int) params.get("searchType");
+		int offset = (int) params.get("offset");
+		int limit = (int) params.get("limit");
+		String groupType = " DATE(`record_time`) ";
+		if (searchType == 2) {
+			groupType = " DATE(`record_time`) ";
+		} else if (searchType == 3) {
+			groupType = " WEEK(`record_time`,1) ";
+		} else if (searchType == 4) {
+			groupType = " MONTH(`record_time`) ";
+		}
+		String groupTypeAll = " CONCAT( YEAR(record_time)," + groupType + " ) ";
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT");
+		query.append("  YEAR(`record_time`)    year, ");
+		query.append("  " + groupType + "    dateStr, ");
+		query.append("  SUM(`gross_weight_in`)    grossInTotal, ");
+		query.append("  SUM(`tare_weight_in`)    tareInTotal, ");
+		query.append("  SUM(`net_weight_in`)    netInTotal, ");
+		query.append("  SUM(`money_in`)    moneyInTotal, ");
+		query.append("  SUM(`gross_weight_out`)    grossOutTotal, ");
+		query.append("  SUM(`tare_weight_out`)    tareOutTotal, ");
+		query.append("  SUM(`net_weight_out`)    netOutTotal, ");
+		query.append("  SUM(`money_out`)    moneyOutTotal, ");
+		query.append("  SUM(IF(t.if_clear=1 ,0, t.unpaid_money)) unpaidMoney, ");
+		query.append("  SUM(`money_in`)/SUM(`net_weight_in`)/2  averageCost, ");
+		query.append("  SUM(`money_out`)/SUM(`net_weight_out`)/2  averagePrice ");
+		query.append("FROM `bs_inventory_temporary` t ");
+		query.append("WHERE t.user_id = " + userId + " ");
+		if (recordType > 0) {
+			query.append("    AND t.record_type = " + recordType + " ");
+		}
+		query.append("    AND t.grain_type = " + grainType + " ");
+		query.append("GROUP BY " + groupTypeAll + " ");
+		query.append("ORDER BY " + groupTypeAll + " DESC ");
+		query.append("LIMIT " + offset + ", " + limit + " ");
+		return query.toString();
+	}
+
+	public String getSearchCounts(Map<String, Object> params) {
+		int userId = (int) params.get("userId");
+		int grainType = (int) params.get("grainType");
+		int recordType = (int) params.get("recordType");
+		int searchType = (int) params.get("searchType");
+		String groupType = " DATE(`record_time`) ";
+		if (searchType == 2) {
+			groupType = " DATE(`record_time`) ";
+		} else if (searchType == 3) {
+			groupType = " WEEK(`record_time`,1) ";
+		} else if (searchType == 4) {
+			groupType = " MONTH(`record_time`) ";
+		}
+		String groupTypeAll = " CONCAT( YEAR(record_time)," + groupType + " ) ";
+		StringBuffer query = new StringBuffer(100);
+		query.append(" select count(1) from (");
+		query.append("SELECT");
+		query.append(" count(1) ");
+		query.append("FROM `bs_inventory_temporary` t ");
+		query.append("WHERE t.user_id = " + userId + " ");
+		if (recordType > 0) {
+			query.append("    AND t.record_type = " + recordType + " ");
+		}
+		query.append("    AND t.grain_type = " + grainType + " ");
+		query.append("GROUP BY " + groupTypeAll + " ");
+		query.append(" ) m ");
+		return query.toString();
+	}
+
+	public String getInventoryStorgeStat(Map<String, Object> params) {
+		String depotIds = (String) params.get("depotIds");
+		int userId = (int) params.get("userId");
+		String datetime = params.get("dateTime").toString();
+		StringBuffer query = new StringBuffer(100);
+		query.append(" SELECT user_id , ");
+		query.append(" 	SUM(`paid_money`) paidMoney, ");
+		query.append(" 	SUM(`unpaid_money`) unpaidMoney, ");
+		query.append(" 	SUM(`has_settled`) hasSettled,  ");
+		query.append(" 	SUM(`not_settled`) notSettled ");
+		query.append(" FROM bs_inventory_storage ");
+		query.append(" where 1=1 ");
+		if (userId > 0) {
+			query.append(" and  user_id = " + userId);
+		}
+		if (datetime != null && !"".equals(datetime)) {
+			query.append(" AND DATE = '" + datetime + "' ");
+		}
+		if (StringUtils.isNotEmpty(depotIds)) {
+			query.append("    AND depot_Id in ( " + depotIds + ") ");
+		}
+		query.append(" GROUP BY user_id");
+
+		return query.toString();
+	}
+
+	public String getUserClickCount(Map<String, Object> params) {
+		int userId = (int) params.get("userId");
+
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT ");
+		query.append("  target_id    userId, ");
+		query.append("  SUM(IF(operate_type=1,1,0))    viewCount, ");
+		query.append("  (SELECT DISTINCT ");
+		query.append("     (subject_user_id) ");
+		query.append("   FROM bs_attention ba ");
+		query.append("   WHERE ba.object_user_id = t1.target_id)    attentionCount, ");
+		query.append("  SUM(IF(operate_type=3,1,0))    phoneCount, ");
+		query.append("  0            tradeCount ");
+		query.append("FROM bs_click_count t1 ");
+		query.append("WHERE t1.target_type = 1 ");
+		query.append("    AND t1.target_id = 100 ");
+		if (userId > 0) {
+			query.append("    AND t1.target_id = " + userId);
+		}
+		return query.toString();
+	}
+
+	public String getUserAuth(Map<String, Object> params) {
+		String phone = (String) params.get("phone");
+
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT ");
+		query.append("  count(1) ");
+		query.append("FROM bs_user_hzk  ");
+		query.append("WHERE 1 = 1 ");
+		query.append(" and user_phone = '" + phone + "'");
+
+		return query.toString();
+	}
+
+	public String getUserHzk(Map<String, Object> params) {
+		String phone = (String) params.get("phone");
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT ");
+		query.append("  count(1) ");
+		query.append("FROM bs_user_hzk  ");
+		query.append("WHERE 1 = 1 ");
+		query.append(" and user_phone = '" + phone + "'");
+		return query.toString();
+	}
+
+	public String getUserRz(Map<String, Object> params) {
+		String phone = (String) params.get("phone");
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT ");
+		query.append("  count(1) ");
+		query.append("FROM bs_user_rz  ");
+		query.append("WHERE 1 = 1 ");
+		query.append(" and user_phone = '" + phone + "'");
+		return query.toString();
+	}
+
+	public String getUserLevel(Map<String, Object> params) {
+		String phone = (String) params.get("phone");
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT ");
+		query.append("  IFNULL(SUM(user_level),0)  userLevel ");
+		query.append("FROM bs_user_level  ");
+		query.append("WHERE 1 = 1 ");
+		query.append(" and user_phone = '" + phone + "'");
+		return query.toString();
+	}
+
+	public String getUserComment(Map<String, Object> params) {
+		int userId = (int) params.get("userId");
+		StringBuffer query = new StringBuffer(100);
+		query.append("SELECT ");
+		query.append("  IFNULL(AVG(comment_level),0)  commentLevel ");
+		query.append("FROM bs_user_comment  ");
+		query.append("WHERE 1 = 1 ");
+		query.append(" and user_id = '" + userId + "'");
+		return query.toString();
+	}
+}

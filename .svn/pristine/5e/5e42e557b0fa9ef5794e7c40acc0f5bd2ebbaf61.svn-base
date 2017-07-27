@@ -1,0 +1,244 @@
+.right {
+    float: left;
+    width: calc(100% - 160px);
+    width: -moz-calc(100% - 160px);
+    width: -webkit-calc(100% - 160px);
+    border-left: 1px solid #000;
+}
+
+.rightHead{
+    margin-top: 50px;
+}
+.add-container{
+    margin-top: 50px;
+    text-align: right;
+    width:100%;
+}
+.add{
+    cursor: pointer;
+    display: inline-block;
+    width: 120px;
+    height: 34px;
+    line-height: 34px;
+    margin-left: 50px;
+    text-align: center;
+    background-color: #f6a85e;
+    color: #fff;
+    font-size: 20px;
+    border: none;
+    outline: none;
+}
+.rightContent{
+    width: 1000px;
+    margin-left: 39px;
+    margin-top: 20px;
+}
+.head-container{
+    width: 800px;
+    height: 2rem;
+    margin: 0 auto;
+    border: 0 solid #000;
+    border-radius: 5px;
+    background-color: #828282;
+}
+.head-tab{
+    width: 33.3%;
+    height: 2rem;
+    line-height: 2rem;
+    text-align: center;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.head-tab:hover{
+    background-color: #f7941d;
+}
+.head-tab-active{
+    background-color: #f7941d;
+}
+
+table {
+    font-size: 16px;
+    width: 100%;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    color: #000;
+    border-collapse: collapse;
+}
+
+thead {
+    width: 100%;
+    height: 40px;
+    background-color: #717171;
+}
+
+thead > tr > td {
+    color: #fff;
+    height: 40px;
+    background-color: #b4b4b4;
+    text-align: center;
+}
+
+tbody > tr:nth-child(odd) {
+    background-color: #faf5f9;
+}
+
+tbody > tr:nth-child(even) {
+    background-color: #white;
+}
+
+tbody > tr > td {
+    text-align: center;
+    height: 40px;
+    line-height: 40px;
+}
+tbody > tr > td:last-child > button{
+    cursor: pointer;
+    width: 50px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    background-color: #f6a85e;
+    border: 0;
+    outline: 0;
+    color: #fff;
+}
+.registerModel{
+    top:0;
+    left: 0;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: none;
+    background: rgba(189,189,189,.7);
+}
+.findPassWordModel{
+    top:0;
+    left: 0;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: none;
+    background: rgba(189,189,189,.7);
+}
+.register-form{
+    width: 680px;
+    height:350px;
+    background-color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -175px;
+    margin-left: -340px;
+}
+.register-form .content{
+    width: 70%;
+    margin: auto;
+}
+.register-form-title {
+    padding-top: 50px;
+}
+.register-form-title .list1{
+    border:solid 1px #44aac3;
+    width: 100%;
+}
+.register-form-title .list2 span{
+    color: #44aac3;
+    font-size: 30px;
+}
+.address{
+    float: left;
+    display: block;
+    width: 500px;
+}
+.cityselect select{
+    display: block;
+    height: 35px;
+    width: 18%;
+    border: solid 1px #858384;
+    float: left;
+    background-color: white;
+    font-size: 20px
+}
+.field-name{
+    float: left;
+    display: block;
+    width: 20%;
+    font-size: 20px;
+    color: #858384;
+    line-height: 40px;
+}
+.field-choice{
+    float: left;
+    width:75%;
+}
+.choice-con{
+    height: 2rem;
+    line-height: 2rem;
+    width: 50%;
+}
+.form input{
+    padding-left: 2%;
+    float: left;
+    display: block;
+    width: 75%;
+    height: 35px;
+}
+.form input[type=checkbox]{
+    vertical-align: middle;
+    width: 20px;
+    height: 2rem;
+    margin-right: 5px;
+}
+.register-btn{
+    width: 100%;
+    height: 38px;
+    margin: 0 auto;
+    margin-top: 20px;
+}
+.register-btn a{
+    background-color: #44aac3;
+    text-align: center;
+    display: block;
+    width: 40%;
+    float: left;
+    color: white;
+    font-size: 25px;
+    cursor: pointer;
+}
+.disable{
+    opacity: .5;
+}
+.reminder{
+    display: none;
+    color: red;
+    height: 12px;
+    font-size: 12px;
+    text-align: right;
+}
+.list1{
+    width: 100%;
+    border-bottom: solid 1px #d2d2d2;
+    margin-bottom: -30px;
+}
+.list2{
+    width: 100%;
+}
+.list2 {
+    display: block;
+    font-size: 40px;
+    width: 100%;
+    text-align: center;
+}
+.list2 span{
+    color: #6d6d6d;
+    background: white;
+    padding:0 50px;
+}
+.form textarea{
+    width: 77%;
+    height: 70px;
+}

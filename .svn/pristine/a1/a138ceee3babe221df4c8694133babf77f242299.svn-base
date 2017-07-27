@@ -1,0 +1,80 @@
+var locationNum,locationText;
+$(".leftContent > div:nth-child(8)> p:nth-child(2)").addClass("left_active");
+$(".leftContent > div:nth-child(7)").addClass("left_active");
+$(".child").eq(4).css('display','block');
+
+var userId = DES3.decrypt(localStorage.getItem('userId'));
+var result = Restful.get('bsinventoryuser/'+userId);
+
+$('#isUseCom').change(function () {
+    var isUseCom = $('#isUseCom').prop('checked');
+    if(isUseCom){
+        var companyName = $('#companyName').val();
+        $('#printHead').val(companyName);
+    }else{
+        $('#printHead').val('');
+    }
+});
+
+if(result){
+    if(result.location){
+        $('.addressSelete').citys({
+            required:false,
+            nodata:'disabled',
+            code:result.location,
+            onChange:function(data){
+                console.log(data);
+                locationText = data.province+data.city+data.area;
+                locationNum = data.code;
+            }
+        });
+    }else {
+        $('.addressSelete').citys({
+            required:false,
+            nodata:'disabled',
+            onChange:function(data){
+                console.log(data);
+                locationText = data.province+data.city+data.area;
+                locationNum = data.code;
+            }
+        });
+    }
+    $('#addressDesc').val(result.address);
+    $('#printHead').val(result.printHead);
+}
+
+
+
+
+$(document).on('click','#submit',function () {
+    var location = locationNum;
+    var locationDesc = locationText;
+    var address = $('#addressDesc').val();
+    var printHead = $('#printHead').val();
+    var password;
+    var params = {};
+    params.action = 'modifyUserInfo';
+    params.trueName = trueName;
+    params.location = location;
+    params.locationDesc = locationDesc;
+    params.address = address;
+    params.printHead = printHead;
+    params.password = password;
+
+    var result = Restful.post('bsinventoryuser/'+userId,params);
+    $(this).addClass('disable');
+    if(result){
+        if(result.success){
+            alert('设置成功');
+            $(this).removeClass('disable');
+            localStorage.setItem('userName',DES3.encrypt(trueName));
+            window.location.reload();
+        }else {
+            alert('设置不成功');
+            $(this).removeClass('disable');
+        }
+    }else {
+        alert('请求失败,请稍后再试');
+        $(this).removeClass('disable');
+    }
+});

@@ -1,0 +1,407 @@
+package lb.rest.user.web.action;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import lb.rest.user.db.dao.BsAttentionDao;
+import lb.rest.user.db.dao.CommonDao;
+import lb.rest.user.db.entity.BsAttention;
+import lb.rest.user.db.entity.BsAttentionExample;
+import lb.rest.user.db.entity.BsAttentionExample.Criteria;
+import lb.rest.user.db.entity.BsAttentionKey;
+import lb.rest.user.db.entity.Mlbuser;
+import lb.rest.user.db.entity.MlbuserAddition;
+import lb.rest.user.db.entity.MlbuserAdditionKey;
+import lb.rest.user.db.mapper.BsAttentionMapper;
+import lb.rest.user.db.mapper.MlbuserAdditionMapper;
+import lb.rest.user.db.mapper.MlbuserMapper;
+import lombok.extern.slf4j.Slf4j;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.mlb.bo.UserAuthBO;
+import com.mlb.enums.IndustryEnum;
+import com.mlb.util.JsonDataUtils;
+import com.mlb.util.SequenceUtil;
+import com.mlb.util.SessionUtils;
+
+import fc.wpf.rest.db.service.DataService;
+import fc.wpf.rest.utils.BeanFactory;
+import fc.wpf.rest.utils.DBBean;
+import fc.wpf.rest.web.action.BasicCtrl;
+import fc.wpf.rest.web.bean.DbCondi;
+import fc.wpf.rest.web.bean.ReturnInfo;
+import fc.wpf.rest.web.bean.SqlMaker;
+import fc.wpf.rest.web.bind.FieldUtils;
+
+@Slf4j
+@Controller
+@RequestMapping("/bsattention")
+public class BsAttentionCtrl extends BasicCtrl {
+
+	private static BsAttentionMapper bsAttentionMapper = (BsAttentionMapper) BeanFactory.getBean("bsAttentionMapper");
+	private static BsAttentionDao bsAttentionDao = (BsAttentionDao) BeanFactory.getBean("bsAttentionDao");
+	private static MlbuserMapper mlbuserMapper = (MlbuserMapper) BeanFactory.getBean("mlbuserMapper");
+	private static MlbuserAdditionMapper mlbuserAdditionMapper = (MlbuserAdditionMapper) BeanFactory
+			.getBean("mlbuserAdditionMapper");
+	private CommonDao commonDao = (CommonDao) BeanFactory.getBean("commonDao");
+
+	private static DataService mysqlDataService = (DataService) BeanFactory.getBean("mysqlDataService");
+
+	/**
+	 * ajax单条数据插入 url:'http://ip/rest/bsattention'
+	 * data:'{"key1":"value1","key2":"value2",...}' type:’POST
+	 */
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo insert(BsAttention info, HttpServletRequest req) {
+		try {
+			int subjectUserId = NumberUtils.toInt(req.getParameter("subjectUserId"));
+			int status = NumberUtils.toInt(req.getParameter("status"), 2);
+			if (subjectUserId > 0) {
+				subjectUserId = NumberUtils.toInt(req.getParameter("subjectUserId"));
+				int objectUserId = NumberUtils.toInt(req.getParameter("objectUserId"));
+				BsAttention item = bsAttentionDao.getAttention(subjectUserId, objectUserId);
+				int flag = 0;
+				int objId = 0;
+				if (item == null || item.getId() == null) {
+					objId = SequenceUtil.getInstance().nextValue("bs_attention");
+					info.setStatus(status);
+					info.setId(objId);
+					info.setAttentionTime(new Date());
+					flag = bsAttentionMapper.insertSelective(info);
+				} else {
+					objId = item.getId();
+					info.setId(objId);
+					info.setStatus(status);
+					flag = bsAttentionMapper.updateByPrimaryKey(info);
+				}
+				if (flag > 0) {
+					return new ReturnInfo("成功", objId, null, true);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("BsAttentionCtrl insert error..", e);
+			// e.printStackTrace();
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * ajax根据ID主键查询 请求 url: 'http://ip/app/bsattention/(_id值)' dataType: 'json'
+	 * type: 'get'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.GET)
+	@ResponseBody
+	public BsAttention get(@PathVariable String key, HttpServletRequest req) {
+		BsAttention obj = null;
+		try {
+			BsAttention akey = new BsAttention();
+
+			Field keyField = FieldUtils.allDeclaredField(BsAttentionKey.class).get(0);
+
+			if (keyField.getType().isInstance(1)) {
+				FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+			} else if (keyField.getType().isInstance(1L)) {
+				FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+			} else {
+				FieldUtils.setObjectValue(akey, keyField, key);
+			}
+
+			if (true && akey.getId() == null) {
+			} else {
+				BsAttentionExample example = new BsAttentionExample();
+				example.createCriteria().andIdEqualTo(akey.getId());
+				List<BsAttention> list = bsAttentionMapper.selectByExample(example);
+				if (list != null && list.size() > 0) {
+					obj = list.get(0);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("BsAttentionCtrl get by key error..", e);
+		}
+		return obj;
+	}
+
+	/**
+	 * ajax根据主键删除 url:'http://ip/app/bsattention/(_id值)' type: 'DELETE'
+	 * dataType: 'json'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public ReturnInfo delete(@PathVariable String key, HttpServletRequest req) {
+		try {
+			BsAttention akey = new BsAttention();
+
+			Field keyField = FieldUtils.allDeclaredField(BsAttentionKey.class).get(0);
+
+			if (keyField.getType().isInstance(1)) {
+				FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+			} else if (keyField.getType().isInstance(1L)) {
+				FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+			} else {
+				FieldUtils.setObjectValue(akey, keyField, key);
+			}
+
+			if (true && akey.getId() != null) {
+				bsAttentionMapper.deleteByPrimaryKey(akey);
+				return ReturnInfo.Success;
+			}
+		} catch (Exception e) {
+			log.warn("BsAttentionCtrl delete by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * ajax根据主键单条修改 url:'http://ip/app/bsattention/(_id值)'
+	 * data:'{"key1":"value1","key2":"value2",...}' type:'PUT'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo update(@PathVariable String key, BsAttention info, HttpServletRequest req) {
+		try {
+			if (info != null) {
+				BsAttention akey = new BsAttention();
+
+				Field keyField = FieldUtils.allDeclaredField(BsAttentionKey.class).get(0);
+
+				if (keyField.getType().isInstance(1)) {
+					FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+				} else if (keyField.getType().isInstance(1L)) {
+					FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+				} else {
+					FieldUtils.setObjectValue(akey, keyField, key);
+				}
+				BsAttentionExample example = new BsAttentionExample();
+				example.createCriteria().andIdEqualTo(akey.getId());
+				info.setAttentionTime(new Date());
+				bsAttentionMapper.updateByExampleSelective(info, example);
+			}
+			return ReturnInfo.Success;
+		} catch (Exception e) {
+			log.warn("BsAttention update by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/***
+	 * 用户能看到的粮库列表
+	 * 
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping(value = "/list", method = RequestMethod.POST)
+	@ResponseBody
+	public Object getList(HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		int type = NumberUtils.toInt(req.getParameter("type"));
+		List<BsAttention> list = null;
+		if (type == 1) {
+			list = bsAttentionDao.getObjectList(userId);
+		} else if (type == 2) {
+			list = bsAttentionDao.getSubjectList(userId);
+		}
+		boolean success = false;
+		JsonDataUtils json = new JsonDataUtils();
+		if (list != null && list.size() > 0) {
+			success = true;
+			int number = 1;
+			success = true;
+			/**
+			 * industryName：加工厂 companyName：公司名称 userName：用户 ifHzk:是否合作库 1 为合作
+			 * ifRz :是否认证 ifLzb：是否粮账本
+			 */
+			json.addTitle("number", "id", "userId", "userName", "industryName", "companyName", "address", "ifHzk",
+					"ifRz", "ifLzb", "userLevel");
+			if (list != null) {
+				for (BsAttention item : list) {
+					// String formattedDate =
+					// DateUtil.format(item.getCreateTime(),
+					// DateStyle.YYYY_MM_DD_HH_MM_SS);
+					int showUserId = item.getObjectUserId();
+					if (type == 1) {
+						showUserId = item.getSubjectUserId();
+					} else if (type == 2) {
+						showUserId = item.getObjectUserId();
+					}
+
+					MlbuserAdditionKey additionKey = new MlbuserAdditionKey();
+					additionKey.setUserId(showUserId);
+					MlbuserAddition additionItem = mlbuserAdditionMapper.selectByPrimaryKey(additionKey);
+					int industry = 0;
+					if (additionItem != null) {
+						industry = additionItem.getIndustry() == null ? 0 : additionItem.getIndustry();
+					}
+					String industryName = IndustryEnum.getName(industry);
+					Mlbuser userKey = new Mlbuser();
+					userKey.setUserid(showUserId);
+					Mlbuser mlbuserItem = mlbuserMapper.selectByPrimaryKey(userKey);
+					String company = "";
+					String userName = "";
+					String address = "";
+					String phone = "";
+					String companyAuthStr = "否";
+					String personalAuthStr = "否";
+					int companyAuth = 2;
+					int personalAuth = 2;
+					if (mlbuserItem.getCompanyAuth() != null && mlbuserItem.getCompanyAuth() > 0) {
+						companyAuth = mlbuserItem.getCompanyAuth();
+					}
+					if (mlbuserItem.getPersonalAuth() != null && mlbuserItem.getPersonalAuth() > 0) {
+						personalAuth = mlbuserItem.getPersonalAuth();
+					}
+					if (companyAuth == 1) {
+						companyAuthStr = "是";
+					}
+					if (personalAuth == 1) {
+						personalAuthStr = "是";
+					}
+					if (mlbuserItem != null) {
+						company = StringUtils.trimToEmpty(mlbuserItem.getCompanyname());
+						userName = StringUtils.trimToEmpty(mlbuserItem.getTruename());
+						address = StringUtils.trimToEmpty(mlbuserItem.getAddress());
+						phone = mlbuserItem.getPhone();
+					}
+					UserAuthBO userAuth = commonDao.getUserAuth(phone, showUserId);
+					json.addOneRow(number++, item.getId(), showUserId, userName, industryName, company, address,
+							userAuth.getIfHzk(), userAuth.getIfRz(), userAuth.getIfLzb(), userAuth.getUserLevel());
+				}
+
+			}
+		}
+		json.setSuccess(success);
+		return json.toJsonObj();
+	}
+
+	@RequestMapping(value = "/getAttention", method = RequestMethod.POST)
+	@ResponseBody
+	public Object getAttention(HttpServletRequest req) {
+		int subjectUserId = NumberUtils.toInt(req.getParameter("subjectUserId"));
+		int objectUserId = NumberUtils.toInt(req.getParameter("objectUserId"));
+		BsAttention item = bsAttentionDao.getAttention(subjectUserId, objectUserId);
+
+		JSONObject obj = new JSONObject();
+		if (item != null) {
+			obj.put("id", item.getId());
+			obj.put("status", item.getStatus());
+		}
+		return obj;
+	}
+
+	@RequestMapping(value = "/updateAttention", method = RequestMethod.POST)
+	@ResponseBody
+	public Object updateAttention(HttpServletRequest req) {
+		int id = NumberUtils.toInt(req.getParameter("id"));
+		int status = NumberUtils.toInt(req.getParameter("status"));
+		BsAttention record = new BsAttention();
+		record.setId(id);
+		record.setStatus(status);
+
+		int flag = bsAttentionDao.updateByPrimaryKeySelective(record);
+		if (flag > 0) {
+			return ReturnInfo.Success;
+		}
+		return ReturnInfo.Faild;
+	}
+
+	@RequestMapping(value = "/getItems", method = RequestMethod.POST)
+	@ResponseBody
+	public Object getItems(HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		List<BsAttention> list = bsAttentionDao.getObjectList(userId);
+		JSONArray jsonlist = new JSONArray();
+		if (list != null && list.size() > 0) {
+			for (BsAttention item : list) {
+				JSONObject obj = new JSONObject();
+				obj.put("id", item.getId());
+				obj.put("name", item.getRemark());
+				jsonlist.add(obj);
+			}
+		}
+		return jsonlist;
+	}
+
+	// 更新已读 ，将未读的更新为已读。 1：已读 2：未读
+	@RequestMapping(value = "/updateRead", method = RequestMethod.GET)
+	@ResponseBody
+	public ReturnInfo updateRead(HttpServletRequest req) {
+		try {
+			int objectUserId = NumberUtils.toInt(req.getParameter("userId"));
+			int status = NumberUtils.toInt(req.getParameter("status"), 1);
+			if (objectUserId > 0) {
+				BsAttention item = new BsAttention();
+				item.setObjectUserId(objectUserId);
+				item.setStatus(status);
+
+				BsAttentionExample example = new BsAttentionExample();
+				Criteria criteria = example.createCriteria();
+				criteria.andObjectUserIdEqualTo(objectUserId).andStatusEqualTo(2);
+				int suc = bsAttentionMapper.updateByExampleSelective(item, example);
+
+				if (suc > 0) {
+					return new ReturnInfo("更新成功", 0, 0, true);
+				}
+			} else {
+				return new ReturnInfo("更新失败", 0, 0, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsAttentionCtrl updateRead by key error..");
+		}
+		return new ReturnInfo("更新失败", 0, 0, false);
+	}
+
+	// 得到 未读 状态的数据 1：已读 2：未读
+	@RequestMapping(value = "/getNoRead", method = RequestMethod.GET)
+	@ResponseBody
+	public int getNoRead(HttpServletRequest req) {
+		int suc = 0;
+		try {
+			int objectUserId = NumberUtils.toInt(req.getParameter("userId"));
+			int status = NumberUtils.toInt(req.getParameter("status"), 2);
+			if (objectUserId > 0) {
+				BsAttentionExample example = new BsAttentionExample();
+				Criteria criteria = example.createCriteria();
+				criteria.andObjectUserIdEqualTo(objectUserId).andStatusEqualTo(status);
+				suc = bsAttentionMapper.countByExample(example);
+				return suc;
+			} else {
+			}
+		} catch (Exception e) {
+			log.warn("BsAttentionCtrl getNoRead by key error..");
+		}
+		return suc;
+	}
+
+	private void setTableName(DbCondi dc) {
+		String tName = DBBean.getTableName2Class(BsAttention.class);
+		if (dc.getOther() == null) {
+			Map<String, Object> o = new HashMap<String, Object>();
+			o.put(SqlMaker.TABLE_NAME, tName);
+			dc.setOther(o);
+		} else {
+			dc.getOther().put(SqlMaker.TABLE_NAME, tName);
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class BsAttentions extends ArrayList<BsAttention> {
+		public BsAttentions() {
+			super();
+		}
+	}
+}

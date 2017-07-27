@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>记账统计</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="css/accountChartsMobile.css">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+</head>
+<style type="text/css">
+    .back {
+        display: inline-block;
+        background: url(img/back.png) no-repeat center;
+        height: 13px;
+        width: 15px;
+        background-size: 100%;
+        position: absolute;
+        left: 14px;
+        top: 14px;
+    }
+</style>
+<body>
+<div class="top">
+
+    <span class="back" onclick="history.go(-1)"></span>
+
+    <h2 class="selectDepot"></h2>
+    <div class="balanceModel" style="display: none">
+        <ul class="select">
+
+        </ul>
+    </div>
+
+</div>
+<div class="content">
+    <div class="container" style="margin-top: 2.2rem;">
+        <div class="c-container" style="height: 17.3rem;">
+            <div class="tableHead">当日经营情况</div>
+            <div id="list">
+
+            </div>
+            <script type="text/template7" id="table-list">
+                {{#each table1}}
+                <div class="card" style="height: 2rem;line-height: 2rem;">
+                    <span class="cardSpan">今日共买粮:{{sumRkAmount}}吨</span>
+                    <span class="cardSpan">总计金额:{{sumRkMoney}}元</span>
+                </div>
+                <div class="card" style="height: 2rem;line-height: 2rem;">
+                    <span class="cardSpan">今日共卖粮:{{sumCkAmount}}吨</span>
+                    <span class="cardSpan">总计金额:{{sumCkMoney}}元</span>
+                </div>
+                <div class="card" style="padding: 0.5rem;padding-right: 0;">
+                    <div class="height1rem">
+                        <span class="innerSpan">玉米</span>
+                        <span class="innerSpan">收:{{ymNetWeightIn}}(吨)</span>
+                    </div>
+                    <div class="inner height1rem">
+                        <span class="innerSpan">库存:{{ymkc}}(吨)</span>
+                        <span class="innerSpan">售:{{ymNetWeightOut}}(吨)</span>
+                    </div>
+                </div>
+                <div class="card" style="padding: 0.5rem;padding-right: 0;">
+                    <div class="height1rem">
+                        <span class="innerSpan">小麦</span>
+                        <span class="innerSpan">收:{{xmNetWeightIn}}(吨)</span>
+                    </div>
+                    <div class="inner height1rem">
+                        <span class="innerSpan">库存:{{xmkc}}(吨)</span>
+                        <span class="innerSpan">售:{{xmNetWeightOut}}(吨)</span>
+                    </div>
+                </div>
+                <div class="card" style="padding: 0.5rem;padding-right: 0;">
+                    <div class="height1rem">
+                        <span class="innerSpan">水稻</span>
+                        <span class="innerSpan">收:{{sdNetWeightIn}}(吨)</span>
+                    </div>
+                    <div class="inner">
+                        <span class="innerSpan">库存:{{sdkc}}(吨)</span>
+                        <span class="innerSpan">售:{{sdNetWeightOut}}(吨)</span>
+                    </div>
+                </div>
+                <div class="card" style="padding: 0.5rem;padding-right: 0;">
+                    <div class="inner height1rem">
+                        <span class="innerSpan">总计:</span>
+                        <span class="innerSpan">库存:{{sumBalance}}(吨)</span>
+                    </div>
+                </div>
+                {{/each}}
+            </script>
+        </div>
+        <div class="tab-container clearfix" id="timeChange">
+            <div class="tab-col">
+                <select name="grainType" id="grainType" class="selectReset">
+                    <option value="2">玉米</option>
+                    <option value="1">小麦</option>
+                    <option value="3">水稻</option>
+                </select>
+            </div>
+            <div class="tab-col">
+                <select name="searchType" id="searchType" class="selectReset">
+                    <option value="1">按吨</option>
+                    <option value="2">按金额</option>
+                </select>
+            </div>
+            <div class="tab-col">
+                <select name="timeType" id="timeType" class="selectReset">
+                    <option value="1">按天看</option>
+                    <option value="2">按周看</option>
+                    <option value="3">按月看</option>
+                </select>
+            </div>
+        </div>
+        <div class="c-container">
+            <div class="tableHead">入库情况</div>
+            <div id="c-inLine" style="width: 90%;height: 300px;margin-top: 40px;"></div>
+            <div id="c-inBar" style="width: 90%;height: 300px;margin-top: 40px;"></div>
+        </div>
+        <div class="c-container">
+            <div class="tableHead">出库情况</div>
+            <div id="c-outLine" style="width: 90%;height: 300px;margin-top: 40px;"></div>
+            <div id="c-outBar" style="width: 90%;height: 300px;margin-top: 40px;"></div>
+        </div>
+        <div class="c-container" style="height: 400px;">
+            <div class="tableHead">库存</div>
+            <div id="c-hasBar" style="width: 90%;height: 355px;margin-top: 40px;"></div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src='js/sha1.min.js?v=20170626' charset='utf-8'></script>
+<script type="text/javascript" src='js/md5.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="js/common/rest.min.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/page.min.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="accountData/js/common/echarts.common.min.js"></script>
+<script type="text/javascript" src="js/accountChartsMobile.js?v=20170626"></script>
+</body>
+</html>

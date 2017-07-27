@@ -1,0 +1,863 @@
+package lb.rest.user.web.action;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
+import lb.rest.user.db.dao.BsInventoryRecordDao;
+import lb.rest.user.db.dao.BsInventoryRecordServiceDao;
+import lb.rest.user.db.dao.BsSequenceDao;
+import lb.rest.user.db.dao.CommonDao;
+import lb.rest.user.db.entity.BsInventoryCompany;
+import lb.rest.user.db.entity.BsInventoryCompanyExample;
+import lb.rest.user.db.entity.BsInventoryRecord;
+import lb.rest.user.db.entity.BsInventoryRecordExample;
+import lb.rest.user.db.entity.BsInventoryRecordKey;
+import lb.rest.user.db.entity.BsInventoryRecordStaff;
+import lb.rest.user.db.entity.BsInventoryStaff;
+import lb.rest.user.db.entity.BsInventoryTemporary;
+import lb.rest.user.db.entity.BsInventoryTemporaryKey;
+import lb.rest.user.db.entity.BsInventoryUser;
+import lb.rest.user.db.entity.BsInventoryUserKey;
+import lb.rest.user.db.mapper.BsInventoryCompanyMapper;
+import lb.rest.user.db.mapper.BsInventoryRecordMapper;
+import lb.rest.user.db.mapper.BsInventoryRecordStaffMapper;
+import lb.rest.user.db.mapper.BsInventoryStaffMapper;
+import lb.rest.user.db.mapper.BsInventoryTemporaryMapper;
+import lb.rest.user.db.mapper.BsInventoryUserMapper;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.mlb.enums.GrainTypeEnum;
+import com.mlb.enums.RecordTypeEnum;
+import com.mlb.enums.StaffTypeEnum;
+import com.mlb.util.ExcelExportUtil;
+import com.mlb.util.GetParamsUtils;
+import com.mlb.util.JsonDataUtils;
+import com.mlb.util.SequenceUtil;
+import com.mlb.util.SessionUtils;
+
+import fc.wpf.rest.db.service.DataService;
+import fc.wpf.rest.utils.BeanFactory;
+import fc.wpf.rest.utils.NumberUtil;
+import fc.wpf.rest.utils.SerializerUtil;
+import fc.wpf.rest.web.action.BasicCtrl;
+import fc.wpf.rest.web.bean.DbCondi;
+import fc.wpf.rest.web.bean.FieldsMapperBean;
+import fc.wpf.rest.web.bean.ListInfo;
+import fc.wpf.rest.web.bean.PageInfo;
+import fc.wpf.rest.web.bean.QueryMapperBean;
+import fc.wpf.rest.web.bean.ReturnInfo;
+import fc.wpf.rest.web.bean.SqlMaker;
+import fc.wpf.rest.web.bind.FieldUtils;
+import fc.wpf.rest.web.bind.KeyExplainHandler;
+import fc.wpf.rest.web.bind.RequestJsonParam;
+
+@Slf4j
+@Controller
+@RequestMapping("/bsinventoryrecord")
+public class BsInventoryRecordCtrl extends BasicCtrl {
+
+	private static BsInventoryRecordMapper bsInventoryRecordMapper = (BsInventoryRecordMapper) BeanFactory
+			.getBean("bsInventoryRecordMapper");
+
+	private static DataService mysqlDataService = (DataService) BeanFactory.getBean("mysqlDataService");
+	private static CommonDao commonDao = (CommonDao) BeanFactory.getBean("commonDao");
+	private static BsInventoryRecordServiceDao bsInventoryRecordServiceDao = (BsInventoryRecordServiceDao) BeanFactory
+			.getBean("bsInventoryRecordServiceDao");
+
+	private static BsInventoryRecordDao bsInventoryRecordDao = (BsInventoryRecordDao) BeanFactory
+			.getBean("bsInventoryRecordDao");
+	private static BsInventoryRecordStaffMapper bsInventoryRecordStaffMapper = (BsInventoryRecordStaffMapper) BeanFactory
+			.getBean("bsInventoryRecordStaffMapper");
+	private static BsInventoryStaffMapper bsInventoryStaffMapper = (BsInventoryStaffMapper) BeanFactory
+			.getBean("bsInventoryStaffMapper");
+
+	private BsSequenceDao bsSequenceDao = (BsSequenceDao) BeanFactory.getBean("bsSequenceDao");
+	private static BsInventoryUserMapper bsInventoryUserMapper = (BsInventoryUserMapper) BeanFactory
+			.getBean("bsInventoryUserMapper");
+
+	private static BsInventoryTemporaryMapper bsInventoryTemporaryMapper = (BsInventoryTemporaryMapper) BeanFactory
+			.getBean("bsInventoryTemporaryMapper");
+
+	private static BsInventoryCompanyMapper bsInventoryCompanyMapper = (BsInventoryCompanyMapper) BeanFactory
+			.getBean("bsInventoryCompanyMapper");
+
+	@RequestMapping(value = "/search", method = RequestMethod.POST)
+	@ResponseBody
+	public Object searchWxList(HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		int depotId = NumberUtils.toInt(req.getParameter("depotId"), 0);
+		int grainType = NumberUtils.toInt(req.getParameter("grainType"));
+		int searchType = NumberUtils.toInt(req.getParameter("searchType"));
+		int recordType = NumberUtils.toInt(req.getParameter("recordType"), 1);
+		int staffId = NumberUtils.toInt(req.getParameter("staffId"), 0);
+		String staffName = StringUtils.trimToEmpty(req.getParameter("staffName"));
+		int wxList = NumberUtils.toInt(req.getParameter("wxList"), 1);
+		int currentPage = NumberUtils.toInt(req.getParameter("currentPage"), 1);
+		int pageSize = NumberUtils.toInt(req.getParameter("pageSize"), 10);
+		int isPay = NumberUtils.toInt(req.getParameter("isPay"), -1);
+		// Map<String, Object> map = GetParamsUtils.getParamMap(req);
+		return bsInventoryRecordDao.searchList(false, userId, grainType, recordType, searchType, staffId, staffName,
+				isPay, depotId, currentPage, pageSize).toJsonObj();
+	}
+
+	@RequestMapping(value = "/export", method = RequestMethod.POST)
+	@ResponseBody
+	public void exportList(HttpServletResponse resp, HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		int depotId = NumberUtils.toInt(req.getParameter("depotId"), 0);
+		int grainType = NumberUtils.toInt(req.getParameter("grainType"));
+		int searchType = NumberUtils.toInt(req.getParameter("searchType"));
+		int recordType = NumberUtils.toInt(req.getParameter("recordType"), 1);
+		// int wxList = NumberUtils.toInt(req.getParameter("wxList"), 1);
+		int staffId = NumberUtils.toInt(req.getParameter("staffId"), 0);
+		int isPay = NumberUtils.toInt(req.getParameter("isPay"), -1);
+		String staffName = StringUtils.trimToEmpty(req.getParameter("staffName"));
+		JsonDataUtils jsonUtils = bsInventoryRecordDao.searchList(true, userId, grainType, recordType, searchType,
+				staffId, staffName, isPay, depotId, 1, 10000);
+
+		ExcelExportUtil excelExportUtil = new ExcelExportUtil();
+		excelExportUtil.addTitle(jsonUtils.getTitleList());
+		excelExportUtil.setTitleMap(jsonUtils.getTitleMap());
+		List<List<Object>> rowList = jsonUtils.getRowList();
+		for (List<Object> row : rowList) {
+			excelExportUtil.addOneRow(row);
+		}
+		String fileName = "";
+		String grainName = GrainTypeEnum.getName(grainType);
+		String recordName = RecordTypeEnum.getName(recordType);
+		fileName = grainName + recordName + "单列表";
+		excelExportUtil.exportExcel(resp, fileName + ".xlsx", fileName + "");
+		return;
+	}
+
+	@RequestMapping(value = "/searchStat", method = RequestMethod.POST)
+	@ResponseBody
+	public Object searchStat(HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		int depotId = NumberUtils.toInt(req.getParameter("depotId"), 0);
+		int grainType = NumberUtils.toInt(req.getParameter("grainType"));
+		int searchType = NumberUtils.toInt(req.getParameter("searchType"));
+		int recordType = NumberUtils.toInt(req.getParameter("recordType"), 0);
+		// int wxList = NumberUtils.toInt(req.getParameter("wxList"), 1);
+		// Map<String, Object> map = GetParamsUtils.getParamMap(req);
+		int currentPage = NumberUtils.toInt(req.getParameter("currentPage"), 1);
+		int pageSize = NumberUtils.toInt(req.getParameter("pageSize"), 10);
+		int staffId = NumberUtils.toInt(req.getParameter("staffId"), 0);
+		return bsInventoryRecordDao.searchStat(false, userId, grainType, recordType, searchType, staffId, depotId,
+				currentPage, pageSize).toJsonObj();
+	}
+
+	@RequestMapping(value = "/findRecordDao", method = RequestMethod.POST)
+	@ResponseBody
+	public Map<String, Object> findRecordDao(HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		int depotId = NumberUtils.toInt(req.getParameter("depotId"), 0);
+		int grainType = NumberUtils.toInt(req.getParameter("grainType"));
+		int searchType = NumberUtils.toInt(req.getParameter("searchType"));
+		int type = NumberUtils.toInt(req.getParameter("type"), 1);
+		// int wxList = NumberUtils.toInt(req.getParameter("wxList"), 1);
+		// Map<String, Object> map = GetParamsUtils.getParamMap(req);
+		int currentPage = NumberUtils.toInt(req.getParameter("currentPage"), 1);
+		int pageSize = NumberUtils.toInt(req.getParameter("pageSize"), 10);
+		Map<String, Object> map = bsInventoryRecordDao.findRecordDao(depotId, userId, grainType, type, searchType,
+				currentPage, pageSize);
+		// System.out.println("map=="+map.toString());
+		return map;
+	}
+
+	@RequestMapping(value = "/exportStat", method = RequestMethod.POST)
+	@ResponseBody
+	public void exportStat(HttpServletResponse resp, HttpServletRequest req) {
+		int userId = SessionUtils.getMlbUserId(req);
+		int depotId = NumberUtils.toInt(req.getParameter("depotId"), 0);
+		int grainType = NumberUtils.toInt(req.getParameter("grainType"));
+		int searchType = NumberUtils.toInt(req.getParameter("searchType"));
+		int recordType = NumberUtils.toInt(req.getParameter("recordType"), 0);
+		// int wxList = NumberUtils.toInt(req.getParameter("wxList"), 1);
+		int staffId = NumberUtils.toInt(req.getParameter("staffId"), 0);
+		JsonDataUtils jsonUtils = bsInventoryRecordDao.searchStat(true, userId, grainType, recordType, searchType,
+				staffId, depotId, 1, 10000);
+
+		ExcelExportUtil excelExportUtil = new ExcelExportUtil();
+		excelExportUtil.addTitle(jsonUtils.getTitleList());
+		excelExportUtil.setTitleMap(jsonUtils.getTitleMap());
+		List<List<Object>> rowList = jsonUtils.getRowList();
+		for (List<Object> row : rowList) {
+			excelExportUtil.addOneRow(row);
+		}
+		String fileName = "";
+		String grainName = GrainTypeEnum.getName(grainType);
+		String recordName = recordType > 0 ? RecordTypeEnum.getName(recordType) + "单" : "";
+		fileName = grainName + recordName + "统计列表";
+		excelExportUtil.exportExcel(resp, fileName + ".xlsx", "数据表");
+		return;
+	}
+
+	/**
+	 * ajax单条数据插入 url:'http://ip/rest/bsinventoryrecord'
+	 * data:'{"key1":"value1","key2":"value2",...}' type:’POST
+	 */
+	@RequestMapping(value = "insert", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo insert(BsInventoryRecord info, HttpServletRequest req) {
+		try {
+			int id = 0;
+			if (info.getId() != null) { // 暂存保存
+				// 查询获取暂存记录
+				BsInventoryTemporaryKey bsInventoryTemporaryKey = new BsInventoryTemporaryKey();
+				bsInventoryTemporaryKey.setId(info.getId());
+				BsInventoryTemporary temporary = bsInventoryTemporaryMapper.selectByPrimaryKey(bsInventoryTemporaryKey);
+				info.setRecordNumber(temporary.getRecordNumber());
+				info.setCreateTime(temporary.getCreateTime());
+				// 然后删除暂存记录
+				bsInventoryTemporaryMapper.deleteByPrimaryKey(bsInventoryTemporaryKey);
+			} else {
+				// id =
+				// SequenceUtil.getInstance().nextValue("bs_inventory_record");
+				id = SequenceUtil.getInstance().nextValue("bs_inventory_record");
+				info.setId(id);
+				info.setCreateTime(new Date());
+			}
+			info.setIfPayment(0);
+			if (info.getRecordType() == 1) {
+				info.setShifuk(info.getMoneyIn());
+			} else {
+				info.setShifuk(info.getMoneyOut());
+			}
+			int flag = bsInventoryRecordServiceDao.insert(info);
+			// 插入成功
+			if (flag > 0) {
+				int staffId = NumberUtils.toInt(req.getParameter("staffId"));
+
+				int driverId = NumberUtils.toInt(req.getParameter("driverId"));
+				// 新建司机
+				if (driverId == -100) {
+					String driverName = StringUtils.trimToEmpty(info.getDriverName());
+					String driverPhone = StringUtils.trimToEmpty(req.getParameter("driverPhone"));
+					if (driverName != null && !"".equals(driverName) && driverPhone != null && !"".equals(driverPhone)) {
+						int staffType = StaffTypeEnum.司机.getCode();
+						BsInventoryStaff record = new BsInventoryStaff();
+						int userId = info.getUserId();
+						record.setUserId(userId);
+						record.setStaffType(staffType);
+						record.setTrueName(driverName);
+						record.setPhone(driverPhone);
+						record.setIdCard("");
+						record.setCardNumber("");
+						record.setCreateTime(new Date());
+						// 新建送粮人或买粮人
+						int staffIdNew = SequenceUtil.getInstance().nextValue("bs_inventory_staff");
+						record.setId(staffIdNew);
+						bsInventoryStaffMapper.insertSelective(record);
+
+						BsInventoryRecord searchNewRecord = new BsInventoryRecord();
+						searchNewRecord.setId(id);
+						searchNewRecord.setDriverId(driverId);
+						bsInventoryRecordMapper.updateByPrimaryKeySelective(searchNewRecord);
+					}
+				}
+				// 新建 送粮人或买粮人
+				if (staffId == -100) {
+					String staffName = StringUtils.trimToEmpty(info.getStaffName());
+					String staffPhone = StringUtils.trimToEmpty(req.getParameter("staffPhone"));
+					if (staffName != null && !"".equals(staffName) && staffPhone != null && !"".equals(staffPhone)) {
+						int recordType = info.getRecordType();
+						// 入库单 为 送粮人；出库单为买粮人
+						int staffType = recordType == RecordTypeEnum.入库.getCode() ? StaffTypeEnum.送粮人.getCode()
+								: StaffTypeEnum.买粮人.getCode();
+
+						BsInventoryStaff record = new BsInventoryStaff();
+						int userId = info.getUserId();
+						record.setUserId(userId);
+						record.setStaffType(staffType);
+						record.setTrueName(staffName);
+						record.setPhone(staffPhone);
+						record.setIdCard("");
+						record.setCardNumber("");
+						record.setCreateTime(new Date());
+						// 新建送粮人或买粮人
+						int staffIdNew = SequenceUtil.getInstance().nextValue("bs_inventory_staff");
+						record.setId(staffIdNew);
+						bsInventoryStaffMapper.insertSelective(record);
+						staffId = staffIdNew;
+						// 新增送粮人或买粮人时，需要更新staffId , -100 更新为插入的staffIdNew
+						BsInventoryRecord searchNewRecord = new BsInventoryRecord();
+						searchNewRecord.setId(id);
+						searchNewRecord.setStaffId(staffIdNew);
+						bsInventoryRecordMapper.updateByPrimaryKeySelective(searchNewRecord);
+					}
+				}
+				// if (staffId > 0) {
+				// BsInventoryRecordStaff record = new BsInventoryRecordStaff();
+				// record.setStaffId(staffId);
+				// record.setRecordId(id);
+				// bsInventoryRecordStaffMapper.insertSelective(record);
+				// }
+
+				return new ReturnInfo("提交成功", id, info.getRecordNumber(), true);
+			} else {
+				return new ReturnInfo("提交失败", 0, 0, false);
+			}
+		} catch (Exception e) {
+			log.warn("保存出入库 error..", e);
+		}
+		return ReturnInfo.Faild;
+	}
+
+	@RequestMapping(value = "/updateIfPayment", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo updateIfPayment(HttpServletRequest req) {
+		try {
+			BsInventoryRecord record = new BsInventoryRecord();
+			int id = NumberUtils.toInt(req.getParameter("id"));
+			int ifPayment = NumberUtils.toInt(req.getParameter("IfPayment"));
+			if (id > 0) {
+				record.setId(id);
+				record.setIfPayment(ifPayment);
+				bsInventoryRecordMapper.updateByPrimaryKeySelective(record);
+			} else {
+				return new ReturnInfo("提交失败", 0, 0, false);
+			}
+			return new ReturnInfo("提交成功", 0, 0, true);
+
+		} catch (Exception e) {
+			log.warn("BsInventoryTemporary update by key error..");
+		}
+		return new ReturnInfo("提交失败", 0, 0, false);
+	}
+
+	@RequestMapping(value = "/updateShifuk", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo updateShifuk(HttpServletRequest req) {
+		try {
+			BsInventoryRecord record = new BsInventoryRecord();
+			int id = NumberUtils.toInt(req.getParameter("id"));
+			double shifuk = NumberUtils.toDouble(req.getParameter("shifuk"));
+			if (id > 0) {
+				record.setId(id);
+				record.setShifuk(shifuk);
+				bsInventoryRecordMapper.updateByPrimaryKeySelective(record);
+			} else {
+				return new ReturnInfo("提交失败", 0, 0, false);
+			}
+			return new ReturnInfo("提交成功", 0, 0, true);
+
+		} catch (Exception e) {
+			log.warn("BsInventoryTemporary update by key error..");
+		}
+		return new ReturnInfo("提交失败", 0, 0, false);
+	}
+
+	@RequestMapping(value = "/updatePaidMoney", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo updatePaidMoney(HttpServletRequest req) {
+		try {
+			BsInventoryRecord record = new BsInventoryRecord();
+			int id = NumberUtils.toInt(req.getParameter("id"));
+			double paidMoney = NumberUtils.toDouble(req.getParameter("paidMoney"));
+			double unpaidMoney = NumberUtils.toDouble(req.getParameter("unpaidMoney"));
+			if (id > 0) {
+				record.setId(id);
+				record.setPaidMoney(paidMoney);
+				record.setUnpaidMoney(unpaidMoney);
+				int suc = bsInventoryRecordMapper.updateByPrimaryKeySelective(record);
+				if (suc > 0) {
+					return new ReturnInfo("提交成功", 0, 0, true);
+				}
+			} else {
+				return new ReturnInfo("提交失败", 0, 0, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryTemporary updatePaidMoney by key error..");
+		}
+		return new ReturnInfo("提交失败", 0, 0, false);
+	}
+
+	@RequestMapping(value = "/updateIfClear", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo updateIfClear(HttpServletRequest req) {
+		try {
+			BsInventoryRecord record = new BsInventoryRecord();
+			int id = NumberUtils.toInt(req.getParameter("id"));
+			int ifClear = NumberUtils.toInt(req.getParameter("ifClear"));
+			if (id > 0) {
+				record.setId(id);
+				record.setIfClear(ifClear);
+				int suc = bsInventoryRecordMapper.updateByPrimaryKeySelective(record);
+				if (suc > 0) {
+					return new ReturnInfo("提交成功", 0, 0, true);
+				}
+			} else {
+				return new ReturnInfo("提交失败", 0, 0, false);
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryTemporary updateIfClear by key error..");
+		}
+		return new ReturnInfo("提交失败", 0, 0, false);
+	}
+
+	/**
+	 * 修改更新
+	 * 
+	 * @param @param info
+	 * @param @param req
+	 * @param @return
+	 * @return ReturnInfo
+	 * @throws
+	 * @date 2017年3月28日下午1:36:21
+	 */
+	@RequestMapping(value = "update", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo update(BsInventoryRecord info, HttpServletRequest req) {
+		try {
+			// if(info.getRecordType() == 1){
+			// info.setShifuk(info.getMoneyIn());
+			// }else{
+			// info.setShifuk(info.getMoneyOut());
+			// }
+			int flag = bsInventoryRecordServiceDao.update(info);
+			// 更新成功
+			if (flag > 0) {
+				int staffId = NumberUtils.toInt(req.getParameter("staffId"));
+				int id = info.getId();
+
+				int driverId = NumberUtils.toInt(req.getParameter("driverId"));
+				// 新建司机
+				if (driverId == -100) {
+					String driverName = StringUtils.trimToEmpty(info.getDriverName());
+					String driverPhone = StringUtils.trimToEmpty(req.getParameter("driverPhone"));
+					if (driverName != null && !"".equals(driverName) && driverPhone != null && !"".equals(driverPhone)) {
+						int staffType = StaffTypeEnum.司机.getCode();
+						BsInventoryStaff record = new BsInventoryStaff();
+						int userId = info.getUserId();
+						record.setUserId(userId);
+						record.setStaffType(staffType);
+						record.setTrueName(driverName);
+						record.setPhone(driverPhone);
+						record.setIdCard("");
+						record.setCardNumber("");
+						record.setCreateTime(new Date());
+						// 新建送粮人或买粮人
+						int staffIdNew = SequenceUtil.getInstance().nextValue("bs_inventory_staff");
+						record.setId(staffIdNew);
+						bsInventoryStaffMapper.insertSelective(record);
+
+						BsInventoryRecord searchNewRecord = new BsInventoryRecord();
+						searchNewRecord.setId(id);
+						searchNewRecord.setDriverId(driverId);
+						bsInventoryRecordMapper.updateByPrimaryKeySelective(searchNewRecord);
+					}
+				}
+
+				// 新建 送粮人或买粮人
+				if (staffId == -100) {
+					String staffName = StringUtils.trimToEmpty(info.getStaffName());
+					String staffPhone = StringUtils.trimToEmpty(req.getParameter("staffPhone"));
+					if (staffName != null && !"".equals(staffName) && staffPhone != null && !"".equals(staffPhone)) {
+						int recordType = info.getRecordType();
+						// 入库单 为 送粮人；出库单为买粮人
+						int staffType = recordType == RecordTypeEnum.入库.getCode() ? StaffTypeEnum.送粮人.getCode()
+								: StaffTypeEnum.买粮人.getCode();
+
+						BsInventoryStaff record = new BsInventoryStaff();
+						int userId = info.getUserId();
+						record.setUserId(userId);
+						record.setStaffType(staffType);
+						record.setTrueName(staffName);
+						record.setPhone(staffPhone);
+						record.setIdCard("");
+						record.setCardNumber("");
+						record.setCreateTime(new Date());
+						// 新建送粮人或买粮人
+						int staffIdNew = SequenceUtil.getInstance().nextValue("bs_inventory_staff");
+						record.setId(staffIdNew);
+						bsInventoryStaffMapper.insertSelective(record);
+						staffId = staffIdNew;
+						// 新增送粮人或买粮人时，需要更新staffId , -100 更新为插入的staffIdNew
+						BsInventoryRecord searchNewRecord = new BsInventoryRecord();
+						searchNewRecord.setId(id);
+						searchNewRecord.setStaffId(staffIdNew);
+						bsInventoryRecordMapper.updateByPrimaryKeySelective(searchNewRecord);
+					}
+				}
+				if (staffId > 0) {
+					BsInventoryRecordStaff record = new BsInventoryRecordStaff();
+					record.setStaffId(staffId);
+					record.setRecordId(id);
+					bsInventoryRecordStaffMapper.insertSelective(record);
+				}
+				return ReturnInfo.Success;
+			}
+
+		} catch (Exception e) {
+			log.warn("更新出入库记录 error..", e);
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * 查询出入库 单号和时间
+	 * 
+	 * @param @param req
+	 * @param @return
+	 * @return Map<String,Object>
+	 * @throws
+	 * @date 2017年3月28日下午1:35:55
+	 */
+	@RequestMapping(value = "/getNumberAndTime", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getNumberAndTime(HttpServletRequest req) {
+		Map<String, Object> maps = GetParamsUtils.getParamMap(req);
+		String depotId = "";
+		if (maps.get("depotId") != null) {
+			depotId = maps.get("depotId").toString();
+		}
+		String userId = maps.get("userId").toString();
+		String type = maps.get("type").toString();
+		return bsInventoryRecordServiceDao.getBsInventoryRecordOrdreByTimeAll(NumberUtil.toInt(depotId, 0),
+				Integer.parseInt(userId), Integer.parseInt(type));
+	}
+
+	/**
+	 * 查询随后一条id，页面编辑用
+	 * 
+	 * @param @param req
+	 * @param @return
+	 * @return Map<String,Object>
+	 * @throws
+	 * @date 2017年3月28日下午1:35:55
+	 */
+	@RequestMapping(value = "/getRecordOrdreByTime", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getRecordOrdreByTime(HttpServletRequest req) {
+		Map<String, Object> maps = GetParamsUtils.getParamMap(req);
+		String depotId = "";
+		if (maps.get("depotId") != null) {
+			depotId = maps.get("depotId").toString();
+		}
+		String userId = maps.get("userId").toString();
+		String grainType = maps.get("grainType").toString();
+		return bsInventoryRecordServiceDao.getRecordOrdreByTime(NumberUtil.toInt(depotId, 0),
+				Integer.parseInt(grainType), Integer.parseInt(userId));
+	}
+
+	/**
+	 * 删除
+	 * 
+	 * @param @param req
+	 * @param @return
+	 * @return ReturnInfo
+	 * @throws
+	 * @date 2017年4月2日下午4:22:14
+	 */
+	@RequestMapping(value = "/deleteRecordOrdre", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo deleteRecordOrdre(HttpServletRequest req) {
+		Map<String, Object> maps = GetParamsUtils.getParamMap(req);
+		String recordId = maps.get("recordId").toString();
+		bsInventoryRecordServiceDao.deleteByExample(Integer.parseInt(recordId));
+		return ReturnInfo.Success;
+	}
+
+	/**
+	 * 导出明细
+	 * 
+	 * @param @param request
+	 * @param @param response
+	 * @return void
+	 * @throws
+	 * @date 2017年3月28日下午3:32:31
+	 */
+	@RequestMapping(value = "/exprotBsInventoryRecord", method = RequestMethod.GET)
+	@ResponseBody
+	public void exprotBsInventoryRecord(HttpServletRequest request, HttpServletResponse response) {
+		int recordId = NumberUtils.toInt(request.getParameter("recordId"), 0);
+		if (recordId > 0) {
+			try {
+				String filename = "出入库记录.xlsx";
+				ExcelExportUtil excelExportUtil = new ExcelExportUtil();
+				BsInventoryRecordKey key = new BsInventoryRecordKey();
+				key.setId(recordId);
+				BsInventoryRecord record = bsInventoryRecordDao.selectByPrimaryKey(key);
+				if (record != null) {
+					String recordType = "";
+					if (record.getRecordType() == 1) {
+						recordType = "入库单";
+					} else {
+						recordType = "出库单";
+					}
+					String grainType = "";
+					String str1 = "";
+					String str2 = "";
+					if (record.getGrainType() == 2) {
+						grainType = "玉米";
+						str1 = "水分：";
+						str2 = "霉变：";
+					} else {
+						grainType = "小麦";
+						str1 = "容重：";
+						str2 = "不完善粒：";
+					}
+
+					if (record.getRecordType() == 1) {
+						excelExportUtil.addTitle("ID", "单种类", "单号", "品类", "称重日期", "称重时间", "车号", "毛重", "皮重", "净重", "单价",
+								"金额", "平均成本", "粮质");
+						excelExportUtil.addOneRow(record.getId().toString(), recordType, record.getRecordNumber(),
+								grainType, record.getDate(), record.getTime(), record.getLicensePlate(), record
+										.getGrossWeightIn().toString(), record.getTareWeightIn().toString(), record
+										.getNetWeightIn().toString(), record.getUnitPrice().toString(), record
+										.getMoneyIn().toString(), record.getAveragePriceIn().toString(),
+								str1 + record.getStrColumn1() + " " + str2 + record.getStrColumn2());//
+					} else {
+						excelExportUtil.addTitle("ID", "单种类", "单号", "品类", "称重日期", "称重时间", "车号", "毛重", "皮重", "净重", "单价",
+								"金额", "粮质");
+						excelExportUtil.addOneRow(record.getId().toString(), recordType, record.getRecordNumber(),
+								grainType, record.getDate(), record.getTime(), record.getLicensePlate(), record
+										.getGrossWeightOut().toString(), record.getTareWeightOut().toString(), record
+										.getNetWeightOut().toString(), record.getUnitPrice().toString(), record
+										.getMoneyIn().toString(),
+								str1 + record.getStrColumn1() + " " + str2 + record.getStrColumn2());//
+					}
+					excelExportUtil.exportExcel(response, filename, "出入库明细");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	/**
+	 * ajax精确查询请求 url:
+	 * 'http://ip/app/bsinventoryrecord/?query=({"key1":"value1","key2":"value2"
+	 * , . . . } ) ' dataType: 'json' type: 'get'
+	 * 
+	 * ajax无条件查询全部请求 url: 'http://ip/app/bsinventoryrecord' dataType: 'json'
+	 * type: 'get'
+	 * 
+	 * ajax模糊查询请求 url:
+	 * 'http://ip/app/bsinventoryrecord/?query={"(colname)":{"$regex":"(colvalue
+	 * ) " , " $ o p t i o n s " : " i " } dataType: 'json' type: 'get'
+	 * 
+	 * ajax分页查询 请求 url:
+	 * 'http://ip/app/bsinventoryrecord/?query=(空或{"key1":"value1","key2":"value
+	 * 2 " , . . . } ) & s k i p = " + beginRow + "&limit=" + rowNum'
+	 * dataType:'json' type:'get'
+	 */
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	@ResponseBody
+	public Object get(@RequestJsonParam(value = "query", required = false) QueryMapperBean info,
+			@RequestJsonParam(value = "fields", required = false) FieldsMapperBean fmb, PageInfo para,
+			HttpServletRequest req) {
+		int totalCount = 0;
+		List<HashMap> list = null;
+		try {
+			DbCondi dc = new DbCondi();
+			dc.setEntityClass(BsInventoryRecord.class);
+			dc.setKeyClass(BsInventoryRecordKey.class);
+			dc.setMapperClass(BsInventoryRecordMapper.class);
+			dc.setQmb(info);
+			dc.setPageinfo(para);
+			dc.setFmb(fmb);
+			this.setTableName(dc);
+			// TEST query
+			// if(info!=null){
+			// StringBuffer keyValues = new StringBuffer();
+			// for(EqualBean b : info.getEqual()){
+			// keyValues.append(b.getFieldName()).append(" = ").append(b.getValue()).append(",");
+			// }
+			// for(LikeBean b : info.getLikes()){
+			// keyValues.append(b.getFieldName()).append(" like ").append(b.getRegex()).append(",");
+			// }
+			// for(OrBean b : info.getOr()){
+			// keyValues.append(b.getFieldName()).append(" or ").append(b.getValue()).append(",");
+			// }
+			// for(ConditionBean b : info.getCondition()){
+			// keyValues.append(b.getFieldName()).append(" ").append(b.getCondi())
+			// .append(" ").append(b.getValue()).append(",");
+			// }
+			// log.debug("传递参数为="+keyValues.toString());
+			// }
+			// //////////////////
+			String sql = SqlMaker.getReferenceCountSql(dc);
+			totalCount = mysqlDataService.getCount(sql);
+			sql = SqlMaker.getReferenceData(dc);
+			list = SerializerUtil.deserializeArray(mysqlDataService.doBySQL(sql), HashMap.class);
+			for (HashMap map : list) {
+				for (Field filed : FieldUtils.allDeclaredField(dc.getKeyClass())) {
+					if (map.get(filed.getName()) == null) {
+						map.put(filed.getName(), "");
+					}
+				}
+				map.put(KeyExplainHandler.ID_KEY, KeyExplainHandler.genKey(map, dc.getKeyClass()));
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryRecordCtrl get error..", e);
+		}
+		if (para.isPage()) {
+			return new ListInfo<>(totalCount, list, para);
+		} else {
+			return list;
+		}
+	}
+
+	/**
+	 * ajax根据ID主键查询 请求 url: 'http://ip/app/bsinventoryrecord/(_id值)' dataType:
+	 * 'json' type: 'get'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.GET)
+	@ResponseBody
+	public Object get(@PathVariable String key, HttpServletRequest req) {
+		List<BsInventoryRecord> list = null;
+		BsInventoryRecord obj = null;
+		try {
+			BsInventoryRecord akey = new BsInventoryRecord();
+
+			Field keyField = FieldUtils.allDeclaredField(BsInventoryRecordKey.class).get(0);
+
+			if (keyField.getType().isInstance(1)) {
+				FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+			} else if (keyField.getType().isInstance(1L)) {
+				FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+			} else {
+				FieldUtils.setObjectValue(akey, keyField, key);
+			}
+			if (true && akey.getId() == null) {
+				list = new ArrayList<BsInventoryRecord>();
+			} else {
+				BsInventoryRecordExample example = new BsInventoryRecordExample();
+				example.createCriteria().andIdEqualTo(akey.getId());
+				list = bsInventoryRecordMapper.selectByExample(example);
+				if (list != null && list.size() > 0) {
+					obj = list.get(0);
+					String printHead = "";
+					// 添加打印抬头，查询用户，然后得到打印抬头。
+					BsInventoryUser user = null;
+					int userId = obj.getUserId();
+					if (userId > 0) {
+						// 从公司表中 获取打印 抬头 。
+						BsInventoryCompanyExample exampleCompany = new BsInventoryCompanyExample();
+						exampleCompany.createCriteria().andOwnerIdEqualTo(userId);
+						List<BsInventoryCompany> companyList = bsInventoryCompanyMapper.selectByExample(exampleCompany);
+						if (companyList != null && companyList.size() > 0) {
+							BsInventoryCompany company = companyList.get(0);
+							if (company != null) {
+								printHead = company.getPrintHead();
+							}
+						}
+						if (StringUtils.isEmpty(printHead)) {
+							BsInventoryUserKey keyUserId = new BsInventoryUserKey();
+							keyUserId.setUserId(userId);
+							user = bsInventoryUserMapper.selectByPrimaryKey(keyUserId);
+							if (user != null) {
+								printHead = StringUtils.trimToEmpty(user.getPrintHead());
+							}
+						}
+					}
+					obj.setStrColumn1(printHead);
+				}
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryRecordCtrl get by key error..", e);
+		}
+		return obj;
+	}
+
+	/**
+	 * ajax根据主键删除 url:'http://ip/app/bsinventoryrecord/(_id值)' type: 'DELETE'
+	 * dataType: 'json'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public ReturnInfo delete(@PathVariable String key, HttpServletRequest req) {
+		try {
+			BsInventoryRecord akey = new BsInventoryRecord();
+
+			Field keyField = FieldUtils.allDeclaredField(BsInventoryRecordKey.class).get(0);
+
+			if (keyField.getType().isInstance(1)) {
+				FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+			} else if (keyField.getType().isInstance(1L)) {
+				FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+			} else {
+				FieldUtils.setObjectValue(akey, keyField, key);
+			}
+
+			if (true && akey.getId() != null) {
+				bsInventoryRecordMapper.deleteByPrimaryKey(akey);
+				return ReturnInfo.Success;
+			}
+		} catch (Exception e) {
+			log.warn("BsInventoryRecordCtrl delete by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * ajax根据主键单条修改 url:'http://ip/app/bsinventoryrecord/(_id值)'
+	 * data:'{"key1":"value1","key2":"value2",...}' type:'PUT'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.PUT)
+	@ResponseBody
+	public ReturnInfo update(@PathVariable String key, @Valid @RequestBody BsInventoryRecord info,
+			HttpServletRequest req) {
+		try {
+			if (info != null) {
+				BsInventoryRecord akey = new BsInventoryRecord();
+
+				Field keyField = FieldUtils.allDeclaredField(BsInventoryRecordKey.class).get(0);
+
+				if (keyField.getType().isInstance(1)) {
+					FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+				} else if (keyField.getType().isInstance(1L)) {
+					FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+				} else {
+					FieldUtils.setObjectValue(akey, keyField, key);
+				}
+				BsInventoryRecordExample example = new BsInventoryRecordExample();
+				example.createCriteria().andIdEqualTo(akey.getId());
+				bsInventoryRecordMapper.updateByExampleSelective(info, example);
+			}
+			return ReturnInfo.Success;
+		} catch (Exception e) {
+			log.warn("BsInventoryRecord update by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+
+	private void setTableName(DbCondi dc) {
+		String tName = "bs_inventory_record";
+		if (dc.getOther() == null) {
+			Map<String, Object> o = new HashMap<String, Object>();
+			o.put(SqlMaker.TABLE_NAME, tName);
+			dc.setOther(o);
+		} else {
+			dc.getOther().put(SqlMaker.TABLE_NAME, tName);
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class BsInventoryRecords extends ArrayList<BsInventoryRecord> {
+		public BsInventoryRecords() {
+			super();
+		}
+	}
+}

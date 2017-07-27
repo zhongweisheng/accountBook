@@ -1,0 +1,726 @@
+package lb.rest.user.web.action;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import lb.rest.user.db.dao.ImageDao;
+import lb.rest.user.db.dao.MlbuserServiceDao;
+import lb.rest.user.db.dao.UserActionDao;
+import lb.rest.user.db.entity.Image;
+import lb.rest.user.db.entity.ImageKey;
+import lb.rest.user.db.entity.Mlbuser;
+import lb.rest.user.db.entity.MlbuserAddition;
+import lb.rest.user.db.entity.MlbuserAdditionKey;
+import lb.rest.user.db.entity.MlbuserExample;
+import lb.rest.user.db.entity.MlbuserKey;
+import lb.rest.user.db.mapper.MlbuserAdditionMapper;
+import lb.rest.user.db.mapper.MlbuserMapper;
+import lombok.extern.slf4j.Slf4j;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.mlb.enums.IndustryEnum;
+import com.mlb.enums.UserActionEnum;
+import com.mlb.util.GetParamsUtils;
+import com.mlb.util.PropertiesUtil;
+import com.mlb.util.SequenceUtil;
+import com.mlb.util.SessionUtils;
+
+import fc.wpf.rest.db.service.DataService;
+import fc.wpf.rest.utils.BeanFactory;
+import fc.wpf.rest.utils.DBBean;
+import fc.wpf.rest.utils.SerializerUtil;
+import fc.wpf.rest.web.action.BasicCtrl;
+import fc.wpf.rest.web.bean.DbCondi;
+import fc.wpf.rest.web.bean.FieldsMapperBean;
+import fc.wpf.rest.web.bean.ListInfo;
+import fc.wpf.rest.web.bean.PageInfo;
+import fc.wpf.rest.web.bean.QueryMapperBean;
+import fc.wpf.rest.web.bean.ReturnInfo;
+import fc.wpf.rest.web.bean.SqlMaker;
+import fc.wpf.rest.web.bind.FieldUtils;
+import fc.wpf.rest.web.bind.KeyExplainHandler;
+import fc.wpf.rest.web.bind.RequestJsonParam;
+
+@Slf4j
+@Controller
+@RequestMapping("/mlbuser")
+public class MlbuserCtrl extends BasicCtrl {
+
+	private static MlbuserMapper mlbuserMapper = (MlbuserMapper) BeanFactory.getBean("mlbuserMapper");
+	private static MlbuserAdditionMapper mlbuserAdditionMapper = (MlbuserAdditionMapper) BeanFactory
+			.getBean("mlbuserAdditionMapper");
+
+	private static MlbuserServiceDao mlbuserServiceDao = (MlbuserServiceDao) BeanFactory.getBean("mlbuserServiceDao");
+	private static DataService mysqlDataService = (DataService) BeanFactory.getBean("mysqlDataService");
+	private static ImageDao imageDao = (ImageDao) BeanFactory.getBean("imageDao");
+	private static UserActionDao userActionDao = (UserActionDao) BeanFactory.getBean("userActionDao");
+	private static final long SENDSMS_TIMEOUT = 2 * 60 * 1000; // 两分钟有效期
+
+	/**
+	 * ajax单条数据插入 url:'http://ip/rest/mlbuser'
+	 * data:'{"key1":"value1","key2":"value2",...}' type:’POST
+	 */
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo insert(HttpServletRequest req) {
+		try {
+			String userName = StringUtils.defaultIfEmpty(req.getParameter("userName"), "");
+			String loginname = StringUtils.defaultIfEmpty(req.getParameter("loginName"), "");
+			String password = StringUtils.defaultIfEmpty(req.getParameter("password"), "111111");
+			// String inviteCode =
+			// StringUtils.defaultIfEmpty(req.getParameter("inviteCode"), "");
+			String smscode = StringUtils.defaultIfEmpty(req.getParameter("smscode"), "");
+			String openId = StringUtils.defaultIfEmpty(req.getParameter("openId"), "");
+			int industry = NumberUtils.toInt(req.getParameter("industry"), 0);
+			// openid = "ofawLxBuQyUk02gl-dBjCu3UHl7E";
+			// 微信注册用户 默认来源为1
+			int fromType = NumberUtils.toInt(req.getParameter("from"), 1);
+			HttpSession session = req.getSession();
+			String sendSmscode = StringUtils.defaultIfEmpty((String) session.getAttribute("sendSmscodeSession"), "");
+			long sendSmsTime = NumberUtils.toLong((String) session.getAttribute("sendSmsTimeSession"), 0);
+
+			boolean result = false;
+			String message = validSmsCode(smscode, sendSmscode, sendSmsTime);
+
+			// 验证码错误
+			if (StringUtils.isNotEmpty(message)) {
+				return new ReturnInfo(message, 1000, null, false);
+			}
+			// 用户登录名
+			MlbuserExample example = new MlbuserExample();
+			example.createCriteria().andPhoneEqualTo(loginname);
+			List<Mlbuser> userList = mlbuserMapper.selectByExample(example);
+
+			if (userList != null && userList.size() > 0) {
+				return new ReturnInfo("手机号已经注册", 1000, null, result);
+			} else {
+				Mlbuser info = new Mlbuser();
+				int id = SequenceUtil.getInstance().nextValue("user");
+				info.setUserid(id);
+				info.setTruename(userName);
+				info.setPhone(loginname);
+				info.setLoginname(loginname);
+				info.setPassword(password);
+				info.setFromtype(fromType);
+				info.setOpenid(openId);
+				info.setRegtime(new Date());
+				info.setUpdatetime(new Date());
+
+				mlbuserMapper.insertSelective(info);
+				MlbuserAddition userAddtion = new MlbuserAddition();
+				userAddtion.setUserId(id);
+				userAddtion.setIndustry(industry);
+				userAddtion.setUserCategory(1);
+				mlbuserAdditionMapper.insert(userAddtion);
+
+				JSONObject retObj = new JSONObject();
+				retObj.put("userId", info.getUserid());
+				retObj.put("userName", info.getTruename());
+				SessionUtils.setMlbUserSession(req, info, openId);
+				return new ReturnInfo("注册成功", id, retObj, true);
+			}
+		} catch (Exception e) {
+			log.warn("MlbuserCtrl insert error..", e);
+			// e.printStackTrace();
+		}
+		return ReturnInfo.Faild;
+	}
+
+	private String validSmsCode(String smscode, String sendSmscode, long sendSmsTime) {
+
+		String message = "";
+		Date d = new Date();
+		// 短信验证码是否超时
+		if (d.getTime() - sendSmsTime > SENDSMS_TIMEOUT) {// 两分钟有效期
+			message = "短信验证码超时！";
+		} else {
+			// 短信验证码是否正确
+			if (!sendSmscode.equals(smscode)) {
+				message = "短信验证码错误！";
+
+			}
+		}
+		return message;
+	}
+
+	@RequestMapping(value = "/getBackPassword", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo getBackPassword(HttpServletRequest req) {
+		try {
+
+			String loginname = StringUtils.defaultIfEmpty(req.getParameter("phone"), "");
+			String password = StringUtils.defaultIfEmpty(req.getParameter("password"), "111111");
+			String smscode = StringUtils.defaultIfEmpty(req.getParameter("smscode"), "");
+
+			String openId = StringUtils.defaultIfEmpty(req.getParameter("openId"), "");
+
+			HttpSession session = req.getSession();
+			String sendSmscode = StringUtils.defaultIfEmpty((String) session.getAttribute("sendSmscodeSession"), "");
+			long sendSmsTime = NumberUtils.toLong((String) session.getAttribute("sendSmsTimeSession"), 0);
+
+			System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+			log.warn("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&getBackPassword&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+			log.warn("sendSmscode:" + sendSmscode);
+			log.warn("sendSmsTime:" + sendSmsTime);
+			log.warn("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&getBackPassword&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+
+			boolean result = false;
+			String message = "";
+
+			Date d = new Date();
+			// 短信验证码是否超时
+			if (d.getTime() - sendSmsTime > SENDSMS_TIMEOUT) {// 两分钟有效期
+				message = "短信验证码超时！";
+				result = false;
+				return new ReturnInfo(message, 1000, null, result);
+			} else { // 短信验证码是否正确
+				if (!sendSmscode.equals(smscode)) {
+					message = "短信验证码错误！";
+					result = false;
+					return new ReturnInfo(message, 1000, null, result);
+				}
+			}
+
+			// 用户登录名
+			MlbuserExample example = new MlbuserExample();
+			example.createCriteria().andPhoneEqualTo(loginname);
+			List<Mlbuser> userList = mlbuserMapper.selectByExample(example);
+
+			if (userList != null && userList.size() > 0) {
+				Mlbuser info = userList.get(0);
+				Mlbuser user = new Mlbuser();
+				user.setUserid(info.getUserid());
+				user.setPassword(password);
+				user.setUpdatetime(new Date());
+				user.setOpenid(openId);
+				mlbuserMapper.updateByPrimaryKeySelective(user);
+				JSONObject retObj = new JSONObject();
+				retObj.put("userId", info.getUserid());
+				retObj.put("userName", info.getTruename());
+				return new ReturnInfo("找回密码成功", info.getUserid(), retObj, true);
+			} else {
+				return ReturnInfo.Faild;
+			}
+		} catch (Exception e) {
+			log.warn("MlbuserCtrl insert error..", e);
+			// e.printStackTrace();
+		}
+		return ReturnInfo.Faild;
+	}
+
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo login(HttpServletRequest req) {
+		List<Mlbuser> list = null;
+		try {
+			String loginname = StringUtils.defaultIfEmpty(req.getParameter("loginName"), "");
+			String password = StringUtils.defaultIfEmpty(req.getParameter("password"), "111111");
+			String openId = StringUtils.defaultIfEmpty(req.getParameter("openId"), "");
+
+			if ("undefined".equals(openId)) {
+				openId = "";
+			}
+			// 通过 登录名和密码
+			if (StringUtils.isNotEmpty(loginname) && StringUtils.isNotEmpty(password)) {
+				MlbuserExample example = new MlbuserExample();
+				example.createCriteria().andLoginnameEqualTo(loginname).andPasswordEqualTo(password);
+				list = mlbuserMapper.selectByExample(example);
+			}
+
+			// 通过openId
+			if ((list == null || list.size() == 0) && StringUtils.isNotEmpty(openId)) {
+				MlbuserExample example = new MlbuserExample();
+				example.createCriteria().andOpenidEqualTo(openId);
+				list = mlbuserMapper.selectByExample(example);
+			}
+
+			if (list != null && list.size() > 0) {
+				Mlbuser user = list.get(0);
+				int userId = user.getUserid();
+				user.setUpdatetime(new Date());
+				String dbOpenId = StringUtils.trimToEmpty(user.getOpenid());
+				if (StringUtils.isNotEmpty(openId)) {
+					// if (StringUtils.isEmpty(dbOpenId)) {
+					user.setOpenid(openId);
+					mlbuserMapper.updateByPrimaryKeySelective(user);
+					// }
+				} else {
+					openId = dbOpenId;
+				}
+				JSONObject retObj = new JSONObject();
+				retObj.put("userId", user.getUserid());
+				retObj.put("userName", user.getTruename());
+				SessionUtils.setMlbUserSession(req, user, openId);
+				return new ReturnInfo("登录成功！", userId, retObj, true);
+			} else {
+				return new ReturnInfo("登录失败！", 10000, null, false);
+			}
+		} catch (Exception e) {
+			log.warn("MlbuserCtrl get by key error..", e);
+		}
+		return ReturnInfo.Faild;
+	}
+
+	@RequestMapping(value = "/logout", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo logout(HttpServletRequest req) {
+		List<Mlbuser> list = null;
+		try {
+			int userId = NumberUtils.toInt(req.getParameter("userId"), 0);
+			String openId = StringUtils.defaultIfEmpty(req.getParameter("openId"), "");
+			Mlbuser user = null;
+			if (userId > 0) {
+				MlbuserKey key = new MlbuserKey();
+				key.setUserid(userId);
+				user = mlbuserMapper.selectByPrimaryKey(key);
+			}
+			// 通过openId
+			if (user == null && StringUtils.isNotEmpty(openId)) {
+				MlbuserExample example = new MlbuserExample();
+				example.createCriteria().andOpenidEqualTo(openId);
+				list = mlbuserMapper.selectByExample(example);
+				if (list != null && list.size() > 0) {
+					user = list.get(0);
+				}
+			}
+			// 通过 登录名和密码
+			if (user != null) {
+				// 清空openId
+				user.setOpenid("");
+				mlbuserMapper.updateByPrimaryKeySelective(user);
+				JSONObject retObj = new JSONObject();
+				retObj.put("userId", user.getUserid());
+				retObj.put("userName", user.getTruename());
+				SessionUtils.setMlbUserSession(req, user, openId);
+				return new ReturnInfo("注销成功！", userId, retObj, true);
+			} else {
+				return new ReturnInfo("注销失败！", 10000, null, false);
+			}
+		} catch (Exception e) {
+			log.warn("MlbuserCtrl get by key error..", e);
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * ajax精确查询请求 url:
+	 * 'http://ip/app/mlbuser/?query=({"key1":"value1","key2":"value2",...})'
+	 * dataType: 'json' type: 'get'
+	 * 
+	 * ajax无条件查询全部请求 url: 'http://ip/app/mlbuser' dataType: 'json' type: 'get'
+	 * 
+	 * ajax模糊查询请求 url:
+	 * 'http://ip/app/mlbuser/?query={"(colname)":{"$regex":"(colvalue)","$optio
+	 * n s " : " i " } dataType: 'json' type: 'get'
+	 * 
+	 * ajax分页查询 请求 url:
+	 * 'http://ip/app/mlbuser/?query=(空或{"key1":"value1","key2":"value2",...})&s
+	 * k i p = " + beginRow + "&limit=" + rowNum' dataType:'json' type:'get'
+	 */
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	@ResponseBody
+	public Object get(@RequestJsonParam(value = "query", required = false) QueryMapperBean info,
+			@RequestJsonParam(value = "fields", required = false) FieldsMapperBean fmb, PageInfo para,
+			HttpServletRequest req) {
+		int totalCount = 0;
+		List<HashMap> list = null;
+		try {
+			DbCondi dc = new DbCondi();
+			dc.setEntityClass(Mlbuser.class);
+			dc.setKeyClass(MlbuserKey.class);
+			dc.setMapperClass(MlbuserMapper.class);
+			dc.setQmb(info);
+			dc.setPageinfo(para);
+			dc.setFmb(fmb);
+			this.setTableName(dc);
+			// TEST query
+			// if(info!=null){
+			// StringBuffer keyValues = new StringBuffer();
+			// for(EqualBean b : info.getEqual()){
+			// keyValues.append(b.getFieldName()).append(" = ").append(b.getValue()).append(",");
+			// }
+			// for(LikeBean b : info.getLikes()){
+			// keyValues.append(b.getFieldName()).append(" like ").append(b.getRegex()).append(",");
+			// }
+			// for(OrBean b : info.getOr()){
+			// keyValues.append(b.getFieldName()).append(" or ").append(b.getValue()).append(",");
+			// }
+			// for(ConditionBean b : info.getCondition()){
+			// keyValues.append(b.getFieldName()).append(" ").append(b.getCondi())
+			// .append(" ").append(b.getValue()).append(",");
+			// }
+			// log.debug("传递参数为="+keyValues.toString());
+			// }
+			// //////////////////
+			String sql = SqlMaker.getReferenceCountSql(dc);
+			totalCount = mysqlDataService.getCount(sql);
+			sql = SqlMaker.getReferenceData(dc);
+			list = SerializerUtil.deserializeArray(mysqlDataService.doBySQL(sql), HashMap.class);
+			for (HashMap map : list) {
+				for (Field filed : FieldUtils.allDeclaredField(dc.getKeyClass())) {
+					if (map.get(filed.getName()) == null) {
+						map.put(filed.getName(), "");
+					}
+				}
+				map.put(KeyExplainHandler.ID_KEY, KeyExplainHandler.genKey(map, dc.getKeyClass()));
+			}
+		} catch (Exception e) {
+			log.warn("MlbuserCtrl get error..", e);
+		}
+		if (para.isPage()) {
+			return new ListInfo<>(totalCount, list, para);
+		} else {
+			return list;
+		}
+	}
+
+	/**
+	 * ajax根据ID主键查询 请求 url: 'http://ip/app/mlbuser/(_id值)' dataType: 'json'
+	 * type: 'get'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.GET)
+	@ResponseBody
+	public Object get(@PathVariable String key, HttpServletRequest req) {
+		Mlbuser mlbuser = new Mlbuser();
+		int keyInt = NumberUtils.toInt(key);
+		if (keyInt <= 0) {
+			return "";
+		}
+		List<Mlbuser> list = null;
+		try {
+			Mlbuser akey = new Mlbuser();
+
+			Field keyField = FieldUtils.allDeclaredField(MlbuserKey.class).get(0);
+
+			if (keyField.getType().isInstance(1)) {
+				FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+			} else if (keyField.getType().isInstance(1L)) {
+				FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+			} else {
+				FieldUtils.setObjectValue(akey, keyField, key);
+			}
+			String industry = "";
+			if (true && akey.getUserid() == null) {
+				list = new ArrayList<Mlbuser>();
+			} else {
+				MlbuserExample example = new MlbuserExample();
+				example.createCriteria().andUseridEqualTo(akey.getUserid());
+				list = mlbuserMapper.selectByExample(example);
+				if (list != null && list.size() > 0) {
+					mlbuser = list.get(0);
+					MlbuserAdditionKey keyAddition = new MlbuserAdditionKey();
+					keyAddition.setUserId(mlbuser.getUserid());
+					MlbuserAddition additionBO = mlbuserAdditionMapper.selectByPrimaryKey(keyAddition);
+					if (additionBO != null && additionBO.getIndustry() != null) {
+						int industryInt = additionBO.getIndustry();
+						industry = IndustryEnum.getName(industryInt);
+					}
+				}
+			}
+
+			String htUserIdList = PropertiesUtil.getProperty("htUserIdList");
+			mlbuser.setIfagent(1);// 0可以发代理1不可以发代理
+			if (mlbuser != null && htUserIdList != null) {
+				if (htUserIdList.contains(mlbuser.getUserid() + ""))
+					mlbuser.setIfagent(0);// 0可以发代理1不可以发代理
+			}
+			// 企业类型
+			mlbuser.setClientName(industry);
+		} catch (Exception e) {
+			log.warn("MlbuserCtrl get by key error..", e);
+		}
+		return mlbuser;
+	}
+
+	/**
+	 * ajax根据主键删除 url:'http://ip/app/mlbuser/(_id值)' type: 'DELETE' dataType:
+	 * 'json'
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public ReturnInfo delete(@PathVariable String key, HttpServletRequest req) {
+		try {
+			Mlbuser akey = new Mlbuser();
+
+			Field keyField = FieldUtils.allDeclaredField(MlbuserKey.class).get(0);
+
+			if (keyField.getType().isInstance(1)) {
+				FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+			} else if (keyField.getType().isInstance(1L)) {
+				FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+			} else {
+				FieldUtils.setObjectValue(akey, keyField, key);
+			}
+
+			if (true && akey.getUserid() != null) {
+				mlbuserMapper.deleteByPrimaryKey(akey);
+				return ReturnInfo.Success;
+			}
+		} catch (Exception e) {
+			log.warn("MlbuserCtrl delete by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+
+	/**
+	 * 个人信息认证 action = authUserInfo trueName : ID ： imageIds: json 对象
+	 */
+	@RequestMapping(value = "/{key}", method = RequestMethod.POST)
+	@ResponseBody
+	public ReturnInfo update(@PathVariable String key, HttpServletRequest req) {
+		try {
+			String action = StringUtils.trimToEmpty(req.getParameter("action"));
+			boolean result = false;
+			if ("modifyUserInfo".equalsIgnoreCase(action)) {
+				String trueName = StringUtils.trimToEmpty(req.getParameter("trueName"));
+				String ID = StringUtils.trimToEmpty(req.getParameter("IDCard"));
+				String imageIds = StringUtils.trimToEmpty(req.getParameter("imageIds"));
+				String email = StringUtils.trimToEmpty(req.getParameter("email"));
+				String phone = StringUtils.trimToEmpty(req.getParameter("phone"));
+				String phone2 = StringUtils.trimToEmpty(req.getParameter("phone2"));
+				String address = req.getParameter("address");
+				String location = req.getParameter("location");
+				String locationDesc = req.getParameter("locationDesc");
+
+				int userId = NumberUtils.toInt(key);
+				Mlbuser info = new Mlbuser();
+				info.setTruename(trueName);
+				// info.setClientName(ID); // 身份证
+				info.setIdCard(ID);// 身份证
+				info.setEmail(email);
+				info.setPhone(phone);
+				info.setPhone2(phone2);
+				info.setAddress(address);
+				info.setLocation(location);
+				info.setLocationdesc(locationDesc);
+
+				// 更新图片对应关系
+				String[] iid = StringUtils.trimToEmpty(imageIds).split(",", -1);
+				for (int i = 0; i < iid.length; i++) {
+					if (iid[i].length() > 0) {
+						ImageKey key2 = new ImageKey();
+						key2.setId(Integer.parseInt(iid[i]));
+						Image image = imageDao.selectByPrimaryKey(key2);
+						if (image != null) {
+							image.setForeignkey(userId);
+							imageDao.updateByPrimaryKey(image);
+							// image = ImageService.saveImageBO(image);
+						}
+					}
+				}
+				if (info != null) {
+					Mlbuser akey = new Mlbuser();
+					Field keyField = FieldUtils.allDeclaredField(MlbuserKey.class).get(0);
+					if (keyField.getType().isInstance(1)) {
+						FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+					} else if (keyField.getType().isInstance(1L)) {
+						FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+					} else {
+						FieldUtils.setObjectValue(akey, keyField, key);
+					}
+					MlbuserExample example = new MlbuserExample();
+					example.createCriteria().andUseridEqualTo(akey.getUserid());
+					mlbuserMapper.updateByExampleSelective(info, example);
+					result = true;
+
+				}
+			} else if ("authUserInfo".equalsIgnoreCase(action)) {
+				String trueName = StringUtils.trimToEmpty(req.getParameter("trueName"));
+				String ID = StringUtils.trimToEmpty(req.getParameter("IDCard"));
+				String imageIds = StringUtils.trimToEmpty(req.getParameter("imageIds"));
+
+				int userId = NumberUtils.toInt(key);
+				Mlbuser info = new Mlbuser();
+				info.setTruename(trueName);
+				// info.setClientName(ID); // 身份证
+				info.setIdCard(ID);// 身份证
+
+				// 更新图片对应关系
+				String[] iid = StringUtils.trimToEmpty(imageIds).split(",", -1);
+				for (int i = 0; i < iid.length; i++) {
+					if (iid[i].length() > 0) {
+						ImageKey key2 = new ImageKey();
+						key2.setId(Integer.parseInt(iid[i]));
+						Image image = imageDao.selectByPrimaryKey(key2);
+						if (image != null) {
+							image.setForeignkey(userId);
+							imageDao.updateByPrimaryKey(image);
+							// image = ImageService.saveImageBO(image);
+						}
+					}
+				}
+				if (info != null) {
+					Mlbuser akey = new Mlbuser();
+					Field keyField = FieldUtils.allDeclaredField(MlbuserKey.class).get(0);
+					if (keyField.getType().isInstance(1)) {
+						FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+					} else if (keyField.getType().isInstance(1L)) {
+						FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+					} else {
+						FieldUtils.setObjectValue(akey, keyField, key);
+					}
+					MlbuserExample example = new MlbuserExample();
+					example.createCriteria().andUseridEqualTo(akey.getUserid());
+					mlbuserMapper.updateByExampleSelective(info, example);
+					result = true;
+					userActionDao.saveAuthTime(UserActionEnum.点击个人认证.getCode(), userId, trueName);
+				}
+			} else if ("authCompanyInfo".equalsIgnoreCase(action)) {
+				// 企业名称
+				String companyName = StringUtils.trimToEmpty(req.getParameter("companyName"));
+				// 详细地址
+				String address = StringUtils.trimToEmpty(req.getParameter("address"));
+				// 地域编码
+				String location = StringUtils.trimToEmpty(req.getParameter("location"));
+				// 地域
+				String locationDesc = StringUtils.trimToEmpty(req.getParameter("locationDesc"));
+				// 图片IDs
+				String imageIds = StringUtils.trimToEmpty(req.getParameter("imageIds"));
+
+				int userId = NumberUtils.toInt(key);
+				Mlbuser info = new Mlbuser();
+				info.setCompanyname(companyName);
+				info.setAddress(address);
+				info.setLocationdesc(locationDesc);
+				info.setLocation(location);
+
+				// 更新图片对应关系
+				String[] iid = StringUtils.trimToEmpty(imageIds).split(",", -1);
+				for (int i = 0; i < iid.length; i++) {
+					if (iid[i].length() > 0) {
+						ImageKey key2 = new ImageKey();
+						key2.setId(Integer.parseInt(iid[i]));
+						Image image = imageDao.selectByPrimaryKey(key2);
+						if (image != null) {
+							image.setForeignkey(userId);
+							imageDao.updateByPrimaryKey(image);
+							// image = ImageService.saveImageBO(image);
+						}
+					}
+				}
+				if (info != null) {
+					Mlbuser akey = new Mlbuser();
+					Field keyField = FieldUtils.allDeclaredField(MlbuserKey.class).get(0);
+					if (keyField.getType().isInstance(1)) {
+						FieldUtils.setObjectValue(akey, keyField, Integer.parseInt(key));
+					} else if (keyField.getType().isInstance(1L)) {
+						FieldUtils.setObjectValue(akey, keyField, Long.parseLong(key));
+					} else {
+						FieldUtils.setObjectValue(akey, keyField, key);
+					}
+					MlbuserExample example = new MlbuserExample();
+					example.createCriteria().andUseridEqualTo(akey.getUserid());
+					mlbuserMapper.updateByExampleSelective(info, example);
+					result = true;
+					userActionDao.saveAuthTime(UserActionEnum.点击企业认证.getCode(), userId, companyName);
+				}
+
+			} else {/*
+					 * 
+					 * if (info != null) { Mlbuser akey = new Mlbuser();
+					 * 
+					 * Field keyField =
+					 * FieldUtils.allDeclaredField(MlbuserKey.class).get(0);
+					 * 
+					 * if (keyField.getType().isInstance(1)) {
+					 * FieldUtils.setObjectValue(akey, keyField,
+					 * Integer.parseInt(key)); } else if
+					 * (keyField.getType().isInstance(1L)) {
+					 * FieldUtils.setObjectValue(akey, keyField,
+					 * Long.parseLong(key)); } else {
+					 * FieldUtils.setObjectValue(akey, keyField, key); }
+					 * MlbuserExample example = new MlbuserExample();
+					 * example.createCriteria
+					 * ().andUseridEqualTo(akey.getUserid());
+					 * mlbuserMapper.updateByExampleSelective(info, example); }
+					 */
+			}
+			return new ReturnInfo("", 0, null, result);
+		} catch (Exception e) {
+			log.warn("Mlbuser update by key error..");
+		}
+		return ReturnInfo.Faild;
+	}
+
+	private void setTableName(DbCondi dc) {
+		String tName = DBBean.getTableName2Class(Mlbuser.class);
+		if (dc.getOther() == null) {
+			Map<String, Object> o = new HashMap<String, Object>();
+			o.put(SqlMaker.TABLE_NAME, tName);
+			dc.setOther(o);
+		} else {
+			dc.getOther().put(SqlMaker.TABLE_NAME, tName);
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class Mlbusers extends ArrayList<Mlbuser> {
+		public Mlbusers() {
+			super();
+		}
+	}
+
+	/**
+	 * 根据客户ID查询客户信息 type: 'get'
+	 */
+	@RequestMapping(value = "/getMlbuserById", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getMlbuser(HttpServletRequest req) {
+		Map<String, Object> map = GetParamsUtils.getParamMap(req);
+		String mlbuserID = map.get("mlbuserId").toString();
+		String type = "";
+		if (map.get("type") != null) {
+			type = map.get("type").toString();
+		}
+		return mlbuserServiceDao.getMlbuserById(mlbuserID, type);
+	}
+
+	/**
+	 * 根据客户ID查询客户信息 type: 'get'
+	 */
+	@RequestMapping(value = "/getUserInfo", method = RequestMethod.POST)
+	@ResponseBody
+	public Map<String, Object> getUserInfo(HttpServletRequest req) {
+		Map<String, Object> map = GetParamsUtils.getParamMap(req);
+		String mlbuserID = map.get("userId").toString();
+		String type = "";
+		if (map.get("type") != null) {
+			type = map.get("type").toString();
+		}
+		return mlbuserServiceDao.getUserInfo(mlbuserID, type);
+	}
+
+	@RequestMapping(value = "/getUserList", method = RequestMethod.GET)
+	@ResponseBody
+	public Object getUserList(HttpServletRequest req) {
+		Map<String, Object> map = GetParamsUtils.getParamMap(req);
+		// 只提取 industry =2 ，深加工成的数据.
+		double minDistance = NumberUtils.toDouble(map.get("minDistance").toString());
+		double maxDistance = NumberUtils.toDouble(map.get("maxDistance").toString());
+		double lat = NumberUtils.toDouble(map.get("lat").toString());
+		double lng = NumberUtils.toDouble(map.get("lng").toString());
+		int update = NumberUtils.toInt(req.getParameter("update"));
+		int foodType = NumberUtils.toInt(req.getParameter("foodType"));
+		String locationStr = StringUtils.trimToEmpty(req.getParameter("location"));
+		locationStr = StringUtils.removeEndIgnoreCase(locationStr, "00");
+		locationStr = StringUtils.removeEndIgnoreCase(locationStr, "00");
+
+		return mlbuserServiceDao.getUserList(minDistance, maxDistance, lat, lng, update, foodType, locationStr);
+	}
+}

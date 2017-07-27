@@ -1,0 +1,1 @@
+(function(a){a.include=function(b){a.ajax({url:b,async:false,success:function(c){document.write(c)}})}}(jQuery));

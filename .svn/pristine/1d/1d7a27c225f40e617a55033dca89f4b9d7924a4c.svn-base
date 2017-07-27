@@ -1,0 +1,18 @@
+
+.choseDepot{
+	float: left;
+	display: inline-block;
+
+}
+.depotN{
+	float: left;
+	margin-right: 10px;
+		display: inline-block;
+}
+#depot{
+	float: right;
+		display: inline-block;
+
+		 left: 10px;
+		 right: 10px;
+}

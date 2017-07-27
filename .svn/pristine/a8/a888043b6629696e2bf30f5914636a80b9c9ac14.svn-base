@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>出库单</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/outForm.css">
+    <link rel="stylesheet" href="accountData/css/select2.min.css">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.include.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common.min.js"></script>
+    <style type="text/css">
+        .left{
+            width: 159px;
+            margin-top: 90px;
+            float: left;
+        }
+        .parent {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child{
+            padding-left: 15%;
+        }
+        .child p {
+            display: inline-block;
+            width: 100%;
+            margin-left: -15px;
+            height: 40px;
+            line-height: 40px;
+            text-indent: 1rem;
+            font-size: 16px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child p:hover,.parent:hover{
+            cursor: pointer;
+            color: #f5a85d;
+            font-size: 18px;
+        }
+        .parent:hover{
+            font-size: 24px;
+        }
+        .child i {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            line-height: 8px;
+            background-color: #585858;
+            border: 1px solid #585858;
+            border-radius: 4px;
+        }
+        .left_active{
+            color: #f5a85d;
+        }
+        .address{
+		    float: left;
+		    display: block;
+		    width: 620px;
+		}
+		.cityselect select{
+		    display: block;
+		    height: 26px;
+		    width: 26.6%;
+		    border: solid 1px #858384;
+		    float: left;
+		    background-color: white;
+		    font-size: 16px
+		}
+        select{
+            height: 28px;
+            font-size: 16px
+        }
+    </style>
+     <script type="text/javascript" language="javascript">
+	function is_leap(year) {
+	   return (year==0 ? res=(year==0 ? 1 : 0) : res=(year%4==0 ? 1: 0));
+	}
+function choose_date_czw(date_id,objtd){
+			if(date_id=="choose_date_czw_close"){
+			    document.getElementById("choose_date_czw_id").style.display="none";
+			    return;
+			}
+			if(objtd!=undefined){
+			    if(objtd=="choose_date_czw_empty"){
+			        document.getElementById(date_id).value="";
+			    }else{
+			        var year1 = document.getElementById("choose_date_czw_year").value;
+			        var month1 = document.getElementById("choose_date_czw_month").value;
+			        if(month1 < 10){
+			            month1 = '0'+month1;
+                    }
+                    if(objtd.innerHTML < 10){
+                        objtd.innerHTML = '0'+objtd.innerHTML;
+                    }
+			        document.getElementById(date_id).value=year1+"-"+month1+"-"+objtd.innerHTML;
+			    }
+			    document.getElementById("choose_date_czw_id").style.display="none";
+			    return;
+			}
+			var nstr=new Date(); //当前
+			if(document.getElementById("choose_date_czw_year")!=null){
+			    var year = document.getElementById("choose_date_czw_year").value;
+			    var month = document.getElementById("choose_date_czw_month").value;
+			    var str=year+"/"+month+"/1";
+			    nstr=new Date(str); //当前
+			}
+			var ynow=nstr.getFullYear(); //年份
+			var mnow=nstr.getMonth(); //月份
+			var dnow=nstr.getDate(); //今日日期
+			var n1str=new Date(ynow,mnow,1); //当月第一天
+			var firstday=n1str.getDay(); //当月第一天星期几
+
+			var dstr="<select id=\"choose_date_czw_year\" onchange=\"choose_date_czw('"+date_id+"')\">";
+			for(var y=1901;y<2050;y++){
+			    if(y==ynow){
+			        dstr+="<option value='"+y+"' selected>"+y+"</option>"
+			    }else{
+			        dstr+="<option value='"+y+"'>"+y+"</option>"
+			    }
+			}
+			dstr+="</select> <select id=\"choose_date_czw_month\" onchange=\"choose_date_czw('"+date_id+"')\">";
+			for(var m=1;m<13;m++){
+			    if(parseInt(mnow+1)==m){
+			        dstr+="<option value='"+m+"' selected>"+m+"</option>"
+			    }else{
+			        dstr+="<option value='"+m+"'>"+m+"</option>"
+			    }
+			}
+			dstr+="</select> <span style='cursor:pointer;' onclick=\"choose_date_czw('choose_date_czw_close')\">关闭</span>|<span style='cursor:pointer;' onclick=\"choose_date_czw('"+date_id+"','choose_date_czw_empty')\">清空</span>";
+			//一三五七八十腊(十二月),三十一日永不差;四六九冬(十一月)三十日,唯有二月二十八(闰年二十九).
+			var m_days = new Array(31,28+is_leap(ynow),31,30,31,30,31,31,30,31,30,31);
+			var tr_str=Math.ceil((m_days[mnow] + firstday)/7);
+			dstr+="<table border='0'  cellpadding='5' cellspacing='0' style='width: 200px;height: 100px; text-align: center;'><tr><td>日</td><td>一</td><td>二</td><td>三</td><td>四</td><td>五</td><td>六</td></tr>";
+			var dqdate=new Date(); //当前
+			for(i=0;i<tr_str;i++) { //外层for语句- tr标签
+			   dstr+="<tr>";
+			   for(k=0;k<7;k++) { //内层for语句- td标签
+			      idx=i*7+k; //表格单元的自然序号
+			      date_str=idx-firstday+1; //计算日期
+			     if(date_str<=0 || date_str>m_days[mnow]){
+			          dstr+="<td> </td>";
+			     }else{
+			        if(ynow==dqdate.getFullYear() && mnow==dqdate.getMonth() && dqdate.getDate()==date_str){
+			            dstr+="<td onmouseover=\"this.style.backgroundColor='#6FF'\" onmouseout=\"this.style.backgroundColor='#fff'\" onclick=\"choose_date_czw('"+date_id+"',this)\" style='cursor:pointer; background-color:#6FF;'>"+date_str+"</td>";
+			        }else{
+			            dstr+="<td onmouseover=\"this.style.backgroundColor='#6FF'\" onmouseout=\"this.style.backgroundColor='#fff'\" onclick=\"choose_date_czw('"+date_id+"',this)\" style='cursor:pointer;'>"+date_str+"</td>";
+			        }
+			     }
+			   }
+			   dstr+="</tr>";
+			}
+			dstr+="</table>";
+			if(document.getElementById("choose_date_czw_id")==null){
+					var obj = document.getElementById(date_id);
+					var odiv = document.getElementById("div");
+					odiv.id="choose_date_czw_id";
+					odiv.innerHTML=dstr;
+					odiv.style.position="absolute";
+					odiv.style.border="1px #0CF solid";
+					odiv.style.fontSize="12px";
+					odiv.style.zOutdex=99999;
+					odiv.style.top=obj.offsetTop+obj.offsetHeight+"px";
+					odiv.style.left=obj.offsetLeft+"px";
+			}else{
+			    document.getElementById("choose_date_czw_id").style.display="block";
+			    document.getElementById("choose_date_czw_id").innerHTML=dstr;
+			}
+		}
+    function getQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);  //获取url中"?"符后的字符串并正则匹配
+        var context = "";
+        if (r != null)
+            context = r[2];
+        reg = null;
+        r = null;
+        return context == null || context == "" || context == "undefined" ? "" : context;
+    }
+</script>
+</head>
+<body>
+    <script>$.include("accountData/shtml/head.shtml")</script>
+    <div class="content clearfix" style="height: 1000px;">
+        <script>
+            var fromId = getQueryString('from');
+            if(fromId == 1 ||fromId == ''){
+                $.include('accountData/shtml/left.shtml');
+            }
+        </script>
+        <div class="right">
+            <div class="rightHead">
+                <script>
+                    var fromId = getQueryString('from');
+                    if(fromId == 2){
+                        $.include('accountData/shtml/topNav.shtml');
+                    }
+                </script>
+                <ul class="clearfix">
+                    <li>出&nbsp;库&nbsp;单</li>
+                    <li>
+                        <span>种类：</span>
+                        <input type="radio" name="grainType" id="grainType1" value="2"
+                               style="width: 2%;cursor: pointer;" checked>
+                        <label for="grainType1">玉米</label>
+                        <input type="radio" name="grainType" id="grainType2" value="1"
+                               style="width: 2%;cursor: pointer;">
+                        <label for="grainType2">小麦</label>
+                        <input type="radio" name="grainType" id="grainType3" value="3"
+                               style="width: 2%;cursor: pointer;">
+                        <label for="grainType3">水稻</label>
+                        <span id="recordNumber"></span>
+                    </li>
+                    <li>
+                        <div class="noComplete" style="cursor: pointer;">
+                            <span>未完成出库单</span>
+                            <div class="finishNum"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="rightContent">
+                <div class="caption" style="padding-bottom: 70px;">
+                    <div class="caption-top">基本信息</div>
+                    <div class="caption-article">
+                        <ul class="clearfix">
+                            <li ><span>出库日期：</span><input id="date" onclick="choose_date_czw('date')" ><div id="div" style="background-color: #ffffff"></div><p></p></li>
+                            <!--<li>
+                                <span>称重时间：</span>
+                                <select name="hour" id="hour" style="width: 50px;"></select>
+                                :
+                                <select name="minute" id="minute" style="width: 50px;"></select>
+                                <p></p></li>-->
+                            <li><span>车号：</span><input type="text" id="licensePlate"  maxlength="10">
+                                <p></p></li>
+                            <li>
+                                <span>买粮人：</span>
+                                <label for="buyPerson" style="width: 60%;">
+                                <select name="buyPerson" id="buyPerson" style="width: 60%;">
+
+                                </select>
+                                </label>
+                                <span id="change-add"></span>
+                                <input id="addPerson" placeholder="请输入姓名"    style="display: none;width: 55%;" maxlength="18">
+                                <input id="phone" placeholder="请输入手机号" maxlength="11" style="display: none;width: 55%;margin-left: 25%;">
+                                <span id="change-sel" style="display: none">选择</span>
+                            </li>
+                        </ul>
+                        <ul>
+                            <li>
+                                <span>司机：</span>
+                                <label for="driver" style="width: 60%;">
+                                    <select name="driver" id="driver" style="width: 60%;">
+
+                                    </select>
+                                </label>
+                                <span id="driver-add"></span>
+                                <input id="addDriver" placeholder="请输入姓名" style="display: none;width: 55%;" maxlength="18">
+                            </li>
+                            <li>
+                                <input id="driverPhone" placeholder="请输入手机号" maxlength="11" style="display: none;width: 55%;">
+                                <span id="driver-sel" style="display: none">选择</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="caption">
+                    <div class="caption-top">收款信息</div>
+                    <div class="caption-article clearfix">
+                        <ul class="clearfix">
+                            <li><span>毛重(公斤)<i>*</i>：</span><input type="text"  id="grossWeightOut" oninput="numberCtrl(this,2)"><p></p></li>
+                            <li><span>皮重(公斤)<i>*</i>：</span><input type="text"  id="tareWeightOut" oninput="numberCtrl(this,2)"><p></p></li>
+                            <li><span>扣重(公斤)：</span><input type="number"  id="deduction" oninput="numberCtrl(this,2)"><p></p></li>
+                        </ul>
+                        <ul class="clearfix">
+                            <li><span>结算净重(公斤)：</span><input type="number" id="netWeightOut" disabled style="color: red;"  placeholder="自动计算"></li>
+                            <li><span>单价(元/斤)<i>*</i>：</span><input type="text"  id="unitPrice" oninput="numberCtrl(this,3)"><p></p></li>
+                            <li><span>金额(元)：</span><input type="number" id="moneyOut" disabled
+                                                          style="color: red;"  placeholder="自动计算"></li>
+                        </ul>
+                       <!--  <ul>
+                            <li><span>其他费用(元)：</span><input type="number"  id="that" oninput="numberCtrl(this,3)"><p></p></li>
+                        </ul> -->
+                    </div>
+                </div>
+                <div class="caption notGrain">
+                    <div class="caption-top">粮食信息</div>
+                    <div class="caption-article">
+                        <ul class="clearfix">
+                            <li><span>水分(%)：</span><input type="number" id="water" oninput="if(value.length>4)value=value.slice(0,4)"><p></p></li>
+                            <li><span>霉变(%)：</span><input type="number" id="meibian" oninput="if(value.length>4)value=value.slice(0,4)"><p></p></li>
+                            <li><span>容重(g/l)：</span><input type="number" id="rongzhong" oninput="if(value.length>4)value=value.slice(0,4)"><p></p></li>
+                            <li><span>不完善粒(%)：</span><input type="number" id="buwanshanli"
+                                                            oninput="if(value.length>4)value=value.slice(0,4)">
+                                <p></p></li>
+                        </ul>
+                        <ul class="clearfix">
+                            <li><span>杂质(%)：</span><input type="number" id="impurity" oninput="if(value.length>4)value=value.slice(0,4)"><p></p></li>
+                            <li>
+                                <span>质量：</span>
+                                <select name="quality" id="quality">
+                                    <option value="0">请选择</option>
+                                    <option value="1">一等</option>
+                                    <option value="2">二等</option>
+                                    <option value="3">三等</option>
+                                    <option value="4">四等</option>
+                                    <option value="5">五等</option>
+                                    <option value="6">等外</option>
+                                </select>
+                                <p></p>
+                            </li>
+                            <li style="width: 49%;">
+                                <span>备注：</span>
+                                <input type="text" id="remark" style="width: 85%;">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="caption grain" style="display: none;">
+                    <div class="caption-top">粮食信息</div>
+                    <div class="caption-article">
+                        <ul class="clearfix">
+                            <li>
+                                <span>品种：</span>
+                                <select name="varietyType" id="varietyType">
+                                 	<option value="0">请选择</option>
+                                    <option value="1">混合麦</option>
+                                    <option value="2">白麦</option>
+                                    <option value="3">红麦</option>
+                                </select>
+                                <p></p>
+                            </li>
+                            <li>
+                                <span>质量：</span>
+                               <select name="quality" id="qualityxm">
+                                    <option value="0">请选择</option>
+                                    <option value="1">一等</option>
+                                    <option value="2">二等</option>
+                                    <option value="3">三等</option>
+                                    <option value="4">四等</option>
+                                    <option value="5">五等</option>
+                                    <option value="6">等外</option>
+                                </select>
+                                <p></p>
+                            </li>
+                            <li>
+                                <span>包装类型：</span>
+                                 <select name="packingType" id="packingType">
+                                 <option value="0">请选择</option>
+                                    <option value="1">散集</option>
+                                    <option value="2">袋集</option>
+                                </select>
+                                <p></p>
+                            </li>
+                            <li>
+                                <span>生产年份：</span>
+                                <select name="productionNiafe" id="productionNiafe">
+                                    <option value="0">请选择</option>
+                                    <option value="2017">2017</option>
+                                    <option value="2016">2016</option>
+                                    <option value="2015">2015</option>
+                                    <option value="2014">2014</option>
+                                    <option value="2013">2013</option>
+                                </select>
+                            </li>
+                        </ul>
+                        <ul class="clearfix">
+                            <li><span>水分(%)：</span><input type="number" id="waterxm" oninput="if(value.length>4)value=value.slice(0,4)"><p></p></li>
+                            <li><span>杂质(%)：</span><input type="number" id="impurityxm" oninput="if(value.length>4)value=value.slice(0,4)"><p></p></li>
+                            <li><span>容重(g/l)：</span><input type="number" id="rongzhongxm" oninput="if(value.length>4)value=value.slice(0,4)"><p></p></li>
+                            <li><span>不完善粒(%)：</span><input type="number" id="buwanshanlixm"
+                                                            oninput="if(value.length>4)value=value.slice(0,4)">
+                                <p></p></li>
+                        </ul>
+                        <ul class="clearfix">
+                            <li><span>气味：</span>
+  								<select name="smell" id="smell">
+                                    <option value="0">请选择</option>
+                                    <option value="1">正常</option>
+                                    <option value="2">微有异味</option>
+                                    <option value="3">霉味、酸臭或其他</option>
+                                </select>
+							</li>
+                            <li style="width: 70%">
+                                  <span class="address" style="width: 100%;">产地：
+				                         <div class="addressSelete" style="display: inline-block;width: 80%;vertical-align: middle">
+				                            <div class="cityselect"><select id="province" name="province"></select></div>
+				                            <div class="cityselect"><select style="margin-left: 10%" id="city" name="city"></select></div>
+				                            <div class="cityselect"><select style="margin-left: 10%" id="area" name="area"></select></div>
+				                        </div>
+				                    </span>
+                                <p></p>
+                            </li>
+                        </ul>
+                        <ul class="clearfix">
+                            <li style="width: 50%;">
+                                <span>备注：</span>
+                                <input type="text" id="remarkxm" style="width: 80%;"><p></p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="rightFooter">
+                <div class="btn" style="background-color: #f0b573;float: left;cursor: pointer;" id="submit">保存出库单</div>
+                <div class="btn" style="background-color: #f0b573;float: right;cursor: pointer;" id="temporary">暂存</div>
+            </div>
+        </div>
+    </div>
+    <script>$.include("accountData/shtml/foot.shtml")</script>
+
+    <script type="text/javascript" src="accountData/js/md5.min.js"></script>
+    <script type="text/javascript" src="accountData/js/select2.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.citys.min.js"></script>
+    <script type='text/javascript' src='accountData/js/jquery.qrcode.min.js' charset='utf-8'></script>
+    <script type="text/javascript" src="accountData/js/rest.js"></script>
+    <script type="text/javascript" src="accountData/js/outForm.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>供应下游</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/downstream.css">
+</head>
+<body>
+<div class="wapper">
+    <div class="tab">
+        <div class="tab_active lf">找下游</div>
+        <div class="rt">供应</div>
+    </div>
+    <div class="downstream">
+        <ul class="nav">
+            <li class="nav_active lf">100公里以内</li>
+            <li class="lf">200公里以内</li>
+            <li class="rt">200公里以外</li>
+        </ul>
+        <div class="navcontent">
+            <div class="content" id="downlist">
+
+            </div>
+            <script type="text/template" id="down-list">
+                {{#each down}}
+                <div class="infore">
+                    <div class="title">
+                        <span class="frist">
+                            <i class="name">{{companyName}}</i>
+                        </span>
+                        <span><i>{{distance}}公里</i></span>
+                        <span class="rt">更新：{{updateTime}}</span>
+                    </div>
+                    <ul>
+                        <li>
+                            <span>&nbsp;{{foodName}}</span>
+                            <span>&nbsp;{{quality}}</span>
+                            <span class="orange">&nbsp;{{foodPrice}}</span>
+                        </li>
+                    </ul>
+                    <div class="line">
+                        <span>下游联系人</span>
+                        <span>{{trueName}}</span>
+                        <span class="last phone" data-phone="4006029967">打电话<em>></em></span>
+                    </div>
+                    <div class="line no">
+                        <span>卖粮宝帮忙</span>
+                        <span>客服</span>
+                        <span class="last phone" data-phone="4006029967">打电话<em>></em></span>
+                    </div>
+                </div>
+                {{/each}}
+            </script>
+        </div>
+    </div>
+    <div class="supply" id="supplylist">
+
+    </div>
+    <script type="text/template" id="supply-list">
+        {{#each supply}}
+        <div class="infor">
+            <ul>
+                <li>
+                    <span class="infor_left">供应方：</span>
+                    <span>{{people}}</span>
+                    <span>&nbsp;&nbsp;&nbsp;&nbsp;类型:</span>
+                    <sapn>{{type}}</sapn>
+                    <em class="time">{{time}}</em>
+                </li>
+                <li>
+                    <span class="infor_left">价格：</span>
+                    <span><i class="orange">{{price}}</i>元/吨</span>
+                    <span class="infor_left">&nbsp;&nbsp;&nbsp;&nbsp;数量：</span>
+                    <span><i class="orange">{{number}}</i>吨</span>
+                </li>
+                <li style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
+                    <span class="infor_left">质量：</span>
+                    <span>{{foodRequire}}</span>
+                </li>
+                <li>
+                    <span class="infor_left">地址：</span>
+                    <span>{{location}}</span>
+                </li>
+                <li>
+                    <span class="infor_left">等级：</span>
+                    <span>{{quality}}</span>
+                    <span class="infor_left">&nbsp;&nbsp;&nbsp;&nbsp;发票：</span>
+                    <span>{{bidInvoice}}</span>
+                    <a href="#" data-phone="{{userPhone}}" class="phone">打电话</a>
+                </li>
+            </ul>
+        </div>
+        {{/each}}
+    </script>
+</div>
+<div class="searchModel">
+    <div class="s-container">
+        <div class="s-top">查询</div>
+        <div class="s-content">
+            <ul>
+                <li class="s-line">
+                    <span>粮食种类:</span>
+                    <select name="grainType" id="grainType">
+                        <option value="0">全部</option>
+                        <option value="2">玉米</option>
+                        <option value="1">小麦</option>
+                    </select>
+                </li>
+                <li class="s-line">
+                    <span>粮食质量:</span>
+                    <select name="quality" id="quality">
+                        <option value="0">全部</option>
+                        <option value="1">一等粮</option>
+                        <option value="2">二等粮</option>
+                        <option value="3">三等粮</option>
+                        <option value="4">四等粮</option>
+                        <option value="5">五等粮</option>
+                    </select>
+                </li>
+                <li class="s-line">
+                    <span>所在地区(省、市、县):</span>
+                    <div class="addressSelete" style="margin-left: 4.5rem;">
+                        <div class="cityselect"><select id="province" name="province" style="width: 85%;"></select></div>
+                        <div class="cityselect"><select id="city" name="city" style="width: 85%;"></select></div>
+                        <div class="cityselect"><select id="area" name="area" style="width: 85%;"></select></div>
+                    </div>
+                </li>
+                <li>
+                    <div class="s-btn">
+                        <button class="lf cencel">取消</button>
+                        <button class="rt submit">确定</button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="replease" onclick="window.location.href='apply.html'">
+    <span class="restext">发报价</span>
+</div>
+<div class="search">
+    <span class="restext">筛选</span>
+</div>
+<script type="text/javascript" src='js/md5.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="js/common/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/common/jquery.citys.js"></script>
+<script type="text/javascript" src="js/common/rest.js"></script>
+<script type="text/javascript" src="libs/template7/1.1.4/template7.js"></script>
+<script type="text/javascript" src="js/downstream.js"></script>
+</body>
+</html>

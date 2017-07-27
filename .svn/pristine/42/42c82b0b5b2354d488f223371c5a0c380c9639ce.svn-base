@@ -1,0 +1,318 @@
+package fc.wpf.rest.web.filter;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import lombok.extern.slf4j.Slf4j;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.util.CollectionUtils;
+
+import com.mlb.util.Md5;
+import com.mlb.util.SessionConfig;
+import com.mlb.util.SessionUtils;
+
+/**
+ * 
+ * @author Reid
+ * 
+ * @version 1.1 Hoe
+ * @version 1.2 2015-07-21 Ryo 纪录使用者操作的动作与时间, 避免短时间内重复发送
+ * 
+ */
+@Slf4j
+public class WPFFilter implements Filter {
+
+	private final String ACTION_URL = "chkActionUrl";
+
+	private final String[] NO_CHK_URL = { "/notificationCtrl/queryTodoTask", "/notificationCtrl/bankMsg" };
+
+	private final String ACTION_TIME = "chkActionTime";
+
+	private final String abSessionConfig = SessionUtils.AB_SESSION_CONFIG;
+
+	// private final String mlb_session_open_id =
+	// SessionUtils.AB_SESSION_USER_OPEN_ID;
+
+	// private final String authLoginUrl = WXHelper.jsUrl + "/mlbweb/authLogin";
+	// private final String registerUrl = WXHelper.jsUrl + "/mlbweb/register";
+	// private static MlbuserDao mlbuserDao = (MlbuserDao)
+	// BeanFactory.getBean("mlbuserDao");
+
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {
+
+	}
+
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
+			ServletException {
+		HttpServletRequest req = (HttpServletRequest) request;
+		HttpServletResponse resp = (HttpServletResponse) response;
+		HttpSession session = req.getSession();
+	
+		/*
+		 * if (!this.chkReSubmit(req, session)) { return; }
+		 */
+		// 判断请求方法 GET 、POST
+		String requestMethod = "get";
+		if (req.getMethod().equalsIgnoreCase("get")) {
+			requestMethod = "get";
+		} else if (req.getMethod().equalsIgnoreCase("post")) {
+			requestMethod = "post";
+		} else if (req.getMethod().equalsIgnoreCase("delete")) {
+			requestMethod = "delete";
+		}
+
+		String qcode = "";
+		String md5 = "";
+		List<String> temp = new ArrayList<String>();
+		StringBuffer buffer = new StringBuffer("\n  请求URL：" + req.getRequestURL()).append("\n  请求参数[\n");
+		if (!CollectionUtils.isEmpty(req.getParameterMap())) {
+			for (Map.Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
+				String key = entry.getKey();
+				String[] values = entry.getValue();
+				buffer.append("     " + key + "=" + Arrays.asList(values) + "\n");
+				if (key.equals("qcode")) {
+					md5 = Arrays.asList(values).toString();
+				} else {
+					temp.add(key + "=" + Arrays.asList(values));
+				}
+			}
+		}
+		log.info(buffer.append(" ]").toString());
+		// System.out.println(entry.getKey() + "=" + entry.getValue());
+		// result.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
+		Collections.sort(temp);
+
+		if (temp != null && temp.size() > 0) {
+			for (String string : temp) {
+				qcode += string;
+			}
+		}
+		qcode = qcode.replace("[", "").replace("]", "");
+		// 由于web.xml中設置Filter過濾全部请求，可以排除不需要過濾的url
+		String requestURI = req.getRequestURI();
+		String fromWeixin = request.getParameter("CHANNAL_TYPE_CHECK");
+		boolean isWeixin = false;
+		if ("WEIXIN".equalsIgnoreCase(fromWeixin)) {
+			isWeixin = true;
+		}
+		// 登录、退出、注册等不需要限制session、 不需要验证code
+		// 微信过来的请求 不需要限制 session
+		// 其他类型 请求 需要限制 session
+		// post方法 需要验证code
+		if (requestURI.contains("login") || requestURI.contains("logout") || requestURI.contains("common")
+				|| requestURI.contains("bsgoodsinfo") || requestURI.endsWith("bsinventoryuser")
+				|| requestURI.contains("bsuserrequire") || requestURI.endsWith("queryCount")
+				|| requestURI.contains("bsusercomment") || requestURI.contains("bsattention")
+				|| requestURI.contains("bsclickcount") || requestURI.contains("bsleaveword")
+				|| requestURI.contains("findRecordDao") || requestURI.contains("mlbuser")
+				|| requestURI.contains("bsuserabstract") || requestURI.contains("ht")
+				|| requestURI.contains("unionuser") || requestURI.contains("mlbuserinventoryuser")
+				|| requestURI.endsWith("getBackPassword")) {
+			chain.doFilter(request, response);
+			return;
+		}
+		// grainType=2currentPage=1searchType=1userId=10002recordType=1pageSize=10staffName=
+		// currentPage=1grainType=2pageSize=10recordType=1searchType=1staffName=userId=10002
+		// post 方法
+		if ("post".equalsIgnoreCase(requestMethod)) {
+			System.out.println("md5_____________" + md5);
+			System.out.println("qcode____________" + qcode);
+			System.out.println("Md5qucode____________" + "[" + Md5.getInstance().encode(qcode) + "]");
+			if (md5 != null && !"".equals(md5)) {
+				if (!md5.equals("[" + Md5.getInstance().encode(qcode) + "]")) {
+					// resp.sendRedirect("index.html");
+					resp.setHeader("loginFlag", "-1");
+					resp.setContentType("text/json; charset=utf-8");
+					JSONObject obj = new JSONObject();
+					obj.put("errorcode", "1");
+					obj.put("message", "对不起，请重新登录！");
+					resp.getWriter().write(obj.toString());
+					// grainType=2currentPage=1searchType=1userId=10002recordType=1pageSize=10staffName=
+					// grainType=2currentPage=1searchType=1userId=10002recordType=1pageSize=10staffName=
+					return;
+				}
+			}
+		}
+
+		if (isWeixin) {
+			chain.doFilter(request, response);
+			return;
+		} else {
+			// session 限制
+			try {
+				SessionConfig sessionConfig = null;
+				if (session.getAttribute(abSessionConfig) != null) {
+					sessionConfig = (SessionConfig) session.getAttribute(abSessionConfig);
+				}
+
+				if (sessionConfig != null) {
+					chain.doFilter(request, response);
+					return;
+				} else {
+					resp.setHeader("loginFlag", "-1");
+					resp.setContentType("text/json; charset=utf-8");
+					JSONObject obj = new JSONObject();
+					obj.put("errorcode", "1");
+					obj.put("message", "对不起，请重新登录！");
+					resp.getWriter().write(obj.toString());
+					return;
+					/*
+					 * if (req.getHeader("x-requested-with") != null &&
+					 * req.getHeader
+					 * ("x-requested-with").equalsIgnoreCase("XMLHttpRequest"))
+					 * { resp.setHeader("timeout", "timeout"); return; }
+					 */
+				}
+
+				/*
+				 * SessionConfig sessionConfig = (SessionConfig)
+				 * session.getAttribute(mlbSessionConfig); String openId =
+				 * (String) session.getAttribute(mlb_session_open_id); // 卖粮宝
+				 * 
+				 * String code = request.getParameter("code");
+				 * 
+				 * if ((openId != null && openId.length() > 10) && sessionConfig
+				 * != null) {
+				 * 
+				 * } else if (code == null) { String appid = WXHelper.appid;
+				 * String wxOpenUrl = oAuth2Url(appid, authLoginUrl); //
+				 * resp.sendRedirect(wxOpenUrl); } else { if (code != null) {
+				 * Mlbuser userBean = null; JSONObject jobj =
+				 * WXHelper.getWXAccessToken(code); if (jobj == null ||
+				 * !jobj.containsKey("openid") ||
+				 * !jobj.containsKey("access_token")) { userBean = null; } else
+				 * { openId = jobj.getString("openid"); MlbuserExample example =
+				 * new MlbuserExample();
+				 * example.createCriteria().andOpenidEqualTo(openId);
+				 * List<Mlbuser> mlbList = mlbuserDao.selectByExample(example);
+				 * if (mlbList != null && mlbList.size() > 0) { userBean =
+				 * mlbList.get(0); } } if (userBean != null) { SessionConfig
+				 * sessionConfigNew = new SessionConfig();
+				 * sessionConfigNew.setUserId(userBean.getUserid());
+				 * sessionConfigNew.setUserName(userBean.getLoginname());
+				 * sessionConfigNew.setRealName(userBean.getTruename());
+				 * sessionConfigNew.setLocation(userBean.getLocation());
+				 * req.getSession().setAttribute(mlbSessionConfig,
+				 * sessionConfigNew);
+				 * req.getSession().setAttribute(mlb_session_open_id, openId); }
+				 * else { req.getSession().setAttribute(mlb_session_open_id,
+				 * openId); // resp.sendRedirect(registerUrl); } } }
+				 */
+
+				// FCSysUser user = (FCSysUser) session.getAttribute("user");
+				// HttpSession userSession
+				// =SessionListener.sessionContext.getSessionMap().get(user.getUserId());
+				// if (user != null &&
+				// userSession.getId().equals(session.getId())) {
+				// @SuppressWarnings("unchecked")
+				// List<FCSysMenu> menuLs = (List<FCSysMenu>)
+				// session.getAttribute("menuLs");
+				// String referer = req.getHeader("Referer");
+				// boolean isAuth = false;
+				// if (menuLs != null) {
+				// for (FCSysMenu fcSysMenu : menuLs) {
+				// if (StringUtil.isNotBlank(referer) &&
+				// referer.contains(fcSysMenu.getMenuUrl())) {
+				// isAuth = true;
+				// }
+				// }
+				// }
+				//
+				// if (isAuth || (StringUtil.isNotBlank(referer) &&
+				// referer.contains("index.html"))) {
+				// //将user目前在那一个页面记住
+				// session.setAttribute("currentPage", referer);
+				// chain.doFilter(request, response);
+				// } else {
+				// resp.setHeader("timeout", "timeout");
+				// try{
+				// userSession.invalidate();
+				// }catch(Exception e){
+				// log.debug(e.getMessage());
+				// }
+				// SessionListener.sessionContext.getSessionMap().remove(user.getUserId());
+				// SessionListener.sessionContext.getSessionMap().remove(session.getId());
+				// }
+				// //resp.sendError(404);
+				// return;
+				// } else {
+				// resp.setHeader("timeout", "timeout");
+				// return;
+				// }
+			} catch (Exception e) {
+				resp.setHeader("loginFlag", "-1");
+				resp.setContentType("text/json; charset=utf-8");
+				JSONObject obj = new JSONObject();
+				obj.put("errorcode", "1");
+				obj.put("message", "对不起，请重新登录！");
+				resp.getWriter().write(obj.toString());
+				return;
+			}
+
+		}
+	}
+
+	public String oAuth2Url(String corpid, String redirect_uri) {
+		try {
+			redirect_uri = java.net.URLEncoder.encode(redirect_uri, "utf-8");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String oauth2Url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=" + corpid + "&redirect_uri="
+				+ redirect_uri + "&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect";
+		return oauth2Url;
+	}
+
+	/**
+	 * 2015-07-21 2015-07-28 只判断post(新增)
+	 * 
+	 * @param req
+	 * @param session
+	 * @return
+	 */
+	private boolean chkReSubmit(HttpServletRequest req, HttpSession session) {
+		boolean isPass = true;
+		if ("POST".equals(req.getMethod().toUpperCase()) && !ArrayUtils.contains(NO_CHK_URL, req.getServletPath())) {
+			if ((req.getServletPath() + "?" + req.getQueryString()).equals(session.getAttribute(ACTION_URL))) {
+				if (session.getAttribute(ACTION_TIME) != null) {
+					Date lastActTime = (Date) session.getAttribute(ACTION_TIME);
+
+					if (new Date().getTime() - lastActTime.getTime() < 500) {
+						isPass = false;
+					}
+				}
+			}
+
+			session.setAttribute(ACTION_URL, req.getServletPath() + "?" + req.getQueryString());
+			session.setAttribute(ACTION_TIME, new Date());
+		}
+
+		return isPass;
+	}
+
+	@Override
+	public void destroy() {
+		// TODO Auto-generated method stub
+
+	}
+
+}

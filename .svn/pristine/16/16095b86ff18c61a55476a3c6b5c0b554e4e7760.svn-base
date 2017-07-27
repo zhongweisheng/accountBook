@@ -1,0 +1,360 @@
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button{
+    -webkit-appearance: none !important;
+    margin: 0;
+}
+input[type="number"]{-moz-appearance:textfield;}
+
+.logoin{
+    width: 100%;
+}
+.logoin-form{
+    width: 386px;
+    height: 400px;
+    background-color: #e3eaef;
+    margin-top: 40px;
+}
+.logoin-form .title{
+    text-align: center;
+    font-size: 34px;
+    color: #71706e  ;
+    line-height: 120px;
+}
+.logoin-form input{
+    display: block;
+    width: 270px;
+    height: 38px;
+    margin: 0 auto;
+    font-size: 16px;
+    padding-left: 10px;
+}
+.find{
+    width: 280px;
+    margin: 0 auto;
+}
+.find .lt a{
+    cursor:pointer;
+    color:#eb832c;
+}
+.find .ri a{
+    cursor:pointer;
+    color: #71706e;
+}
+.logoin-btn{
+    width: 280px;
+    height: 38px;
+    margin: 0 auto;
+    background-color: #44aac3;
+    text-align: center;
+    margin-top: 20px;
+}
+.logoin-btn a{
+    display: block;
+    width: 100%;
+    color: white;
+    font-size: 25px;
+    cursor: pointer;
+}
+.first-index{
+    margin-top: 40px;
+    text-align: center;
+}
+.first-index p{
+    font-size: 40px;
+    color: #44aac3;
+}
+.second{
+    width: 100%;
+    margin-top: 80px;
+}
+.list1{
+    width: 100%;
+    border-bottom: solid 1px #d2d2d2;
+    margin-bottom: -30px;
+}
+.list2{
+    width: 100%;
+}
+.list2 {
+    display: block;
+    font-size: 40px;
+    width: 100%;
+    text-align: center;
+}
+.list2 span{
+    color: #6d6d6d;
+    background: white;
+    padding:0 50px;
+}
+.three{
+    margin-top: 50px;
+    color: #6d6d6d;
+    text-align: center;
+    font-size: 16px;
+}
+.four{
+    margin-top: 50px;
+}
+#nav-bottom{
+    width: 800px;
+    margin: 0 auto;
+}
+#nav-bottom li{
+    height: 60px;
+    width: 160px;
+    cursor: pointer;
+    display: block;
+    float: left;
+    font-size: 30px;
+    color: #6d6d6d;
+    text-align: center;
+}
+#nav-bottom li:hover{
+    font-size: 40px;
+    color: #a444c2;
+}
+.newStaff{
+    width: 500px;
+    height: 200px;
+    padding: 20px;
+    background-color: white;
+    position: absolute;
+    top: 50%;
+    left:50%;
+    margin-left:-250px;
+    margin-top: -100px;
+}
+.newStaffTitle{
+    width: 100%;
+    height: 40px;
+    margin-bottom: 20px;
+    line-height: 40px;
+    text-align: center;
+    color: #777;
+    font-size: 18px;
+}
+.registerModel{
+    top:0;
+    left: 0;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: none;
+    background: rgba(189,189,189,.7);
+}
+.findPassWordModel{
+    top:0;
+    left: 0;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: none;
+    background: rgba(189,189,189,.7);
+}
+.register-form{
+    width: 680px;
+    height:530px;
+    background-color: white;
+    position: absolute;
+    top: 50%;
+    left:50%;
+    margin-left:-340px;
+    margin-top: -265px;
+}
+.register-form .content{
+    width: 70%;
+    margin: auto;
+}
+.register-form-title {
+    padding-top: 50px;
+}
+.register-form-title .list1{
+    border:solid 1px #44aac3;
+    width: 100%;
+}
+.register-form-title .list2 span{
+    color: #44aac3;
+    font-size: 30px;
+}
+.field-name{
+    float: left;
+    display: block;
+    width: 20%;
+    font-size: 20px;
+    color: #858384;
+    line-height: 40px;
+}
+.form input{
+    padding-left: 2%;
+    float: left;
+    display: block;
+    width: 79%;
+    height: 35px;
+}
+.register-btn{
+    width: 100%;
+    height: 38px;
+    margin: 0 auto;
+    margin-top: 20px;
+}
+.register-btn a{
+    background-color: #44aac3;
+    text-align: center;
+    display: block;
+    width: 40%;
+    color: white;
+    font-size: 25px;
+    cursor: pointer;
+    float: left;
+}
+.phonecode {
+    border: solid 1px #858384;
+    float: left;
+    display: block;
+    width: 79%;
+    height: 35px;
+}
+.phonecode input{
+    width: 50%;
+    padding-left: 2%;
+    border-style: none;
+    height: 33px;
+}
+.getPhoneCode{
+    float: right;
+    display: block;
+    color: #44aac3;
+    font-size: 20px;
+    line-height: 35px;
+    text-align: right;
+    padding-right: 10px;
+    cursor: pointer;
+}
+.disable{
+    opacity: .5;
+}
+.address{
+    float: left;
+    display: block;
+    width: 79%;
+}
+.cityselect select{
+    display: block;
+    height: 35px;
+    width: 33.3%;
+    border: solid 1px #858384;
+    float: left;
+    background-color: white;
+}
+.findPassWordModel .register-form{
+    height: 380px;
+}
+.reminder{
+    display: none;
+    color: red;
+    height: 12px;
+    font-size: 12px;
+    text-align: right;
+}
+.logoin-form p{
+    display: block;
+    width: 270px;
+    height: 20px;
+    margin: 0 auto;
+    text-align:  right;
+}
+.banner { position: relative; overflow: auto; text-align:right;margin-top: 40px;color: transparent;}
+.banner li { list-style: none; }
+.banner ul li { float: left; }
+#b04 {
+    width: 793px;
+}
+#b04 .dots { position: absolute; left: 0; right: 0; bottom: 20px;}
+#b04 .dots li
+{
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin: 0 4px;
+    text-indent: -999em;
+    border: 2px solid #333;
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: .4;
+    -webkit-transition: background .5s, opacity .5s;
+    -moz-transition: background .5s, opacity .5s;
+    transition: background .5s, opacity .5s;
+}
+#b04 .dots li.active
+{
+    background: #fff;
+    opacity: 1;
+}
+#b04 .arrow { position: absolute; top: 200px;}
+#b04 #al { left: 15px;}
+#b04 #ar { right: 15px;}
+.banner img{
+    width: 793px;
+    height:400px;
+}
+.bottom-img{
+    margin-top: 50px;
+}
+.hi{
+    width: 386px;
+    height: 252px;
+    margin-left: 20px;
+    float: left;
+}
+.hi img{
+    width: 386px;
+    height: 252px;
+}
+.text-center{
+    text-align: center;
+}
+.agreeModal{
+    display: none;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+.agreeInner{
+    width: 680px;
+    height:530px;
+    margin: 120px auto 120px;
+    padding:0 1rem;
+    background: #fff;
+    position: relative;
+}
+.agreeCon{
+    width: 100%;
+    height: 425px;
+    overflow-y: scroll;
+}
+.agreeFooter{
+    width: 100%;
+    background: #fff;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 60px;
+    line-height: 60px;
+}
+.agreeBtn{
+    cursor: pointer;
+    width: 50%;
+    height: 40px;
+    margin: 0 auto;
+    margin-top: 10px;
+    text-align: center;
+    line-height: 40px;
+    background: #f6a85e;
+    color: #fff;
+    border-radius: 0.1rem;
+}

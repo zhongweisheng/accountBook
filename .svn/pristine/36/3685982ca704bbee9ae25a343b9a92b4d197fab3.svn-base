@@ -1,0 +1,4 @@
+<div class="nav-top">
+    <span style="color: #ccccce;cursor: pointer;" onclick="javascript:location.href='workIndex.html'">首页</span>-
+    <span style="color: #c96071;">入库单>></span>
+</div>

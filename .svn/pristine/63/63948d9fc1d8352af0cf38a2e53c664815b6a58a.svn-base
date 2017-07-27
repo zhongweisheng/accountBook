@@ -1,0 +1,249 @@
+.right h2{
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    font-size: 22px;
+    float: left;
+    margin-top:16px;
+    margin-bottom: 11px;
+}
+.right p{
+    width: 100%;
+    height: 35px;
+    float: left;
+}
+.right p button{
+    height: 40px;
+    width: 160px;
+    font-size: 18px;
+    border:0;
+    background-color: #f7941d;
+    color: #fff;
+    letter-spacing: 1px;
+}
+.right table {
+    font-size: 16px;
+    width: 100%;
+    padding: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #f4f5f9;
+    margin-top: 25px;
+    float: left;
+}
+.table table > tr{
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #f4f5f9;
+}
+.table thead {
+    width: 100%;
+    height: 38px;
+    font-size: 15px;
+    line-height: 38px;
+    background-color: #f4f5f9;
+}
+
+.table thead > tr > th {
+    height: 38px;
+    text-align: center;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #f4f5f9;
+}
+.table tbody > tr > td {
+    color: #666;
+    text-align: center;
+    height: 32px;
+    line-height: 32px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #f4f5f9;
+}
+.table tbody > tr > td:last-child{
+    position: relative;
+    width: 200px;
+}
+.table tbody > tr > td button{
+    height: 20px;
+    line-height: 20px; 
+    font-size: 14px;
+    width: 36px;
+    background-color: #f7941d;
+    color: #fff;
+    border:0;
+    margin-right: 15px;
+}
+ .table tbody > tr > td button:last-child{
+    margin-right: 0;
+}
+.accountRemark{
+    top: 40px;
+    position: absolute;
+    right:0;
+    z-index: 5;
+    background: #fff;
+    display: none;
+    width: 400px;
+    border: 1px solid #f6a85e;
+}
+.accountRemark ul li{
+    text-align: left;
+    text-indent: 20px;
+    border-bottom: 1px dashed #f6a85e;
+}
+
+
+
+.registerModel{
+    top:0;
+    left: 0;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: none;
+    background: rgba(189,189,189,.7);
+}
+.findPassWordModel{
+    top:0;
+    left: 0;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: none;
+    background: rgba(189,189,189,.7);
+}
+.register-form{
+    width: 400px;
+    height:520px;
+    background-color: white;
+    position: absolute;
+    top:50%;
+    left:50%;
+    margin-left: -150px;
+    margin-top: -210px;
+}
+.register-form .content{
+    width: 80%;
+    margin: auto;
+}
+.register-form-title {
+    padding-top: 40px;
+    padding-bottom: 10px;
+}
+.register-form-title .list1{
+    border:solid 1px #44aac3;
+    width: 100%;
+}
+.register-form-title .list2 span{
+    color: #44aac3;
+    font-size: 22px;
+}
+.field-name{
+    float: left;
+    display: block;
+    width: 23%;
+    font-size: 14px;
+    color: #858384;
+    line-height: 40px;
+}
+.form input{
+    padding-left: 2%;
+    float: left;
+    display: block;
+    width: 77%;
+    height: 35px;
+}
+.register-btn{
+    width: 100%;
+    height: 38px;
+    margin: 0 auto;
+    margin-top: 20px;
+}
+.register-btn a{
+    background-color: #5498fb;
+    text-align: center;
+    display: block;
+    width: 40%;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    float: right;
+    height: 35px;
+    line-height: 35px;
+}
+.phonecode {
+    border: solid 1px #858384;
+    float: left;
+    display: block;
+    width: 79%;
+    height: 35px;
+}
+.phonecode input{
+    width: 50%;
+    padding-left: 2%;
+    border-style: none;
+}
+.getPhoneCode{
+    display: block;
+    color: #44aac3;
+    font-size: 20px;
+    line-height: 35px;
+    text-align: right;
+    padding-right: 10px;
+    cursor: pointer;
+}
+.disable{
+    opacity: .5;
+}
+.reminder{
+    display: none;
+    color: red;
+    height: 12px;
+    font-size: 12px;
+    text-align: right;
+}
+.list1{
+    width: 100%;
+    border-bottom: solid 1px #d2d2d2;
+    margin-bottom: -20px;
+}
+.list2{
+    width: 100%;
+}
+.list2 {
+    display: block;
+    height: 40px;
+    width: 100%;
+    text-align: center;
+}
+.list2 span{
+    color: #6d6d6d;
+    background: white;
+    padding:0 50px;
+}
+.form textarea{
+    width: 77%;
+    height: 70px;
+}
+.mb10{
+    margin-bottom: 10px;
+}
+#submit,#editSubmit{
+    float: left;
+    background-color: #e69423;
+}
+.field-name i{
+    color: red;
+    display: inline-block;
+    margin-right: 10px;
+    font-style: normal;
+    vertical-align: middle;
+}
+.table{
+    height: 400px;
+    float: left;
+    width: 100%;
+}

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>送粮人</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/salePerson.css">
+    <script type="text/javascript" src="accountData/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="accountData/js/jquery.include.min.js"></script>
+    <script type="text/javascript" src="libs/template7/1.1.4/template7.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common.min.js"></script>
+    <style type="text/css">
+        .left{
+            width: 159px;
+            margin-top: 90px;
+            float: left;
+        }
+        .parent {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            font-size: 20px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child{
+            padding-left: 15%;
+        }
+        .child p {
+            display: inline-block;
+            width: 100%;
+            margin-left: -15px;
+            height: 40px;
+            line-height: 40px;
+            text-indent: 1rem;
+            font-size: 16px;
+            transition: color 0.5s,font-size 0.5s;
+        }
+        .child p:hover,.parent:hover{
+            cursor: pointer;
+            color: #f5a85d;
+            font-size: 20px;
+        }
+        .parent:hover{
+            font-size: 24px;
+        }
+        .child i {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            line-height: 8px;
+            background-color: #585858;
+            border: 1px solid #585858;
+            border-radius: 4px;
+        }
+        .left_active{
+            color: #f5a85d;
+        }
+    </style>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml")</script>
+<div class="content clearfix"  style="height: 857px;">
+    <script>$.include("accountData/shtml/left.shtml")</script>
+    <div class="right">
+        <div class="rightHead clearfix">
+            <ul>
+                <li>送&nbsp;粮&nbsp;人&nbsp;管&nbsp;理</li>
+                <li>
+                    <button class="excelBtn" id="add">添加</button>
+                </li>
+            </ul>
+        </div>
+        <div class="rightContent">
+            <table style="table-layout: fixed">
+                <thead>
+                <tr>
+                    <td style="width: 50px;">序号</td>
+                    <td style="width:130px;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;">姓名</td>
+                    <td style="width: 120px;">手机号</td>
+                    <td style="width:250px;">身份证号</td>
+                    <td style="width:250px;">银行卡号</td>
+                    <td style="width: 200px;">操作</td>
+                </tr>
+                </thead>
+                <tbody id="list">
+
+                </tbody>
+                <script type="text/template7" id="salePerson-list">
+                    {{#each salePerson}}
+                    <tr>
+                        <td style="width: 50px;">{{number}}</td>
+                        <td style="width: 130px;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;">{{trueName}}</td>
+                        <td style="width: 120px;">{{phone}}</td>
+                        <td style="width: 250px;">{{idCard}}</td>
+                        <td style="width: 250px;">{{cardNumber}}</td>
+                        <td style="position: relative;width: 200px;">
+                            <button id="editbtn" data-id={{staffId}}>编辑</button>
+                            <button id="accountRemark">详情</button>
+                            <button id="deletebtn" data-id={{staffId}}>删除</button>
+                            <div class="accountRemark" style="top: 40px;position: absolute;right:0;z-index: 5;background: #fff;display: none;width: 400px;border: 1px solid #f6a85e;">
+                                <ul>
+                                    <li style="text-align: left;text-indent: 20px;border-bottom: 1px dashed #f6a85e;">公司名称：{{company}}</li>
+                                    <li style="text-align: left;text-indent: 20px;border-bottom: 1px dashed #f6a85e;">备注：{{remark}}</li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </table>
+        </div>
+        <div class="page" style="margin-left: 39px">
+
+        </div>
+    </div>
+</div>
+<script>$.include('accountData/shtml/foot.shtml')</script>
+<div id="addP" class="registerModel">
+    <div class="register-form">
+        <div class="content">
+            <div class="register-form-title">
+                <ul>
+                    <li class="list1"></li>
+                    <li class="list2"><span>送粮人信息</span></li>
+                </ul>
+            </div>
+            <div class="form">
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>姓名:</span><input id="trueName" placeholder="请输入用户姓名" maxlength="18"><p class="reminder">请输入用户姓名</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>手机号:</span><input id="phone" type="number" oninput="if(value.length>11)value=value.slice(0,11)" placeholder="请输入手机号"><p class="reminder">请输入手机号</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">身份证号:</span><input id="idCard" type="number" oninput="if(value.length>18)value=value.slice(0,18)" placeholder="请输入身份证号"><p class="reminder">身份证号位数或格式不正确</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">银行卡号:</span><input type="number" id="cardNumber" placeholder="请输入银行卡号" maxlength="20"><p class="reminder">请输入银行卡号</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">公司名称:</span><input id="company" placeholder="请输入公司名称"></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">备注:</span><textarea id="remark" placeholder="" maxlength="30"></textarea></div>
+            </div>
+            <div class="register-btn">
+                <a id="cencel">取消</a>
+                <a id="submit" style="float: right">提交</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="edit" class="registerModel">
+    <div class="register-form">
+        <div class="content">
+            <div class="register-form-title">
+                <ul>
+                    <li class="list1"></li>
+                    <li class="list2"><span>送粮人信息</span></li>
+                </ul>
+            </div>
+            <div class="form">
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>姓名:</span><input id="trueName-edit" placeholder="请输入用户姓名" maxlength="18"><p class="reminder">请输入用户姓名</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name"><i style="color: red;display: inline-block;margin-right: 10px;font-style: normal;vertical-align: middle;">*</i>手机号:</span><input id="phone-edit" type="number" oninput="if(value.length>11)value=value.slice(0,11)" placeholder="请输入手机号"><p class="reminder">请输入手机号</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">身份证号:</span><input id="idCard-edit" type="number" oninput="if(value.length>18)value=value.slice(0,18)" placeholder="请输入身份证号"><p class="reminder">身份证号位数或格式不正确</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">银行卡号:</span><input type="number" id="cardNumber-edit" placeholder="请输入银行卡号"><p class="reminder">请输入银行卡号</p></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">公司名称:</span><input id="company-edit" placeholder="请输入公司名称"></div>
+                <div class="clearfix" style="margin-bottom: 20px"><span class="field-name">备注:</span><textarea id="remark-edit" placeholder="" maxlength="30"></textarea></div>
+            </div>
+            <div class="register-btn">
+
+                <a id="editCencel" >取消</a>
+                <a id="editSubmit" style="float: right">提交</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="accountData/js/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/rest.min.js"></script>
+<script type="text/javascript" src="accountData/js/page.min.js"></script>
+<script type="text/javascript" src="accountData/js/salePerson.min.js"></script>
+</body>
+</html>

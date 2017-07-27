@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>粮库结算记录</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="accountData/css/common.css">
+    <link rel="stylesheet" href="accountData/css/storageDetails.css">
+    <script type="text/javascript" src="accountData/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/jquery.include.min.js?v=20170626"></script>
+    <script type="text/javascript" src="libs/template7/1.1.4/template7.min.js"></script>
+    <script type="text/javascript" src="accountData/js/common/common.min.js?v=20170626"></script>
+</head>
+<body>
+<script>$.include("accountData/shtml/head.shtml?v=20170626")</script>
+<div class="content clearfix">
+    <script>$.include("accountData/shtml/left.shtml?v=20170626");</script>
+    <div class="right">
+        <div class="rightHead clearfix" id="list1"></div>
+        <script type="text/template" id="inTable-list1">
+                <ul>
+                    <li style="float:left; font-size: 16px;font-weight: normal;color: orange" onclick="window.history.go(-1)">返回</li>
+                    <li style="text-align: center">结&nbsp;算&nbsp;记&nbsp;录</li>
+
+                    <li>
+                        <span>订单编号：{{recordNumber}}</span>
+                    </li>
+                </ul>
+        </script>
+        <div class="rightConTop" id="list2"></div>
+        <script type="text/template" id="inTable-list2">
+                <p class="title">概况</p>
+                <ul>
+                    <li>送粮人：{{staffName}}</li>
+                    <li>送粮时间：{{date}}</li>
+                    <li>净重（公斤）：{{netWeightIn}}</li>
+                    <li>已结算（公斤）：{{hasSettled}}</li>
+                    <li>未结算（公斤）：{{notSettled}}</li>
+                    <li>已付款（元）：{{paidMoney}}</li>
+                </ul>
+                <p class="title">代储记录</p>
+        </script>
+        <div class="rightContent">
+                <table>
+                    <thead>
+                    <tr>
+                        <td>序号</td>
+                        <td>结算时间</td>
+                        <td>操作人</td>
+                        <td>结算量（公斤）</td>
+                        <td>结算单价（元/斤）</td>
+                        <td>应付款（元）</td>
+                        <td>已付款（元）</td>
+                    </tr>
+                    </thead>
+                    <tbody id="list">
+
+                    </tbody>
+                    <script type="text/template" id="inTable-list">
+                        {{#each inTable}}
+                        <tr>
+                            <td>{{number}}</td>
+                            <td>{{createTime}}</td>
+                            <td>{{operateUserName}}</td>
+                            <td>{{settleCount}}</td>
+                            <td>{{settlePrice}}</td>
+                            <td>{{shouldPay}}</td>
+                            <td>{{actualPay}}</td>
+                        </tr>
+                        {{/each}}
+                    </script>
+                </table>
+        </div>
+        <div class="page" style="margin-left: 39px">
+
+        </div>
+    </div>
+</div>
+<script>$.include('accountData/shtml/foot.shtml?v=20170626')</script>
+<script type="text/javascript" src="accountData/js/common/md5.min.js"></script>
+<script type="text/javascript" src="accountData/js/common/rest.min.js?v=20170626"></script>
+<script type="text/javascript" src="accountData/js/storageDetails.js?v=20170626"></script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+$(document).ready(function (e) {
+    $(".tab div").click(function(){
+        $(".tab div").eq($(this).index()).addClass("tab_active").siblings().removeClass("tab_active");
+        $(".wapper .downstream").hide().eq($(this).index()).show();
+        $(".wapper .supply").show().eq($(this).index()).hide();
+        var $dis = $('.supply').css('display');
+        if($dis == 'none'){
+            $('.search').hide();
+        }else{
+            $('.search').show();
+        }
+    });
+    var $nav_li = $('.downstream>ul>li');
+    $nav_li.click(function(){
+        $(this).addClass('nav_active').siblings().removeClass('nav_active');
+        var index = $nav_li.index(this);
+        $('.navcontent > div.content').eq(index).show().siblings().hide();
+    });
+});
+var lat = 39.904989,lng = 116.405285,minDistance = 0,maxDistance = 100,$navActive = 0;
+var grainType = 0,quality = 0,locationNum = "";
+if (navigator.geolocation) {
+    if(navigator.geolocation.getCurrentPosition){
+        navigator.geolocation.getCurrentPosition(showPosition,showError);
+    }
+}
+function showPosition(position) {
+    lat = position.coords.latitude;
+    lng = position.coords.longitude;
+    getData();
+}
+function showError(error)
+{
+    switch(error.code)
+    {
+        case error.PERMISSION_DENIED:
+            lat =  39.904989;
+            lng = 116.405285;
+            break;
+        case error.POSITION_UNAVAILABLE:
+            lat =  39.904989;
+            lng = 116.405285;
+            break;
+        case error.TIMEOUT:
+            lat =  39.904989;
+            lng = 116.405285;
+            break;
+        case error.UNKNOWN_ERROR:
+            lat =  39.904989;
+            lng = 116.405285;
+            break;
+    }
+}
+$('.nav').on('click','li',function () {
+    $navActive = $(this).index();
+    if($navActive == 0){
+        minDistance = '0';
+        maxDistance = 100;
+    }else if($navActive == 1){
+        minDistance = 100;
+        maxDistance = 200;
+    }else{
+        minDistance = 200;
+        maxDistance = 2000;
+    }
+    getData();
+});
+
+
+getData();
+getapplyData();
+//shouMoreText();
+
+function getData() {
+    var params = {};
+    params.lat = lat;
+    params.lng = lng;
+    params.minDistance = minDistance;
+    params.maxDistance = maxDistance;
+    jsonParams = JSON.stringify(params);
+    var res = Restful.get('mlbuser/getUserList',jsonParams);
+    if (res && res.success) {
+        var data = res.dataList;
+        var msg = $('#down-list').html();
+        var compiledTemplate = Template7.compile(msg);
+        var html = compiledTemplate({"down": data});
+        $("#downlist").html(html);
+        //$('.more-text').removeClass('hiden');
+    } else {
+        //$('.more').css('display', 'none');
+        $("#downlist").html(
+            '<div style="width: 100%">' +
+            '<div style="width: 100%;height: 5rem;background: url(../img/nodata.png) center no-repeat;background-size: 50% 5rem;margin-top: 3rem;">' +
+            '</div>' +
+            '<div style="text-align: center;margin-top: 1rem">' +
+            '<span style="color: #929292;font-size: 0.9rem;">暂无此类数据~</span>' +
+            '</div>' +
+            '</div>'
+        );
+    }
+}
+
+
+function getapplyData() {
+    var searchParams = {};
+    searchParams.type = grainType;
+    searchParams.location = locationNum;
+    searchParams.quality = quality;
+    console.log(searchParams);
+    var res = Restful.get('bsgoodsinfo/findGoodsList',JSON.stringify(searchParams));
+    if (res) {
+        var data = res.dataList;
+        var msg = $('#supply-list').html();
+        var compiledTemplate = Template7.compile(msg);
+        var html = compiledTemplate({"supply": data});
+        $("#supplylist").html(html);
+        //$('.more-text').removeClass('hiden');
+    } else {
+        //$('.more').css('display', 'none');
+        $("#applylist").html(
+            '<div style="width: 100%">' +
+            '<div style="width: 100%;height: 5rem;background: url(../img/nodata.png) center no-repeat;background-size: 50% 5rem;margin-top: 3rem;">' +
+            '</div>' +
+            '<div style="text-align: center;margin-top: 1rem">' +
+            '<span style="color: #929292;font-size: 0.9rem;">暂无此类数据~</span>' +
+            '</div>' +
+            '</div>'
+        );
+    }
+}
+
+//打电话
+$(document).on('click','.phone',function () {
+    var phone = $(this).data('phone');
+    window.location.href = 'tel:'+phone;
+});
+
+$('.addressSelete').citys({
+    required:false,
+    nodata:'disabled',
+    onChange:function(data){
+        console.log(data);
+        locationText = data.province+data.city+data.area;
+        locationNum = data.code;
+    }
+});
+//筛选
+$('.search').on('click',function () {
+    $('.searchModel').show().animate({'left':0},300);
+    $('#grainType,#quality').val('0');
+    locationNum = '';
+});
+
+$('.cencel').on('click',function () {
+    $('.searchModel').animate({'left':'100%'},200);
+});
+$('.submit').on('click',function () {
+    $('.searchModel').animate({'left':'100%'},200);
+    quality = $('#quality').val();
+    grainType = $('#grainType').val();
+    getapplyData();
+});
